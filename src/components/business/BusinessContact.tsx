@@ -1,16 +1,38 @@
 import { useState, FormEvent } from "react";
 import { COMPANY_EMAIL } from "@/lib/contact";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function BusinessContact() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent("Business Enquiry — People Studio");
-    const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\n${form.message}`);
-    window.location.href = `mailto:${COMPANY_EMAIL}?subject=${subject}&body=${body}`;
-    setSent(true);
+    setStatus("sending");
+    setErrorMsg("");
+    try {
+      const { data, error } = await supabase.functions.invoke("send-contact-enquiry", {
+        body: {
+          source: "Business",
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          message: form.message,
+        },
+      });
+      if (error || !data?.success) {
+        const ctx = (error as { context?: { error?: string } })?.context;
+        setErrorMsg(ctx?.error || error?.message || "Couldn't send your enquiry. Please email us directly.");
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+    } catch (err) {
+      console.error("send-contact-enquiry threw:", err);
+      setErrorMsg(err instanceof Error ? err.message : "Couldn't send your enquiry. Please email us directly.");
+      setStatus("error");
+    }
   };
 
   const contacts = [
@@ -25,6 +47,8 @@ export default function BusinessContact() {
     { id: "email" as const, label: "Email", type: "email", required: true },
     { id: "phone" as const, label: "Phone (optional)", type: "tel", required: false },
   ];
+
+  const sending = status === "sending";
 
   return (
     <section id="contact" className="px-6 md:px-20 py-24 bg-terracotta">
@@ -63,7 +87,7 @@ export default function BusinessContact() {
           </div>
 
           <div>
-            {!sent ? (
+            {status !== "sent" ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {fields.map((f) => (
                   <div key={f.id}>
@@ -75,6 +99,8 @@ export default function BusinessContact() {
                       required={f.required}
                       value={form[f.id]}
                       onChange={(e) => setForm((p) => ({ ...p, [f.id]: e.target.value }))}
+                      disabled={sending}
+                      maxLength={320}
                       className="w-full px-4 py-3 font-dm text-sm text-cream"
                       style={{
                         background: "hsl(var(--cream) / 0.12)",
@@ -94,6 +120,8 @@ export default function BusinessContact() {
                     rows={5}
                     value={form.message}
                     onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
+                    disabled={sending}
+                    maxLength={5000}
                     className="w-full px-4 py-3 font-dm text-sm resize-none text-cream"
                     style={{
                       background: "hsl(var(--cream) / 0.12)",
@@ -104,12 +132,16 @@ export default function BusinessContact() {
                     onBlur={(e) => (e.currentTarget.style.borderColor = "hsl(var(--cream) / 0.2)")}
                   />
                 </div>
+                {status === "error" && errorMsg && (
+                  <p className="font-dm text-sm text-cream bg-ink/30 px-4 py-3">{errorMsg}</p>
+                )}
                 <button
                   type="submit"
-                  className="font-dm font-bold text-sm uppercase w-full py-4 rounded-sm transition-colors duration-200 bg-cream text-terracotta hover:bg-ink hover:text-cream"
+                  disabled={sending}
+                  className="font-dm font-bold text-sm uppercase w-full py-4 rounded-sm transition-colors duration-200 bg-cream text-terracotta hover:bg-ink hover:text-cream disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ letterSpacing: "0.1em" }}
                 >
-                  Send Enquiry →
+                  {sending ? "Sending…" : "Send Enquiry →"}
                 </button>
               </form>
             ) : (
@@ -117,7 +149,7 @@ export default function BusinessContact() {
                 <div>
                   <div className="font-serif font-bold text-2xl mb-3 text-cream">Message sent.</div>
                   <p className="font-dm text-cream/75" style={{ fontWeight: 300 }}>
-                    Your email client should open. If not, email {COMPANY_EMAIL} directly.
+                    Thanks {form.name || "—"}, your enquiry is in our inbox. We'll reply to {form.email} within one business day.
                   </p>
                 </div>
               </div>
