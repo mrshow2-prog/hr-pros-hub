@@ -35,7 +35,7 @@ export const MARQUEE_SERVICES = [
 ];
 
 export const HERO_STATS = [
-  { value: "AED 108k", label: "Fine per unfilled Emiratisation position" },
+  { value: "AED 3M+", label: "Documented savings delivered" },
   { value: "16 yrs", label: "Executive HR experience" },
   { value: "11", label: "MENAT markets served" },
 ];
