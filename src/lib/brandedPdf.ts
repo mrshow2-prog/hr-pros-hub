@@ -62,6 +62,16 @@ function ensureSpace(doc: jsPDF, y: number, needed = 24) {
 }
 
 function writeBody(doc: jsPDF, text: string, x: number, y: number, maxWidth: number) {
+  // Lightweight inline emphasis: paragraphs wrapped in **...** render bold + sienna.
+  const boldMatch = text.match(/^\s*\*\*([\s\S]+?)\*\*\s*$/);
+  if (boldMatch) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(156, 86, 67);
+    const lines = doc.splitTextToSize(boldMatch[1], maxWidth);
+    doc.text(lines, x, y);
+    return y + lines.length * 5.2 + 3;
+  }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(47, 42, 37);
