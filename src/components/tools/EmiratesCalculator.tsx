@@ -88,6 +88,10 @@ export default function EmiratesCalculator() {
             ))}
           </div>
           <p className="font-dm text-sm leading-7 text-ink/70">{result.note}</p>
+          <p className="mt-5 border-t border-ink/10 pt-4 font-dm text-xs leading-6 text-ink/45" style={{ fontWeight: 300 }}>
+            <span className="font-bold uppercase tracking-wider text-ink/55" style={{ letterSpacing: "0.08em" }}>Disclaimer · </span>
+            This calculator provides indicative figures based on publicly available MoHRE guidelines (last updated April 2026). It is not legal advice. Consult a qualified UAE employment lawyer for your specific obligations.
+          </p>
           <UpsellStrip title="Want a full compliance plan?" body="I’ll review your setup, calculate Nafis subsidy angles, and give you a 90-day plan." href="/business#services" link="See Emiratisation Pack →" />
         </OutputBox>
       )}

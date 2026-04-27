@@ -52,6 +52,8 @@ export default function BusinessServices() {
               </ul>
               <a
                 href={BOOKING_HREF}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="font-dm font-bold text-xs uppercase px-5 py-3 text-center rounded-sm transition-colors duration-200 mt-auto text-terracotta-soft hover:bg-terracotta hover:text-cream"
                 style={{ border: "1px solid hsl(var(--terracotta) / 0.35)", letterSpacing: "0.1em" }}
               >
