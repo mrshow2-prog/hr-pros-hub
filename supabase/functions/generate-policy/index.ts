@@ -129,14 +129,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userPrompt = `Generate a complete, ready-to-use HR policy document for:
+    const userPrompt = `Generate a complete, ready-to-use HR policy document with these inputs:
 
 Company: ${companyName}
 Policy type: ${type}
 Company sector: ${sector}
 Company size: ${size}
 Jurisdiction: ${jur}
-Additional context: ${notes || "None provided"} (use this to overwrite any policy content within the applicable laws and regulations for the country)`;
+Additional context (notes from the user — use to shape the policy, never echo as a section): ${notes || "None provided"}
+
+Reminder: Write exclusively for a ${sector} company. Do not reference any other industry, sector terminology, role titles, or organisational structure that does not match the ${sector} sector. Do not reference internal grade levels or pay bands unless they are explicitly defined above. Do not include the user's notes verbatim as a section in the output.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
