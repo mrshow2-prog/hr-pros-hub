@@ -6,6 +6,7 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import PsLogo from "@/components/ui/PsLogo";
 import sampleWebCvPreview from "@/assets/sample-web-cv-preview.jpg";
 import { BOOKING_HREF, COMPANY_EMAIL } from "@/lib/contact";
+import { supabase } from "@/integrations/supabase/client";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
