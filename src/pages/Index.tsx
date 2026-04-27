@@ -10,7 +10,6 @@ const Index = () => {
         <PsLogo size="lg" className="pointer-events-auto" />
         <nav aria-label="Utility" className="pointer-events-auto flex items-center gap-5 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 md:gap-6">
           <Link to="/business#about" className="hidden transition-colors hover:text-ink md:text-paper/45 md:hover:text-paper sm:inline">About</Link>
-          <Link to="/tools" className="hidden transition-colors hover:text-ink md:text-paper/45 md:hover:text-paper sm:inline">Free Tools</Link>
           <a href={`mailto:${COMPANY_EMAIL}`} className="transition-colors hover:text-ink md:text-paper/65 md:hover:text-paper">Contact</a>
         </nav>
       </header>
