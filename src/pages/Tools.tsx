@@ -1,0 +1,67 @@
+import { useState } from "react";
+import ToolsNav from "@/components/tools/ToolsNav";
+import HRDiagnostic from "@/components/tools/HRDiagnostic";
+import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
+import PolicyGenerator from "@/components/tools/PolicyGenerator";
+import JDBuilder from "@/components/tools/JDBuilder";
+import BookCallBanner from "@/components/ui/BookCallBanner";
+
+const tabs = [
+  { id: "diagnostic", label: "HR Diagnostic" },
+  { id: "calculator", label: "Emiratisation Calculator" },
+  { id: "policy", label: "Policy Generator" },
+  { id: "jd", label: "JD Builder" },
+] as const;
+
+type TabId = (typeof tabs)[number]["id"];
+
+export default function Tools() {
+  const [activeTab, setActiveTab] = useState<TabId>("diagnostic");
+
+  return (
+    <div className="min-h-screen bg-paper font-dm text-ink">
+      <ToolsNav />
+
+      <main>
+        <section className="mx-auto max-w-5xl px-5 pb-10 pt-16 md:px-10 md:pb-12 md:pt-20">
+          <div className="max-w-3xl">
+            <div className="mb-5 flex items-center gap-3 font-dm text-[0.68rem] font-bold uppercase tracking-widest2 text-sienna before:h-px before:w-5 before:bg-sienna">
+              Free tools — no signup required
+            </div>
+            <h1 className="mb-5 font-serif text-5xl font-normal leading-[1.04] text-ink md:text-6xl">
+              Use these.<br />No strings attached.
+            </h1>
+            <p className="max-w-2xl font-dm text-base font-light leading-8 text-ink/60">
+              Four practical HR tools for UAE and GCC business owners: a full HR diagnostic, Emiratisation calculator, starter policy generator, and job description builder.
+            </p>
+          </div>
+        </section>
+
+        <div className="border-b border-ink/10 px-5 md:px-10">
+          <div className="mx-auto flex max-w-5xl overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`mb-[-1px] flex-shrink-0 border-b-2 px-5 py-4 font-dm text-[0.72rem] font-bold uppercase tracking-wider2 transition-colors ${
+                  activeTab === tab.id ? "border-sienna text-sienna" : "border-transparent text-ink/40 hover:text-ink/75"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <section className="mx-auto max-w-5xl px-5 py-12 md:px-10 md:py-16">
+          {activeTab === "diagnostic" && <HRDiagnostic />}
+          {activeTab === "calculator" && <EmiratesCalculator />}
+          {activeTab === "policy" && <PolicyGenerator />}
+          {activeTab === "jd" && <JDBuilder />}
+        </section>
+      </main>
+
+      <BookCallBanner />
+    </div>
+  );
+}

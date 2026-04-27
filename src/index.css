@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* People.Studio design system. All colors HSL. */
+
+@layer base {
+  :root {
+    /* People.Studio core palette */
+    --ink: 27 13% 9%;               /* #1A1714 */
+    --ink-elev: 30 7% 13%;
+    --paper: 37 38% 93%;            /* #F4EFE6 */
+    --clay: 37 34% 86%;             /* #E8DFD1 */
+    --stone: 34 25% 68%;            /* #BFB09A */
+    --blush: 21 34% 71%;            /* #CFAE9C */
+    --sienna: 13 40% 44%;           /* #9C5643 */
+    --umber: 12 41% 31%;            /* #6E3A2E */
+    --olive: 97 15% 28%;            /* #44513C */
+
+    --surface: 27 13% 12%;
+    --surface-soft: 27 13% 16%;
+    --risk-red: 5 56% 49%;
+    --risk-amber: 38 89% 44%;
+    --risk-blue: 203 68% 32%;
+    --risk-purple: 266 43% 44%;
+    --risk-green: 130 46% 33%;
+
+    /* Career Studio palette */
+    --career-bg: 97 15% 28%;
+    --career-surface: 97 14% 23%;
+    --career-deep: 97 15% 18%;
+    --career-blue: 13 40% 44%;
+    --career-sky: 21 34% 71%;
+    --career-light: 37 34% 86%;
+    --career-border: 37 38% 93% / 0.16;
+
+    /* Backward-compat aliases — keeps existing components working */
+    --cream: var(--paper);
+    --cream-warm: var(--clay);
+    --terracotta: var(--sienna);
+    --terracotta-deep: var(--umber);
+    --terracotta-soft: var(--blush);
+    --moss: var(--olive);
+    --navy: var(--olive);
+    --navy-deep: var(--umber);
+    --navy-soft: var(--stone);
+
+    /* Semantic shadcn tokens mapped to brand */
+    --background: 37 38% 93%;
+    --foreground: 27 13% 9%;
+
+    --card: 30 7% 8%;
+    --card-foreground: 30 24% 94%;
+
+    --popover: 30 7% 8%;
+    --popover-foreground: 30 24% 94%;
+
+    --primary: 13 40% 44%;
+    --primary-foreground: 30 24% 94%;
+
+    --secondary: 30 7% 11%;
+    --secondary-foreground: 30 24% 94%;
+
+    --muted: 30 7% 11%;
+    --muted-foreground: 24 5% 61%;
+
+    --accent: 13 40% 44%;
+    --accent-foreground: 30 24% 94%;
+
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 30 24% 94%;
+
+    --border: 30 24% 94% / 0.08;
+    --input: 30 7% 11%;
+    --ring: 13 40% 44%;
+
+    --radius: 0.25rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 24 13% 9%;
+    --foreground: 36 33% 93%;
+    --card: 24 13% 13%;
+    --card-foreground: 36 33% 93%;
+    --popover: 24 13% 13%;
+    --popover-foreground: 36 33% 93%;
+    --primary: 11 39% 44%;
+    --primary-foreground: 36 33% 93%;
+    --secondary: 24 13% 17%;
+    --secondary-foreground: 36 33% 93%;
+    --muted: 24 13% 17%;
+    --muted-foreground: 36 10% 65%;
+    --accent: 34 18% 68%;
+    --accent-foreground: 24 13% 9%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 36 33% 93%;
+    --border: 36 33% 93% / 0.08;
+    --input: 24 13% 17%;
+    --ring: 11 39% 44%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-dm antialiased;
+  }
+  h1, h2, h3, h4, h5 {
+    @apply font-syne;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
