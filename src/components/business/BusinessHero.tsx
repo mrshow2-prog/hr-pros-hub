@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { HERO_STATS } from "@/data/business";
+import heroKintsugi from "@/assets/business-hero-kintsugi.jpg";
 
 export default function BusinessHero() {
   return (
@@ -8,51 +9,23 @@ export default function BusinessHero() {
     >
       {/* Layered backdrop */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        {/* Warm radial wash + diagonal gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,hsl(var(--clay)/0.85),transparent_42%),radial-gradient(circle_at_12%_88%,hsl(var(--terracotta)/0.10),transparent_38%),linear-gradient(135deg,hsl(var(--paper))_0%,hsl(var(--paper))_55%,hsl(var(--clay)/0.55)_100%)]" />
+        {/* Hero photograph: kintsugi (fixing the broken) */}
+        <img
+          src={heroKintsugi}
+          alt=""
+          width={1920}
+          height={1080}
+          className="absolute inset-0 h-full w-full object-cover object-right"
+        />
 
-        {/* Floating document cards (HR artifacts) */}
-        <div className="absolute right-[6%] top-[14%] h-44 w-32 rotate-[8deg] border border-ink/10 bg-paper shadow-[0_24px_60px_-30px_hsl(var(--ink)/0.35)] md:h-64 md:w-48">
-          <div className="mx-3 mt-4 h-1.5 w-10 bg-terracotta/70" />
-          <div className="mx-3 mt-3 space-y-1.5">
-            <div className="h-px bg-ink/15" />
-            <div className="h-px w-5/6 bg-ink/15" />
-            <div className="h-px w-2/3 bg-ink/15" />
-            <div className="h-px w-4/5 bg-ink/15" />
-            <div className="h-px w-3/5 bg-ink/15" />
-          </div>
-        </div>
-        <div className="absolute right-[22%] top-[8%] h-40 w-28 rotate-[-6deg] border border-ink/10 bg-clay/60 backdrop-blur-sm md:h-56 md:w-40">
-          <div className="mx-3 mt-4 h-1.5 w-8 bg-ink/30" />
-          <div className="mx-3 mt-3 space-y-1.5">
-            <div className="h-px bg-ink/15" />
-            <div className="h-px w-3/4 bg-ink/15" />
-            <div className="h-px w-5/6 bg-ink/15" />
-          </div>
-        </div>
-        <div className="absolute right-[38%] top-[26%] hidden h-32 w-44 rotate-[3deg] border border-ink/10 bg-paper/80 backdrop-blur-sm md:block md:h-40 md:w-56">
-          <div className="mx-3 mt-3 h-1 w-12 bg-terracotta/60" />
-          <div className="mx-3 mt-3 grid grid-cols-3 gap-1.5">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="h-1.5 bg-ink/10" />
-            ))}
-          </div>
-        </div>
+        {/* Warm wash to harmonise with paper palette */}
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(var(--paper))_0%,hsl(var(--paper)/0.85)_45%,hsl(var(--paper)/0.15)_75%,transparent_100%)]" />
 
-        {/* Faint dotted grid (structure) */}
-        <div className="absolute inset-0 [background-image:radial-gradient(hsl(var(--ink)/0.12)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_60%_at_75%_30%,black_30%,transparent_75%)]" />
+        {/* Left-side readability veil for text column */}
+        <div className="absolute inset-y-0 left-0 w-full md:w-3/5 bg-gradient-to-r from-paper via-paper/85 to-transparent" />
 
-        {/* Org-chart "broken → fixed" SVG */}
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1200 800" fill="none" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <path d="M180 560 L 320 560 L 320 660 L 460 660" stroke="hsl(var(--ink) / 0.18)" strokeWidth="1" strokeDasharray="4 8" />
-          <path d="M180 560 L 320 560 L 320 460 L 480 460" stroke="hsl(var(--terracotta))" strokeWidth="1.4" />
-          <circle cx="180" cy="560" r="3.5" fill="hsl(var(--terracotta))" />
-          <circle cx="320" cy="460" r="3" fill="hsl(var(--terracotta))" />
-          <circle cx="480" cy="460" r="4" fill="hsl(var(--terracotta))" />
-          <circle cx="320" cy="660" r="2.5" fill="hsl(var(--ink) / 0.25)" />
-          <circle cx="460" cy="660" r="2.5" fill="hsl(var(--ink) / 0.25)" />
-          <path d="M470 452 l 6 6 l 12 -14" stroke="hsl(var(--terracotta))" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        {/* Faint dotted grid (structure) — masked away from text area */}
+        <div className="absolute inset-0 [background-image:radial-gradient(hsl(var(--ink)/0.12)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_40%_50%_at_85%_15%,black_30%,transparent_75%)]" />
 
         {/* Bottom fade so content stays readable */}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper to-transparent" />
