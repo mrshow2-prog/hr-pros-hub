@@ -169,8 +169,8 @@ export default function Career() {
         <div className="absolute inset-0 bg-gradient-to-t from-career-bg via-career-bg/58 to-career-deep/20" />
         <div className="relative z-10 max-w-5xl">
           <p className="mb-6 flex items-center gap-3 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky before:block before:h-px before:w-7 before:bg-career-sky">Career Studio · UAE &amp; GCC</p>
-          <h1 className="mb-7 max-w-4xl font-serif text-5xl font-normal leading-[0.96] text-paper drop-shadow-2xl md:text-7xl lg:text-8xl">Your career,<br /><span className="italic text-career-sky">considered</span><span className="text-career-sky">.</span></h1>
-          <p className="mb-9 max-w-xl text-base font-light leading-8 text-paper/70 md:text-lg">You're good at what you do. Your CV, your LinkedIn, and your ability to articulate your value should reflect that. Most people's don't. That's what we fix.</p>
+          <h1 className="mb-7 max-w-4xl font-serif text-5xl font-normal leading-[0.96] text-paper drop-shadow-2xl md:text-7xl lg:text-8xl">You're good at your job.<br /><span className="italic text-career-sky">The market doesn't know it yet</span><span className="text-career-sky">.</span></h1>
+          <p className="mb-9 max-w-xl text-base font-light leading-8 text-paper/70 md:text-lg">Career positioning, CV architecture, and interview preparation for professionals who want to move — and move well.</p>
           <div className="flex flex-wrap gap-3">
             <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center border border-career-sky/30 px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky transition-all hover:-translate-y-0.5 hover:bg-career-sky/10">Book a free discovery call</a>
             <a href="#web-cv" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Create your personal brand website</a>

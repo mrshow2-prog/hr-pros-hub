@@ -19,12 +19,12 @@ export default function BusinessHero() {
           className="font-serif font-normal leading-[0.98] mb-7 text-ink"
           style={{ fontSize: "clamp(3rem, 7vw, 6rem)" }}
         >
-          Practical HR,
+          Your HR is probably broken.
           <br />
-          <em className="text-terracotta" style={{ fontStyle: "italic" }}>honestly</em> said.
+          <em className="text-terracotta" style={{ fontStyle: "italic" }}>Let's fix it.</em>
         </h1>
         <p className="font-dm mb-10 max-w-xl leading-relaxed text-ink/70" style={{ fontSize: "1.1rem", fontWeight: 300 }}>
-          UAE enforcement is here. Fines are being issued. Most businesses with 20+ employees are already non-compliant — and don't know it.
+          Most UAE SMEs are one labour claim away from a serious problem. We find the gaps before they cost you.
         </p>
 
         <div className="flex flex-wrap gap-4 mb-20">
