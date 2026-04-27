@@ -2,9 +2,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_SECTORS, POLICY_TYPES } from "@/data/tools";
 import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
-import { recordToolUsage } from "@/lib/toolsTracking";
+import { recordToolUsage, saveToolLead } from "@/lib/toolsTracking";
 import { FieldLabel, SuggestionBox, ToolInput, ToolSelect, ToolTextarea, UpsellStrip } from "./ToolPrimitives";
-import ToolEmailCapture from "./ToolEmailCapture";
+import EmailGatedGenerate from "./EmailGatedGenerate";
 
 const TOOL_NAME = "Policy Generator";
 const sizes = ["1–20 employees", "20–60 employees", "60–150 employees", "150+ employees"];
@@ -82,10 +82,13 @@ export default function PolicyGenerator() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
-  const [generated, setGenerated] = useState<PdfSection[] | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+  const [sentTo, setSentTo] = useState("");
 
-  const generatePdf = async () => {
-    if (!companyName.trim() || !type || !sector || !size) {
+  const fieldsValid = !!(companyName.trim() && type && sector && size);
+
+  const generate = async (userEmail: string) => {
+    if (!fieldsValid) {
       setError("Please complete company name, policy type, sector, and company size.");
       return;
     }
@@ -108,7 +111,10 @@ export default function PolicyGenerator() {
         return;
       }
       const sections = buildSections(policy);
-      setGenerated(sections);
+      const documentName = `${type}${companyName ? ` — ${companyName}` : ""}`;
+      const outputText = `${type} — ${companyName}\n${sector} · ${size} · ${jurisdiction}\n\n${sectionsToPlainText(sections)}`;
+
+      // 1. Trigger PDF download for the user
       downloadPdf({
         title: type,
         subtitle: `A UAE/GCC-grounded HR policy for ${companyName}.`,
@@ -117,7 +123,31 @@ export default function PolicyGenerator() {
         sections,
         footerNote: "Want a version tailored to your organisation? People.Studio prepares policies, handbooks, and job descriptions specific to your business, your people, and the UAE & GCC regulatory context — not generic templates.",
       }, `${slug(companyName)}-${slug(type)}.pdf`);
+
+      // 2. Log the lead with the captured email
+      void saveToolLead({ toolName: TOOL_NAME, outputText: outputText.slice(0, 200000), userEmail });
       void recordToolUsage(TOOL_NAME);
+
+      // 3. Auto-send a copy to the user's inbox (BCC to admin handled server-side)
+      try {
+        const { error: emailErr } = await supabase.functions.invoke("send-tool-email", {
+          body: {
+            toEmail: userEmail,
+            documentKind: "Policy",
+            documentName,
+            outputText: outputText.slice(0, 200000),
+          },
+        });
+        if (!emailErr) {
+          setEmailSent(true);
+          setSentTo(userEmail);
+        } else {
+          console.error("send-tool-email error:", emailErr);
+        }
+      } catch (err) {
+        console.error("send-tool-email threw:", err);
+      }
+
       setReady(true);
     } catch (e) {
       console.error("Policy generation failed:", e);
@@ -125,11 +155,6 @@ export default function PolicyGenerator() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const buildOutputText = () => {
-    if (!generated) return "";
-    return `${type} — ${companyName}\n${sector} · ${size} · ${jurisdiction}\n\n${sectionsToPlainText(generated)}`;
   };
 
   return (
@@ -146,24 +171,27 @@ export default function PolicyGenerator() {
           <div><FieldLabel>Jurisdiction</FieldLabel><ToolSelect value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)}>{jurisdictions.map((j) => <option key={j}>{j}</option>)}</ToolSelect></div>
         </div>
         <div className="mt-5"><FieldLabel>Specific requirements or context</FieldLabel><ToolTextarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. We have office and remote staff. We allow up to 2 days WFH per week..." /></div>
-        {error && <p className="mt-4 text-sm font-medium text-risk-red">{error}</p>}
-        <button
-          onClick={generatePdf}
-          disabled={loading}
-          className="mt-6 bg-sienna px-7 py-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? "Generating…" : "Generate policy"}
-        </button>
+
+        <EmailGatedGenerate
+          buttonLabel="Generate policy"
+          loadingLabel="Generating…"
+          parentValid={fieldsValid}
+          externalError={error}
+          loading={loading}
+          onSubmit={generate}
+        />
       </div>
 
       {ready && (
         <>
-          <ToolEmailCapture
-            toolName={TOOL_NAME}
-            getOutputText={buildOutputText}
-            documentKind="Policy"
-            getDocumentName={() => `${type}${companyName ? ` — ${companyName}` : ""}`}
-          />
+          {emailSent && (
+            <div className="mt-6 border border-olive/25 bg-olive/10 px-5 py-4">
+              <p className="font-dm text-sm font-medium text-olive">PDF downloaded — copy emailed to your inbox.</p>
+              <p className="mt-1 font-dm text-xs leading-6 text-ink/55">
+                Sent to <span className="font-medium text-ink/75">{sentTo}</span>.
+              </p>
+            </div>
+          )}
           <UpsellStrip title="Your PDF has downloaded." body="A prepared-for-you version can turn this starter policy into a complete, legally aligned policy suite for your business." href="/business#services" link="See HR Foundation Pack →" />
         </>
       )}
