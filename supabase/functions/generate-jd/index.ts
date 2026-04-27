@@ -22,14 +22,25 @@ Generate a professional, labor-law-compliant job description, calibrated to the 
 
 Your output must be returned by calling the provided "return_job_description" function. Follow these rules for each field:
 
-- mohreClassification: One concise line. Only fill this with substantive content when the location is in the UAE (mainland). State the likely MoHRE skill level (Level 1–5 based on ISCO classification) and whether this role qualifies as "skilled" under UAE law (requires: professional Level 1–5 + post-secondary qualification + minimum AED 4,000/month salary). For non-UAE locations, return an empty string.
-- aboutUs: A short paragraph (2–3 sentences) about the company and its culture. Use the company name and sector context. Keep it generic enough to be edited by the hiring company.
+- mohreClassification: Only fill this with substantive content when the location is in the UAE (mainland). For non-UAE locations, return an empty string.
+  When the location IS UAE, follow this MoHRE classification logic strictly and never contradict yourself:
+  • Determine the role's MoHRE skill level (1–5) based on ISCO classification:
+    - Levels 1–3 cover legislators, managers, professionals, technicians, and associate professionals (post-secondary qualifications, professional/managerial roles).
+    - Level 4 covers clerical support workers (e.g. clerks, secretaries, data entry).
+    - Level 5 covers services, sales, craft, plant/machine operators, and elementary occupations.
+  • If the role falls in Levels 1–3: state the level, classify the role as "Skilled" under MoHRE, and explicitly note that it counts toward the company's Emiratisation skilled-workforce quota (subject to the additional requirements: post-secondary qualification + minimum AED 4,000/month basic salary).
+  • If the role falls in Levels 4–5: state the level, classify the role as "Non-Skilled" under MoHRE, and explicitly note: "This role does not count toward the Emiratisation skilled workforce quota under MoHRE classification."
+  • NEVER describe a Level 4 or Level 5 role as "Skilled". NEVER state both "Level 4" and "Skilled" in the same sentence.
+  • Format as 1–2 short sentences. Example (skilled): "MoHRE Skill Level 2 — Professional. Classified as Skilled; counts toward the Emiratisation skilled-workforce quota provided the post-secondary qualification and AED 4,000+ basic salary thresholds are met." Example (non-skilled): "MoHRE Skill Level 4 — Clerical Support Worker. Classified as Non-Skilled. This role does not count toward the Emiratisation skilled workforce quota under MoHRE classification."
+- aboutUs: Return an empty string. The hiring company will write its own About Us section.
 - roleOverview: 2–3 sentences capturing the purpose and scope of the role. Specific to sector and seniority.
 - keyResponsibilities: 8–12 action-oriented bullet points, calibrated to the seniority level. No generic filler. Each bullet is a single sentence, no leading dash or bullet character.
 - requiredQualifications: Bullets covering education (with attested-qualification note where relevant for UAE visa), years of experience, and technical/functional skills. Each bullet is a single sentence, no leading dash.
 - preferredQualifications: Nice-to-haves, not must-haves. Each bullet is a single sentence, no leading dash.
 - coreCompetencies: 5–6 behavioural competencies appropriate for the level and role. Short phrases, no leading dash.
 - whatWeOffer: 2–3 placeholder lines. Leave brackets like [Salary range] and [Benefits package] for the hiring company to fill in. Each entry a single sentence, no leading dash.
+
+The user may provide additional context in their notes. Use it to inform the WRITING of the JD (tone, scope, focus areas). NEVER quote, echo, or print the notes as a section in the output. NEVER fabricate company facts (size, history, mission, culture) — those belong to the hiring company.
 
 Tone: appropriate for the UAE/GCC professional market — direct, specific, ambitious but not hyperbolic. Do not add preamble or commentary outside the structured output.`;
 

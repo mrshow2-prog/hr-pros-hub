@@ -62,6 +62,16 @@ function ensureSpace(doc: jsPDF, y: number, needed = 24) {
 }
 
 function writeBody(doc: jsPDF, text: string, x: number, y: number, maxWidth: number) {
+  // Lightweight inline emphasis: paragraphs wrapped in **...** render bold + sienna.
+  const boldMatch = text.match(/^\s*\*\*([\s\S]+?)\*\*\s*$/);
+  if (boldMatch) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(156, 86, 67);
+    const lines = doc.splitTextToSize(boldMatch[1], maxWidth);
+    doc.text(lines, x, y);
+    return y + lines.length * 5.2 + 3;
+  }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(47, 42, 37);
@@ -76,13 +86,14 @@ export function createBrandedPdf(input: BrandedPdfInput) {
   doc.rect(0, 0, pageWidth, pageHeight, "F");
   addLogo(doc);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
   doc.setTextColor(156, 86, 67);
-  doc.text("CO-BRANDED WITH", pageWidth - margin, 16, { align: "right", charSpace: 2.2 });
-  doc.setFontSize(10);
+  doc.text("PREPARED FOR", pageWidth - margin, 15, { align: "right", charSpace: 0.6 });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10.5);
   doc.setTextColor(26, 23, 20);
-  doc.text(input.companyName || "Company Name", pageWidth - margin, 22, { align: "right" });
+  doc.text(input.companyName || "Company Name", pageWidth - margin, 21, { align: "right" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);

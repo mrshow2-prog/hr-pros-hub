@@ -28,22 +28,21 @@ function bullets(items: string[]): string[] {
   return items.map((s) => (s.trim().startsWith("-") ? s.trim() : `- ${s.trim()}`));
 }
 
-function buildSections(jd: JdResult, notes: string): PdfSection[] {
+function buildSections(jd: JdResult): PdfSection[] {
   const sections: PdfSection[] = [];
 
   if (jd.mohreClassification && jd.mohreClassification.trim()) {
     sections.push({ title: "MoHRE Classification", body: jd.mohreClassification.trim() });
   }
-  sections.push({ title: "About us", body: jd.aboutUs });
+  sections.push({
+    title: "About us",
+    body: "[Insert your company description here — 2–3 sentences about who you are and what you stand for.]",
+  });
   sections.push({ title: "Role overview", body: jd.roleOverview });
   sections.push({ title: "Key responsibilities", body: bullets(jd.keyResponsibilities) });
   sections.push({ title: "Required qualifications", body: bullets(jd.requiredQualifications) });
   sections.push({ title: "Preferred qualifications", body: bullets(jd.preferredQualifications) });
   sections.push({ title: "Core competencies", body: bullets(jd.coreCompetencies) });
-  sections.push({
-    title: "Company context",
-    body: notes.trim() || "Add reporting line, team size, travel expectations, working model, salary range, and role-specific requirements before publishing.",
-  });
   sections.push({ title: "What we offer", body: bullets(jd.whatWeOffer) });
   return sections;
 }
@@ -93,7 +92,7 @@ export default function JDBuilder() {
         setLoading(false);
         return;
       }
-      const sections = buildSections(jd, notes);
+      const sections = buildSections(jd);
       setGenerated(sections);
       downloadPdf({
         title,

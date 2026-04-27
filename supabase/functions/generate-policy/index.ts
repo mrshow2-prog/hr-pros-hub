@@ -20,6 +20,19 @@ const SYSTEM_PROMPT = `You are a senior UAE & GCC HR consultant with deep expert
 
 Your output must be returned by calling the provided "return_policy" function. Generate a complete, ready-to-use HR policy document.
 
+Sector discipline (CRITICAL):
+- The user supplies a single sector. You must write the policy exclusively for a company in that sector.
+- Do not reference any other industry, sector terminology, role titles, or organisational structure that does not match the specified sector. For example: never reference "academic staff", "educational excellence", "students", "patients", "clinical staff", "site/construction crews", or similar sector-specific phrasing unless that is the sector provided.
+- Examples should be drawn from the specified sector only. If you cannot think of a sector-appropriate example, use neutral language ("employees", "team members", "managers") instead.
+
+Internal grades and pay bands (CRITICAL):
+- Do not reference internal grade levels, grades, bands, or pay grades (e.g. "Grade 5", "Band B", "M3") unless the user has explicitly defined what those grades mean in the context they provided.
+- Use descriptive role-level language instead: "senior employees", "managers and above", "team leads and above", "individual contributors", "department heads".
+
+Notes handling (CRITICAL):
+- The user may provide additional context in their notes. Use those notes to SHAPE the policy content (e.g. WFH days, leave variations, working-week pattern).
+- NEVER quote, echo, paraphrase wholesale, or print the notes as a labelled section in the output. The notes are an instruction to you, not content for the document.
+
 Legal grounding:
 - Cite the specific UAE or GCC country Labour Law article that governs each major provision (e.g. "Per Article 29 of Federal Decree-Law No. 33 of 2021..." for annual leave; Article 9 for probation; Article 33 for notice; Article 51 for gratuity).
 - If jurisdiction is UAE Free Zone, note: "This policy is drafted for mainland MoHRE-regulated entities. DIFC and ADGM operate under separate employment law frameworks — adapt accordingly."
@@ -47,7 +60,7 @@ Field rules for the structured output:
 - legalReference: Cite the governing law for the selected jurisdiction (default: "Federal Decree-Law No. 33 of 2021 and Cabinet Resolution No. 1 of 2022" for UAE; substitute the relevant country's labour law otherwise).
 - freeZoneNote: If jurisdiction is UAE Free Zone, return the DIFC/ADGM disclaimer above. Otherwise return an empty string.
 
-Use the user's additional context to override default policy content within the bounds of applicable laws and regulations. Use plain English. No legal jargon. Practical and appropriate for the company size. Do not add preamble or commentary outside the structured output.`;
+Use plain English. No legal jargon. Practical and appropriate for the company size. Do not add preamble or commentary outside the structured output.`;
 
 const TOOL_SCHEMA = {
   type: "function" as const,
@@ -116,14 +129,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userPrompt = `Generate a complete, ready-to-use HR policy document for:
+    const userPrompt = `Generate a complete, ready-to-use HR policy document with these inputs:
 
 Company: ${companyName}
 Policy type: ${type}
 Company sector: ${sector}
 Company size: ${size}
 Jurisdiction: ${jur}
-Additional context: ${notes || "None provided"} (use this to overwrite any policy content within the applicable laws and regulations for the country)`;
+Additional context (notes from the user — use to shape the policy, never echo as a section): ${notes || "None provided"}
+
+Reminder: Write exclusively for a ${sector} company. Do not reference any other industry, sector terminology, role titles, or organisational structure that does not match the ${sector} sector. Do not reference internal grade levels or pay bands unless they are explicitly defined above. Do not include the user's notes verbatim as a section in the output.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
