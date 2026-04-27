@@ -29,10 +29,31 @@ const services = [
   ["Unique to us", "Salary negotiation coaching", ["Market rate benchmarking", "Negotiation script and strategy", "Offer evaluation framework", "Counter-offer coaching"]],
 ];
 
-const webCvLevels = [
-  ["Essential", "A polished one-page web CV with profile, headline, career highlights, and contact links."],
-  ["Signature", "A fully designed professional profile with narrative sections, metrics, timeline, and PDF export."],
-  ["Executive", "A personal brand site with thought leadership, media-ready bio, speaking profile, and tailored positioning."],
+const webCvLevels: Array<{ level: string; desc: string; stars: number; cardClass: string; titleClass: string; starClass: string }> = [
+  {
+    level: "Essential",
+    desc: "A polished one-page web CV with profile, headline, career highlights, and contact links.",
+    stars: 1,
+    cardClass: "border-career-border bg-career-sky/5",
+    titleClass: "text-paper",
+    starClass: "text-career-sky/70",
+  },
+  {
+    level: "Signature",
+    desc: "A fully designed professional profile with narrative sections, metrics, timeline, and PDF export.",
+    stars: 2,
+    cardClass: "border-career-sky/40 bg-career-sky/15",
+    titleClass: "text-paper",
+    starClass: "text-career-sky",
+  },
+  {
+    level: "Executive",
+    desc: "A personal brand site with thought leadership, media-ready bio, speaking profile, and tailored positioning.",
+    stars: 3,
+    cardClass: "border-career-blue/60 bg-career-blue/25 shadow-[0_0_0_1px_hsl(var(--career-blue)/0.4)]",
+    titleClass: "text-paper",
+    starClass: "text-blush",
+  },
 ];
 
 type AtsResult = { score: number; strengths: string[]; gaps: string[]; wordCount: number };
