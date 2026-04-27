@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, Compass, Edit3, FileText, Grid2X2, Linkedin, Loader2, Mail, RotateCcw, Target, TrendingUp, Upload, UserRoundCheck } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, Compass, Edit3, FileText, Grid2X2, Linkedin, Loader2, Mail, RotateCcw, Target, TrendingUp, Upload, UserRoundCheck } from "lucide-react";
 import JSZip from "jszip";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
@@ -118,7 +118,7 @@ export default function Career() {
       if (text.trim().length < 120) throw new Error("low-text");
       setAtsResult(analyseCvText(text, atsFile));
     } catch {
-      setAtsError("We couldn't read enough text from this file. Please upload a text-based PDF or DOCX CV.");
+      setAtsError("We couldn't read this file. This usually means it's a designed/image-based CV (Canva, InDesign, etc.) or a scanned document. ATS systems can't read these either — which may already be hurting your job search. Upload a plain Word or PDF export instead.");
     } finally {
       setAtsLoading(false);
     }
