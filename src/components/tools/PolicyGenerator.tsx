@@ -1,14 +1,25 @@
 import { useMemo, useState } from "react";
 import { BUSINESS_SECTORS, POLICY_TYPES } from "@/data/tools";
-import { downloadPdf, openLeadEmail, type PdfSection } from "@/lib/brandedPdf";
+import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
+import { recordToolUsage } from "@/lib/toolsTracking";
 import { FieldLabel, SuggestionBox, ToolInput, ToolSelect, ToolTextarea, UpsellStrip } from "./ToolPrimitives";
+import ToolEmailCapture from "./ToolEmailCapture";
 
+const TOOL_NAME = "Policy Generator";
 const sizes = ["1–20 employees", "20–60 employees", "60–150 employees", "150+ employees"];
 const jurisdictions = ["UAE Mainland", "UAE Free Zone", "KSA", "Qatar", "Kuwait", "Bahrain", "Jordan", "Egypt"];
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function slug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function sectionsToPlainText(sections: PdfSection[]): string {
+  return sections
+    .map((s) => {
+      const body = Array.isArray(s.body) ? s.body.join("\n") : s.body;
+      return `## ${s.title}\n${body}`;
+    })
+    .join("\n\n");
 }
 
 export default function PolicyGenerator() {
@@ -18,8 +29,6 @@ export default function PolicyGenerator() {
   const [size, setSize] = useState("");
   const [jurisdiction, setJurisdiction] = useState("UAE Mainland");
   const [notes, setNotes] = useState("");
-  const [email, setEmail] = useState("");
-  const [showEmailStep, setShowEmailStep] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
 
@@ -66,27 +75,12 @@ export default function PolicyGenerator() {
     },
   ], [companyName, jurisdiction, notes, sector, size, type]);
 
-  const validateBase = () => {
+  const generatePdf = () => {
     if (!companyName.trim() || !type || !sector || !size) {
       setError("Please complete company name, policy type, sector, and company size.");
-      return false;
-    }
-    setError("");
-    return true;
-  };
-
-  const requestEmail = () => {
-    if (!validateBase()) return;
-    setShowEmailStep(true);
-  };
-
-  const generatePdf = () => {
-    if (!validateBase()) return;
-    if (!emailPattern.test(email.trim())) {
-      setError("Please enter a valid email address to download the PDF.");
       return;
     }
-    const documentTitle = `${type} for ${companyName}`;
+    setError("");
     downloadPdf({
       title: type,
       subtitle: `A starter HR policy framework for ${companyName}.`,
@@ -95,16 +89,12 @@ export default function PolicyGenerator() {
       sections,
       footerNote: "Want a version tailored to your organisation? People.Studio prepares policies, handbooks, and job descriptions specific to your business, your people, and the UAE & GCC regulatory context — not generic templates.",
     }, `${slug(companyName)}-${slug(type)}.pdf`);
-    openLeadEmail({
-      tool: "Policy Generator",
-      email: email.trim(),
-      companyName,
-      documentTitle,
-      summary: `${type} · ${sector} · ${size} · ${jurisdiction}`,
-    });
+    void recordToolUsage(TOOL_NAME);
     setReady(true);
-    setError("");
   };
+
+  const buildOutputText = () =>
+    `${type} — ${companyName}\n${sector} · ${size} · ${jurisdiction}\n\n${sectionsToPlainText(sections)}`;
 
   return (
     <section className="max-w-3xl">
@@ -120,19 +110,18 @@ export default function PolicyGenerator() {
           <div><FieldLabel>Jurisdiction</FieldLabel><ToolSelect value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)}>{jurisdictions.map((j) => <option key={j}>{j}</option>)}</ToolSelect></div>
         </div>
         <div className="mt-5"><FieldLabel>Specific requirements or context</FieldLabel><ToolTextarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. We have office and remote staff. We allow up to 2 days WFH per week..." /></div>
-        {showEmailStep && (
-          <div className="mt-5 border border-sienna/20 bg-paper p-5">
-            <FieldLabel>Email address to download</FieldLabel>
-            <ToolInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@company.com" />
-          </div>
-        )}
         {error && <p className="mt-4 text-sm font-medium text-risk-red">{error}</p>}
-        <button onClick={showEmailStep ? generatePdf : requestEmail} className="mt-6 bg-sienna px-7 py-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber">
-          {showEmailStep ? "Download branded PDF" : "Generate policy"}
+        <button onClick={generatePdf} className="mt-6 bg-sienna px-7 py-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber">
+          Generate policy
         </button>
       </div>
 
-      {ready && <UpsellStrip title="Your PDF has downloaded." body="A prepared-for-you version can turn this starter policy into a complete, legally aligned policy suite for your business." href="/business#services" link="See HR Foundation Pack →" />}
+      {ready && (
+        <>
+          <ToolEmailCapture toolName={TOOL_NAME} getOutputText={buildOutputText} />
+          <UpsellStrip title="Your PDF has downloaded." body="A prepared-for-you version can turn this starter policy into a complete, legally aligned policy suite for your business." href="/business#services" link="See HR Foundation Pack →" />
+        </>
+      )}
       <SuggestionBox title="Need a policy that isn’t listed?" subtitle="Tell me what policy you need and I’ll add it to the generator — or build it directly." placeholder="e.g. I need a social media policy or company car usage policy..." />
     </section>
   );
