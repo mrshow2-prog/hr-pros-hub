@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_SECTORS, GCC_LOCATIONS } from "@/data/tools";
 import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
 import { recordToolUsage } from "@/lib/toolsTracking";
@@ -8,8 +9,43 @@ import ToolEmailCapture from "./ToolEmailCapture";
 const TOOL_NAME = "JD Builder";
 const levels = ["Entry level (0–2 years)", "Mid level (3–5 years)", "Senior (6–10 years)", "Manager / Team lead", "Director / Head of", "C-suite / VP"];
 
+interface JdResult {
+  mohreClassification: string;
+  aboutUs: string;
+  roleOverview: string;
+  keyResponsibilities: string[];
+  requiredQualifications: string[];
+  preferredQualifications: string[];
+  coreCompetencies: string[];
+  whatWeOffer: string[];
+}
+
 function slug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function bullets(items: string[]): string[] {
+  return items.map((s) => (s.trim().startsWith("-") ? s.trim() : `- ${s.trim()}`));
+}
+
+function buildSections(jd: JdResult, notes: string): PdfSection[] {
+  const sections: PdfSection[] = [];
+
+  if (jd.mohreClassification && jd.mohreClassification.trim()) {
+    sections.push({ title: "MoHRE Classification", body: jd.mohreClassification.trim() });
+  }
+  sections.push({ title: "About us", body: jd.aboutUs });
+  sections.push({ title: "Role overview", body: jd.roleOverview });
+  sections.push({ title: "Key responsibilities", body: bullets(jd.keyResponsibilities) });
+  sections.push({ title: "Required qualifications", body: bullets(jd.requiredQualifications) });
+  sections.push({ title: "Preferred qualifications", body: bullets(jd.preferredQualifications) });
+  sections.push({ title: "Core competencies", body: bullets(jd.coreCompetencies) });
+  sections.push({
+    title: "Company context",
+    body: notes.trim() || "Add reporting line, team size, travel expectations, working model, salary range, and role-specific requirements before publishing.",
+  });
+  sections.push({ title: "What we offer", body: bullets(jd.whatWeOffer) });
+  return sections;
 }
 
 function sectionsToPlainText(sections: PdfSection[]): string {
@@ -29,74 +65,63 @@ export default function JDBuilder() {
   const [location, setLocation] = useState("Dubai, UAE");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [generated, setGenerated] = useState<PdfSection[] | null>(null);
 
-  const sections = useMemo<PdfSection[]>(() => [
-    {
-      title: "Role overview",
-      body: `The ${title || "role"} is responsible for delivering clear commercial outcomes at ${companyName || "the company"} in a ${sector || "business"} environment. The role requires practical execution, stakeholder management, and the discipline to turn business priorities into measurable work.`,
-    },
-    {
-      title: "Key responsibilities",
-      body: [
-        `- Own the core responsibilities of the ${title || "role"} from planning through execution.`,
-        "- Translate business goals into clear priorities, timelines, and deliverables.",
-        "- Work closely with internal stakeholders to remove blockers and improve execution quality.",
-        "- Maintain accurate reporting, documentation, and decision records.",
-        "- Identify risks early and recommend practical solutions.",
-        "- Build strong working relationships across teams and external partners.",
-        "- Improve processes, templates, and ways of working as the business grows.",
-      ],
-    },
-    {
-      title: "Required qualifications",
-      body: [
-        `- Experience appropriate for ${level || "the selected seniority level"}.`,
-        "- Strong written and verbal communication skills.",
-        `- Practical knowledge of the ${sector || "relevant"} market or a closely related sector.`,
-        "- Ability to work in a fast-moving UAE/GCC business environment.",
-        "- Strong ownership, judgement, and follow-through.",
-      ],
-    },
-    {
-      title: "Core competencies",
-      body: ["- Commercial judgement", "- Ownership and accountability", "- Structured problem-solving", "- Stakeholder management", "- Clear communication", "- Execution discipline"],
-    },
-    {
-      title: "Company context",
-      body: notes || "Add reporting line, team size, travel expectations, working model, salary range, and role-specific requirements before publishing.",
-    },
-    {
-      title: "What we offer",
-      body: ["- Competitive compensation aligned to experience.", "- Clear performance expectations.", "- Direct access to decision-makers.", "- Practical growth opportunities in a focused business environment."],
-    },
-  ], [companyName, level, notes, sector, title]);
-
-  const generatePdf = () => {
+  const generatePdf = async () => {
     if (!companyName.trim() || !title.trim() || !level || !sector) {
       setError("Please complete company name, job title, seniority level, and sector.");
       return;
     }
     setError("");
-    downloadPdf({
-      title,
-      subtitle: `${level} · ${sector} · ${location}`,
-      documentLabel: "Job Description · Sample Template",
-      companyName,
-      sections,
-      footerNote: "Want a full role architecture? People.Studio prepares properly scoped JDs, grading frameworks, and competency profiles for UAE & GCC businesses.",
-    }, `${slug(companyName)}-${slug(title)}-job-description.pdf`);
-    void recordToolUsage(TOOL_NAME);
-    setReady(true);
+    setLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-jd", {
+        body: { companyName, title, level, sector, location, notes },
+      });
+      if (fnError) {
+        // Surface server-provided message when available
+        const ctx = (fnError as { context?: { error?: string } })?.context;
+        setError(ctx?.error || fnError.message || "Couldn't generate the JD. Please try again.");
+        setLoading(false);
+        return;
+      }
+      const jd = (data as { jd?: JdResult } | null)?.jd;
+      if (!jd) {
+        setError("AI returned an unexpected response. Please try again.");
+        setLoading(false);
+        return;
+      }
+      const sections = buildSections(jd, notes);
+      setGenerated(sections);
+      downloadPdf({
+        title,
+        subtitle: `${level} · ${sector} · ${location}`,
+        documentLabel: "Job Description · AI-generated draft",
+        companyName,
+        sections,
+        footerNote: "Want a full role architecture? People.Studio prepares properly scoped JDs, grading frameworks, and competency profiles for UAE & GCC businesses.",
+      }, `${slug(companyName)}-${slug(title)}-job-description.pdf`);
+      void recordToolUsage(TOOL_NAME);
+      setReady(true);
+    } catch (e) {
+      console.error("JD generation failed:", e);
+      setError(e instanceof Error ? e.message : "Couldn't generate the JD. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const buildOutputText = () =>
-    `${title} — ${companyName}\n${level} · ${sector} · ${location}\n\n${sectionsToPlainText(sections)}`;
+  const buildOutputText = () => {
+    if (!generated) return "";
+    return `${title} — ${companyName}\n${level} · ${sector} · ${location}\n\n${sectionsToPlainText(generated)}`;
+  };
 
   return (
     <section className="max-w-3xl">
       <h2 className="mb-2 font-serif text-2xl font-normal text-ink">Job description builder</h2>
-      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55">Generate a UAE-market-calibrated, branded job description PDF with responsibilities, requirements, and competencies.</p>
+      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55">Generate a UAE-market-calibrated, labor-law-aware job description PDF — drafted by an AI trained on senior HR consulting practice for the UAE & GCC.</p>
 
       <div className="border border-ink/10 bg-clay/35 p-6">
         <div className="grid gap-5 md:grid-cols-2">
@@ -108,8 +133,12 @@ export default function JDBuilder() {
         </div>
         <div className="mt-5"><FieldLabel>Key responsibilities or context</FieldLabel><ToolTextarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. This role leads a team of 4, manages agency relationships, and owns LinkedIn strategy..." /></div>
         {error && <p className="mt-4 text-sm font-medium text-risk-red">{error}</p>}
-        <button onClick={generatePdf} className="mt-6 bg-sienna px-7 py-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber">
-          Build job description
+        <button
+          onClick={generatePdf}
+          disabled={loading}
+          className="mt-6 bg-sienna px-7 py-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Generating…" : "Build job description"}
         </button>
       </div>
 
