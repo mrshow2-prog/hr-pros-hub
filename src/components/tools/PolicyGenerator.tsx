@@ -107,7 +107,7 @@ export default function PolicyGenerator() {
         setLoading(false);
         return;
       }
-      const sections = buildSections(policy, notes);
+      const sections = buildSections(policy);
       setGenerated(sections);
       downloadPdf({
         title: type,
