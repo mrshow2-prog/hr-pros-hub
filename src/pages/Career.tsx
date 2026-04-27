@@ -177,7 +177,7 @@ export default function Career() {
           </div>
         </div>
         <div className="relative z-10 mt-14 grid gap-6 text-right md:absolute md:bottom-20 md:right-10 md:mt-0">
-          {[["16+", "Years on the hiring side"], ["11", "MENAT markets"], ["Arabic", "& English fluent"]].map(([num, label]) => <div key={label}><div className="font-serif text-3xl font-bold text-career-sky">{num}</div><div className="text-xs text-paper/40">{label}</div></div>)}
+          {[["16+", "Years on the hiring side"], ["11", "MENAT markets"], ["Bilingual", "Arabic & English"]].map(([num, label]) => <div key={label}><div className="font-serif text-3xl font-bold text-career-sky">{num}</div><div className="text-paper/40 text-xs">{label}</div></div>)}
         </div>
       </section>
 
