@@ -39,7 +39,7 @@ function numbered(items: string[]): string[] {
   });
 }
 
-function buildSections(p: PolicyResult, notes: string): PdfSection[] {
+function buildSections(p: PolicyResult): PdfSection[] {
   const sections: PdfSection[] = [];
   if (p.freeZoneNote && p.freeZoneNote.trim()) {
     sections.push({ title: "Important note", body: p.freeZoneNote.trim() });
@@ -52,14 +52,12 @@ function buildSections(p: PolicyResult, notes: string): PdfSection[] {
   sections.push({ title: "HR responsibilities", body: bullets(p.hrResponsibilities) });
   sections.push({ title: "Non-compliance consequences", body: bullets(p.nonCompliance) });
   sections.push({ title: "Related documents / policies", body: bullets(p.relatedDocuments) });
-  if (notes.trim()) {
-    sections.push({ title: "Company-specific context", body: notes.trim() });
-  }
   sections.push({
     title: "Policy ownership & legal basis",
     body: [
       `Policy owner: ${p.policyOwner || "HR Department (or its designated representative)"}`,
       `Legal reference: ${p.legalReference || "Federal Decree-Law No. 33 of 2021 and Cabinet Resolution No. 1 of 2022"}`,
+      `Review date: **[REVIEW DATE — complete before issuing]**`,
     ],
   });
   return sections;
