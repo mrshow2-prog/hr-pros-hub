@@ -112,19 +112,50 @@ const analyseCvText = (text: string, file: File): AtsResult => {
 export default function Career() {
   const [contact, setContact] = useState({ name: "", email: "", phone: "", linkedin: "", goal: "" });
   const [contactCv, setContactCv] = useState<File | null>(null);
-  const [contactSent, setContactSent] = useState(false);
+  const [contactStatus, setContactStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [contactError, setContactError] = useState("");
+  const contactSent = contactStatus === "sent";
+  const contactSending = contactStatus === "sending";
   const [atsEmail, setAtsEmail] = useState("");
   const [atsFile, setAtsFile] = useState<File | null>(null);
   const [atsLoading, setAtsLoading] = useState(false);
   const [atsResult, setAtsResult] = useState<AtsResult | null>(null);
   const [atsError, setAtsError] = useState("");
 
-  const handleContactSubmit = (e: FormEvent) => {
+  const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent("Career Studio Enquiry — People Studio");
-    const body = encodeURIComponent(`Name: ${contact.name}\nEmail: ${contact.email}\nPhone: ${contact.phone}\nLinkedIn: ${contact.linkedin}\nCV file selected: ${contactCv?.name || "Not attached"}\n\nCareer goal:\n${contact.goal}`);
-    window.location.href = `mailto:${COMPANY_EMAIL}?subject=${subject}&body=${body}`;
-    setContactSent(true);
+    setContactStatus("sending");
+    setContactError("");
+    try {
+      const messageBody = [
+        contact.goal,
+        contactCv ? `\n\n(CV file selected by sender: ${contactCv.name} — please reply to request it.)` : "",
+      ]
+        .filter(Boolean)
+        .join("");
+
+      const { data, error } = await supabase.functions.invoke("send-contact-enquiry", {
+        body: {
+          source: "Career",
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          linkedin: contact.linkedin,
+          goal: messageBody,
+        },
+      });
+      if (error || !data?.success) {
+        const ctx = (error as { context?: { error?: string } })?.context;
+        setContactError(ctx?.error || error?.message || "Couldn't send your enquiry. Please email us directly.");
+        setContactStatus("error");
+        return;
+      }
+      setContactStatus("sent");
+    } catch (err) {
+      console.error("send-contact-enquiry threw:", err);
+      setContactError(err instanceof Error ? err.message : "Couldn't send your enquiry. Please email us directly.");
+      setContactStatus("error");
+    }
   };
 
   const handleAtsSubmit = async (e: FormEvent) => {
