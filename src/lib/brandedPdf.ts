@@ -76,13 +76,14 @@ export function createBrandedPdf(input: BrandedPdfInput) {
   doc.rect(0, 0, pageWidth, pageHeight, "F");
   addLogo(doc);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
   doc.setTextColor(156, 86, 67);
-  doc.text("CO-BRANDED WITH", pageWidth - margin, 16, { align: "right", charSpace: 2.2 });
-  doc.setFontSize(10);
+  doc.text("PREPARED FOR", pageWidth - margin, 15, { align: "right", charSpace: 0.6 });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10.5);
   doc.setTextColor(26, 23, 20);
-  doc.text(input.companyName || "Company Name", pageWidth - margin, 22, { align: "right" });
+  doc.text(input.companyName || "Company Name", pageWidth - margin, 21, { align: "right" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
