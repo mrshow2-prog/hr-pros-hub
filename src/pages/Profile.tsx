@@ -31,6 +31,20 @@ export default function Profile() {
 
   return (
     <div className="bg-cream text-ink font-dm min-h-screen">
+      {/* Sample profile notice */}
+      <div className="no-print sticky top-0 z-40 border-b border-ink/10 bg-blush text-ink">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-2.5 md:px-10">
+          <span
+            className="inline-flex shrink-0 items-center rounded-sm bg-ink px-2 py-1 font-dm text-[10px] font-bold uppercase text-paper"
+            style={{ letterSpacing: "0.12em" }}
+          >
+            Notice
+          </span>
+          <p className="font-dm text-xs leading-5 text-ink/85 sm:text-sm">
+            <span className="font-bold">Sample profile</span> — fictional persona for illustration only.
+          </p>
+        </div>
+      </div>
       {/* Stable hero */}
       <section className="sticky-hero relative min-h-[100svh] overflow-hidden bg-olive text-paper">
         <div className="absolute top-0 left-0 right-0 z-10 px-6 md:px-10 py-3 flex items-center justify-between gap-4 border-b border-paper/15">

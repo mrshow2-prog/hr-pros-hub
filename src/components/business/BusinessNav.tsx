@@ -48,6 +48,8 @@ export default function BusinessNav() {
         </div>
         <a
           href={BOOKING_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-dm font-bold text-xs uppercase px-5 py-2.5 rounded-sm transition-colors duration-200 bg-terracotta hover:bg-terracotta-deep text-paper"
           style={{ letterSpacing: "0.1em" }}
         >

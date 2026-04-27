@@ -21,6 +21,8 @@ export default function BookCallBanner({ dark = false }: BookCallBannerProps) {
         </div>
         <a
           href={BOOKING_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-dm font-bold text-xs uppercase px-7 py-4 rounded-sm whitespace-nowrap transition-colors duration-200 bg-terracotta hover:bg-terracotta-deep text-cream self-start md:self-auto"
           style={{ letterSpacing: "0.1em" }}
         >
