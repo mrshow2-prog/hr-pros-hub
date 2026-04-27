@@ -49,7 +49,7 @@ function addFooter(doc: jsPDF, pageNumber: number, totalPages: number) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(90, 82, 73);
-  doc.text("Dubai, UAE · +971 56 288 1713 · peoplestudio.ae", margin, 286);
+  doc.text("Dubai, UAE · +971 58 178 4948 · peoplestudio.ae", margin, 286);
   doc.text("Prepared as a free People.Studio tool output for general HR reference only. It is not legal advice and should be tailored before use.", margin, 291, { maxWidth: 130 });
   doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin, 286, { align: "right" });
 }

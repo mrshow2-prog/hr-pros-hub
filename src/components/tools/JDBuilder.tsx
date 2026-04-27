@@ -115,7 +115,12 @@ export default function JDBuilder() {
 
       {ready && (
         <>
-          <ToolEmailCapture toolName={TOOL_NAME} getOutputText={buildOutputText} />
+          <ToolEmailCapture
+            toolName={TOOL_NAME}
+            getOutputText={buildOutputText}
+            documentKind="Job Description"
+            getDocumentName={() => `${title}${companyName ? ` — ${companyName}` : ""}`}
+          />
           <UpsellStrip title="Your PDF has downloaded." body="Properly scoped JDs, grading frameworks, and competency profiles can sit inside an Organisation Design engagement." href="/business#services" link="See Organisation Design →" />
         </>
       )}
