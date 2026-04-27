@@ -92,7 +92,7 @@ export default function JDBuilder() {
         setLoading(false);
         return;
       }
-      const sections = buildSections(jd, notes);
+      const sections = buildSections(jd);
       setGenerated(sections);
       downloadPdf({
         title,
