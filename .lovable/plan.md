@@ -1,29 +1,58 @@
-# Update hero copy on Business and Career pages
+# Wire JD Builder to Lovable AI
 
-Two small, surgical copy edits. CTA buttons, layout, styling, and stats are all preserved exactly as they are. The Home page (`/`) is intentionally left untouched even though it also contains the old "Practical HR" headline — your instructions scoped this to the Business and Career pages.
+The JD Builder currently uses a static template — there is no existing AI prompt to swap. We'll add a Lovable AI edge function that runs the upgraded prompt and feeds its output into the existing branded PDF.
 
-## Changes
+## What changes
 
-### 1. `src/components/business/BusinessHero.tsx`
+### 1. New edge function: `supabase/functions/generate-jd/index.ts`
+- Accepts `{ companyName, title, level, sector, location, notes }`
+- Calls Lovable AI Gateway (`google/gemini-3-flash-preview` default) with `LOVABLE_API_KEY`
+- Uses a **structured output** (tool-calling) schema so we get back clean JSON ready for the PDF:
+  ```
+  {
+    mohreClassification: string,        // one-line, only filled when location is UAE mainland
+    aboutUs: string,
+    roleOverview: string,
+    keyResponsibilities: string[],      // 8–12 bullets
+    requiredQualifications: string[],
+    preferredQualifications: string[],
+    coreCompetencies: string[],         // 5–6 bullets
+    whatWeOffer: string[]
+  }
+  ```
+- System prompt = the upgraded senior-HR-consultant prompt provided, with `${...}` slots filled from the request
+- Handles 429 (rate limit) and 402 (credits) and returns clear JSON errors
+- CORS enabled, `verify_jwt = false` (public, like other tool functions)
 
-Replace the `<h1>` (lines 18–25) and the sub-headline `<p>` (lines 26–28).
+### 2. `src/components/tools/JDBuilder.tsx`
+- Remove the static `useMemo` template
+- On "Build job description":
+  1. Validate fields (existing logic)
+  2. Show loading state on the button ("Generating…", disabled)
+  3. `supabase.functions.invoke('generate-jd', { body: {...} })`
+  4. Map the returned JSON into `PdfSection[]`:
+     - Optional "MoHRE Classification" section (only if returned & non-empty)
+     - "About us"
+     - "Role overview"
+     - "Key responsibilities"
+     - "Required qualifications"
+     - "Preferred qualifications"
+     - "Core competencies"
+     - "Company context" (still uses user's `notes` verbatim, kept for editor handoff)
+     - "What we offer"
+  5. `downloadPdf(...)` (unchanged branded PDF) and `recordToolUsage(TOOL_NAME)`
+  6. Set `ready = true` so the existing `ToolEmailCapture` + upsell strip render as today
+- Error handling: toast/inline error for 402 ("Add credits to keep using this tool"), 429 ("Too many requests, try again in a moment"), and generic failure
+- `buildOutputText()` uses the AI sections so the email capture sends the AI-generated JD
 
-- **Headline:** "Your HR is probably broken. Let's fix it."
-  - Line break after "broken." so it reads on two lines
-  - "Let's fix it." styled as the italic terracotta accent (matching the existing `<em className="text-terracotta">` treatment used today)
-- **Sub-headline:** "Most UAE SMEs are one labour claim away from a serious problem. We find the gaps before they cost you."
-- Existing classes, font sizing, spacing, eyebrow tag, CTAs, and stats row left untouched.
+### 3. No DB migration, no new client files needed.
 
-### 2. `src/pages/Career.tsx` (line 172–173)
+## Technical notes
+- Default model: `google/gemini-3-flash-preview` (fast + cheap, good for this length).
+- Tool-calling guarantees parseable structure — no regex on free-text.
+- `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` are already configured.
+- PolicyGenerator is **not** touched in this change (you only asked about JD Builder). Happy to mirror the same pattern there next if you want.
 
-Replace the `<h1>` and the sub-headline `<p>` directly below it.
-
-- **Headline:** "You're good at your job. The market doesn't know it yet."
-  - Line break after "job." 
-  - "The market doesn't know it yet." styled in the existing `italic text-career-sky` accent treatment (matching today's "considered." pattern), with the trailing period also in `text-career-sky` for visual consistency
-- **Sub-headline:** "Career positioning, CV architecture, and interview preparation for professionals who want to move — and move well."
-- All other elements on the page (eyebrow, CTAs, stats block, sections below) left untouched.
-
-## Out of scope (intentionally untouched)
-
-- `src/pages/Index.tsx` still uses the old "Practical HR, honestly said." headline. Tell me if you'd like that updated too — but per your instructions ("Make no other changes to these pages"), I'm leaving it alone.
+## Files
+- `supabase/functions/generate-jd/index.ts` (new)
+- `src/components/tools/JDBuilder.tsx` (edited)
