@@ -57,7 +57,7 @@ function buildSections(p: PolicyResult): PdfSection[] {
     body: [
       `Policy owner: ${p.policyOwner || "HR Department (or its designated representative)"}`,
       `Legal reference: ${p.legalReference || "Federal Decree-Law No. 33 of 2021 and Cabinet Resolution No. 1 of 2022"}`,
-      `Review date: **[REVIEW DATE — complete before issuing]**`,
+      `**Review date: [REVIEW DATE — complete before issuing]**`,
     ],
   });
   return sections;
