@@ -118,7 +118,12 @@ export default function PolicyGenerator() {
 
       {ready && (
         <>
-          <ToolEmailCapture toolName={TOOL_NAME} getOutputText={buildOutputText} />
+          <ToolEmailCapture
+            toolName={TOOL_NAME}
+            getOutputText={buildOutputText}
+            documentKind="Policy"
+            getDocumentName={() => `${type}${companyName ? ` — ${companyName}` : ""}`}
+          />
           <UpsellStrip title="Your PDF has downloaded." body="A prepared-for-you version can turn this starter policy into a complete, legally aligned policy suite for your business." href="/business#services" link="See HR Foundation Pack →" />
         </>
       )}

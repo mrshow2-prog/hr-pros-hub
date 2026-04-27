@@ -15,7 +15,7 @@ export default function BusinessContact() {
 
   const contacts = [
     { label: "Email", val: COMPANY_EMAIL, href: `mailto:${COMPANY_EMAIL}` },
-    { label: "Phone", val: "+971 562 881 713", href: "tel:+971562881713" },
+    { label: "Phone", val: "+971 58 178 4948", href: "tel:+971581784948" },
     { label: "LinkedIn", val: "linkedin.com/in/peoplestudio", href: "https://linkedin.com" },
     { label: "Markets", val: "UAE · KSA · Qatar · Kuwait · Bahrain", href: null as string | null },
   ];

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { saveToolLead } from "@/lib/toolsTracking";
 import { FieldLabel, ToolInput } from "./ToolPrimitives";
 
@@ -8,13 +9,17 @@ interface Props {
   toolName: string;
   /** The generated output to attach to the lead record. */
   getOutputText: () => string;
+  /** Human label shown in the email subject, e.g. "Policy" or "Job Description". */
+  documentKind: "Policy" | "Job Description";
+  /** Specific document name, e.g. "Working From Home Policy" or "Senior Marketing Manager". */
+  getDocumentName: () => string;
 }
 
 /**
  * Optional, post-output email capture used by the JD Builder and
  * Policy Generator tools. Not required to use the tool.
  */
-export default function ToolEmailCapture({ toolName, getOutputText }: Props) {
+export default function ToolEmailCapture({ toolName, getOutputText, documentKind, getDocumentName }: Props) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
@@ -34,13 +39,35 @@ export default function ToolEmailCapture({ toolName, getOutputText }: Props) {
     setStatus("sending");
 
     const output = (getOutputText() || "").slice(0, 200000);
-    const ok = await saveToolLead({
+    const documentName = (getDocumentName() || "Document").slice(0, 200);
+
+    // 1. Always log the lead in Supabase (DB record).
+    const logged = await saveToolLead({
       toolName,
       outputText: output,
       userEmail: trimmed,
     });
 
-    if (ok) {
+    // 2. Send the actual email via Resend edge function.
+    let emailed = false;
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("send-tool-email", {
+        body: {
+          toEmail: trimmed,
+          documentKind,
+          documentName,
+          outputText: output,
+        },
+      });
+      emailed = !fnError && !!data?.success;
+      if (fnError) console.error("send-tool-email error:", fnError);
+    } catch (err) {
+      console.error("send-tool-email threw:", err);
+    }
+
+    if (emailed || logged) {
+      // Show success if either path succeeded — the DB record is enough to follow up manually
+      // even if the live email send failed for some reason.
       setStatus("sent");
     } else {
       setStatus("error");
