@@ -310,6 +310,108 @@ function ExecSec({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
+/* ─────────────── AI AGENT WIDGET (overlay, not scaled) ─────────────── */
+type AiMsg = { role: "visitor" | "agent"; text: string };
+const AI_CONVO: AiMsg[] = [
+  { role: "visitor", text: "What's Sarah's experience with Emiratisation?" },
+  { role: "agent", text: "Sarah has led Emiratisation programs for 3 major UAE groups, achieving 100% quota compliance and securing Nafis subsidies. She's also spoken on the topic at HR Summit MENA." },
+];
+
+function AiAgentWidget() {
+  const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<AiMsg[]>([]);
+  const [typing, setTyping] = useState(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    const clearAll = () => { timers.current.forEach(clearTimeout); timers.current = []; };
+    clearAll();
+    setVisible(false); setOpen(false); setMessages([]); setTyping(false);
+
+    timers.current.push(setTimeout(() => setVisible(true), 1400));
+    timers.current.push(setTimeout(() => setOpen(true), 2000));
+    // play conversation
+    timers.current.push(setTimeout(() => setMessages([AI_CONVO[0]]), 2600));
+    timers.current.push(setTimeout(() => setTyping(true), 3200));
+    timers.current.push(setTimeout(() => {
+      setTyping(false);
+      setMessages([AI_CONVO[0], AI_CONVO[1]]);
+    }, 4400));
+
+    return clearAll;
+  }, []);
+
+  return (
+    <div
+      className={`pointer-events-none absolute bottom-3.5 right-3.5 z-30 flex flex-col items-end gap-2 transition-opacity duration-400 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <div
+        className={`flex max-h-[268px] w-[220px] origin-bottom-right flex-col overflow-hidden rounded-[10px] bg-white shadow-[0_8px_32px_rgba(0,0,0,0.22)] ring-1 ring-ink/[0.08] transition-all duration-300 ${
+          open ? "pointer-events-auto translate-y-0 scale-100 opacity-100" : "pointer-events-none translate-y-1.5 scale-95 opacity-0"
+        }`}
+      >
+        <div className="flex items-center gap-2 bg-ink px-3 py-2">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-career-blue text-[11px] font-semibold text-paper">
+            <Sparkles size={12} />
+          </div>
+          <div className="flex-1">
+            <div className="font-dm text-[11px] font-medium text-paper">Sarah's AI</div>
+            <div className="font-dm text-[9px] tracking-wider text-paper/50">ASK ANYTHING</div>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            className="pointer-events-auto px-0.5 text-paper/50 hover:text-paper"
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <div className="flex max-h-[148px] min-h-[80px] flex-1 flex-col gap-2 overflow-y-auto p-2.5">
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`max-w-[88%] rounded-lg px-2.5 py-1.5 font-dm text-[11px] leading-[1.5] animate-fade-in ${
+                m.role === "visitor"
+                  ? "self-end rounded-br-sm bg-clay text-ink"
+                  : "self-start rounded-bl-sm bg-ink text-paper/90"
+              }`}
+            >
+              {m.text}
+            </div>
+          ))}
+          {typing && (
+            <div className="flex items-center gap-1 self-start rounded-lg rounded-bl-sm bg-ink px-2.5 py-2">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper/50 [animation-delay:0ms]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper/50 [animation-delay:150ms]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-paper/50 [animation-delay:300ms]" />
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 border-t border-ink/[0.08] bg-[#FAFAFA] px-2.5 py-2">
+          <input
+            disabled
+            placeholder="Ask about Sarah…"
+            className="flex-1 bg-transparent font-dm text-[11px] text-ink outline-none placeholder:text-ink/35"
+          />
+          <button className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md bg-career-blue text-paper">
+            <Send size={11} />
+          </button>
+        </div>
+      </div>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-career-blue text-paper shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-transform hover:scale-110"
+        aria-label="Chat with Sarah's AI"
+      >
+        <Sparkles size={16} />
+      </button>
+    </div>
+  );
+}
+
 /* ─────────────── SHOWCASE ─────────────── */
 const CV_DESIGN_WIDTH = 800;
 
