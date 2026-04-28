@@ -199,6 +199,23 @@ export default function Career() {
   const [atsResult, setAtsResult] = useState<AtsResult | null>(null);
   const [atsError, setAtsError] = useState("");
   const [contactCvError, setContactCvError] = useState("");
+  const goalRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleServiceClick = (name: string) => {
+    setContact((p) => {
+      const prefill = `I'd like to learn more about: ${name}.\n\n`;
+      const next = p.goal.trim().length === 0 ? prefill : `${prefill}${p.goal}`;
+      return { ...p, goal: next };
+    });
+    setTimeout(() => {
+      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        goalRef.current?.focus();
+        const len = goalRef.current?.value.length ?? 0;
+        goalRef.current?.setSelectionRange(len, len);
+      }, 600);
+    }, 0);
+  };
 
   const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
