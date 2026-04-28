@@ -15,13 +15,13 @@ export default function BusinessAbout() {
               <em>applied with purpose.</em>
             </h2>
             <p className="font-dm leading-relaxed mb-5 text-moss" style={{ fontWeight: 300, fontSize: "1rem" }}>
-              People Studio brings together senior HR leadership experience spanning 11 MENAT markets, deep knowledge of UAE
-              employment law and Emiratisation regulation, and a genuine commitment to building people functions that actually
-              work — not just comply.
+              I've spent 16 years making HR decisions that affected real people — across 11 MENAT markets, in companies from 25 to 1,300 employees, in eight industries. I've hired and let people go, restructured organisations, navigated MoHRE labour claims, built compliance frameworks from scratch, and sat in rooms where the people decisions were the hardest ones being made.
+            </p>
+            <p className="font-dm leading-relaxed mb-5 text-moss" style={{ fontWeight: 300, fontSize: "1rem" }}>
+              People Studio exists because most UAE SMEs are running without the HR infrastructure their headcount demands — and the consequences are expensive. I work directly with founders and operators to close that gap: not with reports and frameworks, but with decisions and implementations.
             </p>
             <p className="font-dm leading-relaxed mb-8 text-moss" style={{ fontWeight: 300, fontSize: "1rem" }}>
-              We work with business owners, founders, and operators who need senior HR thinking without the overhead of a
-              full-time hire. Every engagement is direct, practical, and built around your commercial reality.
+              When you work with me, you work with me. No juniors, no subcontractors, no eighty-page handbooks.
             </p>
             <a
               href="#contact"
