@@ -78,6 +78,80 @@ const extractPdfText = async (file: File) => {
   return pages.join(" ");
 };
 
+const NON_CV_MESSAGE =
+  "This doesn't appear to be a CV or resume. Please upload a CV or resume file to use this tool. If you uploaded the wrong file, try again — or use the Policy Generator for HR policy documents.";
+
+// Heuristic: check the document looks like a CV/resume.
+// Requires (a) a plausible name in the top of the document,
+// (b) employment/experience signals, and (c) education signals.
+const looksLikeCv = (text: string): boolean => {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (cleaned.length < 120) return false;
+
+  // (a) Name-like line near the top: 2–5 capitalised words within the first ~40 lines / 600 chars
+  const head = text.slice(0, 1200);
+  const headLines = head
+    .split(/\r?\n|(?<=\.)\s{2,}/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 40);
+  const nameLineRegex = /^(?:[A-Z][a-zA-Z'’.-]{1,20}\s+){1,4}[A-Z][a-zA-Z'’.-]{1,20}$/;
+  const hasNameAtTop =
+    headLines.some((l) => l.length <= 60 && nameLineRegex.test(l)) ||
+    // Fallback: a sequence like "FIRST LAST" in caps within the first 200 chars
+    /\b[A-Z][A-Z'’.-]{1,}\s+[A-Z][A-Z'’.-]{1,}\b/.test(head.slice(0, 200));
+
+  const lower = text.toLowerCase();
+
+  // (b) Employment / experience signals
+  const experienceTerms = [
+    "experience",
+    "employment",
+    "work history",
+    "professional experience",
+    "career history",
+    "work experience",
+  ];
+  const jobTitleTerms = [
+    "manager",
+    "director",
+    "engineer",
+    "consultant",
+    "analyst",
+    "officer",
+    "specialist",
+    "coordinator",
+    "lead",
+    "head of",
+    "executive",
+  ];
+  const dateRangeRegex =
+    /\b(19|20)\d{2}\s*[-–—to]+\s*((19|20)\d{2}|present|current)\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(19|20)\d{2}\b/i;
+  const hasExperience =
+    experienceTerms.some((t) => lower.includes(t)) &&
+    (jobTitleTerms.some((t) => lower.includes(t)) || dateRangeRegex.test(text));
+
+  // (c) Education signals
+  const educationTerms = [
+    "education",
+    "bachelor",
+    "master",
+    "mba",
+    "phd",
+    "degree",
+    "university",
+    "college",
+    "diploma",
+    "bsc",
+    "msc",
+    "b.a.",
+    "m.a.",
+  ];
+  const hasEducation = educationTerms.some((t) => lower.includes(t));
+
+  return hasNameAtTop && hasExperience && hasEducation;
+};
+
 const analyseCvText = (text: string, file: File): AtsResult => {
   const normalised = text.toLowerCase();
   const words = normalised.match(/[a-z0-9+#.-]+/g) || [];
