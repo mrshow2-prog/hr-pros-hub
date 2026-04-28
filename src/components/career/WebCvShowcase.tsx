@@ -503,6 +503,8 @@ export default function WebCvShowcase() {
                   </div>
                 </div>
               ))}
+              {/* AI agent overlay — only visible on Executive (re-mounts on tier change to replay) */}
+              {active === "executive" && <AiAgentWidget key="ai-exec" />}
             </div>
           </div>
         </div>
