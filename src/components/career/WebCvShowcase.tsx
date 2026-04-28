@@ -124,8 +124,12 @@ function SignatureCv() {
         ))}
       </div>
       <div className="overflow-hidden border-t border-paper/10 bg-career-deep py-2">
-        <div className="whitespace-nowrap font-dm text-[10px] font-medium uppercase tracking-[0.18em] text-paper/70">
-          &nbsp;&nbsp;Emiratisation · Org Design · C&B Architecture · Talent Strategy · Performance Mgmt · UAE Labour Law · People Analytics · MENA Markets · PHRi Certified
+        <div className="inline-block whitespace-nowrap font-dm text-[10px] font-medium uppercase tracking-[0.18em] text-paper/70 animate-marquee">
+          {Array.from({ length: 2 }).map((_, k) => (
+            <span key={k}>
+              &nbsp;&nbsp;Emiratisation &nbsp;·&nbsp; Org Design &nbsp;·&nbsp; C&amp;B Architecture &nbsp;·&nbsp; Talent Strategy &nbsp;·&nbsp; Performance Mgmt &nbsp;·&nbsp; UAE Labour Law &nbsp;·&nbsp; People Analytics &nbsp;·&nbsp; HR Foundation &nbsp;·&nbsp; MENA Markets &nbsp;·&nbsp; PHRi Certified &nbsp;·&nbsp;
+            </span>
+          ))}
         </div>
       </div>
       <div className="grid grid-cols-[1fr_220px] gap-9 px-10 py-8">
