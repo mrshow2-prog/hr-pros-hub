@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TARGETED_SECTORS } from "@/data/tools";
 import { FieldLabel, OutputBox, ToolInput, ToolSelect, UpsellStrip, SuggestionBox } from "./ToolPrimitives";
+import { BOOKING_URL } from "@/lib/contact";
 
 type Breakdown = { label: string; amount: number; sublabel?: string };
 
@@ -169,6 +170,12 @@ export default function EmiratesCalculator() {
             Figures based on MoHRE Cabinet Decision (Ministerial Decision No. 455 of 2023). Last verified: April 2026. This calculator provides indicative figures only and is not legal advice. Consult a qualified UAE employment lawyer for your specific obligations.
           </p>
           <UpsellStrip title="Want a full compliance plan?" body="I’ll review your setup, calculate Nafis subsidy angles, and give you a 90-day plan." href="/business#services" link="See Emiratisation Pack →" />
+          <UpsellStrip
+            title="Now you know the number. Here's how to fix it."
+            body="The Emiratisation Readiness Pack starts at AED 3,500 and gives you a 90-day compliance plan within 2 days."
+            ctaLabel="Book a call to get started →"
+            ctaHref={BOOKING_URL}
+          />
         </OutputBox>
       )}
 

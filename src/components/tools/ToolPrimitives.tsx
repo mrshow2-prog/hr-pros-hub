@@ -40,16 +40,58 @@ export function OutputBox({ label, text, children }: { label: string; text?: str
   );
 }
 
-export function UpsellStrip({ title, body, href, link }: { title: string; body: string; href: string; link: string }) {
+export function UpsellStrip({
+  title,
+  body,
+  href,
+  link,
+  ctaLabel,
+  ctaHref,
+  secondaryLabel,
+  secondaryHref,
+}: {
+  title: string;
+  body: string;
+  href?: string;
+  link?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+}) {
+  const isExternal = (h?: string) => !!h && /^https?:\/\//.test(h);
   return (
     <div className="mt-6 flex flex-col gap-4 border border-sienna/20 bg-sienna/10 p-5 md:flex-row md:items-center md:justify-between">
-      <p className="max-w-xl font-dm text-sm leading-6 text-ink/60">
+      <div className="max-w-xl">
         <strong className="mb-1 block font-medium text-ink">{title}</strong>
-        {body}
-      </p>
-      <a href={href} className="whitespace-nowrap font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-sienna hover:underline">
-        {link}
-      </a>
+        <p className="font-dm text-sm leading-6 text-ink/60">{body}</p>
+        {secondaryLabel && secondaryHref && (
+          <a
+            href={secondaryHref}
+            target={isExternal(secondaryHref) ? "_blank" : undefined}
+            rel={isExternal(secondaryHref) ? "noopener noreferrer" : undefined}
+            className="mt-2 inline-block font-dm text-xs text-ink/55 underline-offset-2 hover:text-sienna hover:underline"
+          >
+            {secondaryLabel}
+          </a>
+        )}
+      </div>
+      {ctaLabel && ctaHref ? (
+        <a
+          href={ctaHref}
+          target={isExternal(ctaHref) ? "_blank" : undefined}
+          rel={isExternal(ctaHref) ? "noopener noreferrer" : undefined}
+          className="inline-flex shrink-0 items-center justify-center bg-sienna px-6 py-3 font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-paper transition-opacity hover:opacity-90"
+        >
+          {ctaLabel}
+        </a>
+      ) : (
+        href && link && (
+          <a href={href} className="whitespace-nowrap font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-sienna hover:underline">
+            {link}
+          </a>
+        )
+      )}
     </div>
   );
 }
