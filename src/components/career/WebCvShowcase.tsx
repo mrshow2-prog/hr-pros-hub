@@ -438,12 +438,13 @@ export default function WebCvShowcase() {
   };
 
   return (
-    <section id="web-cv" className="bg-career-deep px-6 py-20 md:px-10">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[280px_1fr_320px] lg:items-center">
+    <section id="web-cv" className="relative border-y border-career-sky/15 bg-career-bg px-6 py-20 md:px-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,hsl(var(--career-sky)/0.10),transparent_55%),radial-gradient(circle_at_12%_92%,hsl(var(--career-blue)/0.12),transparent_60%)]" />
+      <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[280px_1fr_320px] lg:items-center">
         {/* LEFT COPY */}
         <div>
           <p className="mb-5 flex items-center gap-2.5 font-dm text-[11px] font-medium uppercase tracking-[0.24em] text-career-sky">
-            <span className="h-px w-6 bg-career-sky" /> Personal brand web-CV
+            <span className="h-px w-6 bg-career-sky" /> Only at People.Studio
           </p>
           <h2 className="mb-5 font-serif text-4xl font-medium leading-[1.05] tracking-tight text-paper md:text-5xl">
             A CV people can <em className="italic text-career-sky">actually</em> experience.
@@ -453,9 +454,9 @@ export default function WebCvShowcase() {
           </p>
           <a
             href="/profile"
-            className="group inline-flex min-h-12 items-center gap-2.5 rounded-md border border-paper/30 px-5 font-dm text-[13px] font-medium uppercase tracking-[0.06em] text-paper transition-all hover:border-paper/60 hover:bg-paper/10"
+            className="group inline-flex min-h-12 items-center gap-2.5 rounded-md bg-career-sky px-6 font-dm text-[13px] font-bold uppercase tracking-[0.08em] text-career-deep shadow-[0_12px_32px_-12px_hsl(var(--career-sky)/0.6)] transition-all hover:-translate-y-0.5 hover:bg-paper"
           >
-            View sample CV page
+            See the live demo
             <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </a>
         </div>
