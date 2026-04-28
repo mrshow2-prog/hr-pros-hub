@@ -423,6 +423,34 @@ export default function Career() {
 
       <section id="who" className="bg-career-surface px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Who this is for</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Every professional with more to offer.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Six distinct situations. One common thread — your career deserves better representation than it's getting.</p><div className="grid gap-px border border-career-border bg-career-border md:grid-cols-2 lg:grid-cols-3">{audience.map((a) => <AudienceCard key={a.title} icon={a.icon} title={a.title} desc={a.desc} badge={a.badge} reveal={a.reveal} onCta={() => handleAudienceCta(a.q1)} />)}</div></div></section>
 
+      <section id="testimonials" className="bg-career-deep px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-6xl">
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">What clients say</p>
+          <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Results speak for themselves.</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {TESTIMONIALS.map((t) => (
+              <article key={t.name} className="flex h-full flex-col border border-career-border bg-career-surface p-7">
+                <div className="mb-5 flex gap-1 text-career-sky" aria-label="5 out of 5 stars">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={16} className="fill-current" />
+                  ))}
+                </div>
+                <blockquote className="mb-6 font-light leading-8 text-paper/75">&ldquo;{t.quote}&rdquo;</blockquote>
+                <div className="mt-auto border-t border-career-border pt-5">
+                  <div className="font-dm text-sm font-bold text-paper">{t.name}</div>
+                  {t.role && <div className="mt-1 text-xs leading-5 text-paper/55">{t.role}</div>}
+                  <div className="mt-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky/70">{t.service}</div>
+                  <div className="mt-1 text-[11px] text-paper/35">{t.source}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-paper/45">
+            <a href="https://www.linkedin.com/in/bmesiha/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-career-sky">More recommendations available on LinkedIn →</a>
+          </p>
+        </div>
+      </section>
+
       <div id="matcher"><StartingPointMatcher trigger={matcherTrigger} /></div>
 
       <section id="services" className="bg-career-bg px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Career services</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">What we can build together.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Every engagement is scoped individually after a free discovery call. Pricing reflects your situation, not a menu.</p><div className="grid gap-px overflow-hidden rounded-lg border border-career-border bg-career-border shadow-[0_20px_60px_-30px_hsl(var(--career-blue)/0.45)] md:grid-cols-2 lg:grid-cols-3">{services.map(([cat, name, list]) => <button type="button" onClick={() => handleServiceClick(name as string)} key={name as string} className="group relative flex h-full flex-col bg-career-bg p-7 text-left transition-all duration-300 hover:-translate-y-1 hover:bg-career-surface hover:ring-1 hover:ring-inset hover:ring-career-sky/40 active:-translate-y-0.5 active:bg-career-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-career-sky cursor-pointer"><p className="relative mb-4 inline-block self-start font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky after:absolute after:bottom-[-4px] after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-career-sky after:transition-transform after:duration-300 group-hover:after:scale-x-100">{cat}</p><h3 className="mb-3 font-dm text-xl font-bold leading-snug text-paper transition-colors duration-300 group-hover:text-career-sky">{name}</h3><ul className="mb-5 space-y-2">{(list as string[]).map((item) => <li key={item} className="text-sm leading-6 text-paper/55 transition-colors duration-300 before:mr-2 before:text-career-sky before:content-['—'] group-hover:text-paper/75 group-hover:before:text-blush">{item}</li>)}</ul><p className="mt-auto inline-flex items-center gap-2 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky/70 transition-colors duration-300 group-hover:text-paper">Start this conversation <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-1.5" /></p></button>)}</div></div></section>
