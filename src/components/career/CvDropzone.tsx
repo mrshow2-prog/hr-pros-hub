@@ -133,13 +133,13 @@ export default function CvDropzone({
         onDragEnter={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
-        className={`flex min-h-36 cursor-pointer flex-col items-center justify-center border border-dashed px-4 py-6 text-center transition-colors ${
+        className={`relative flex min-h-36 cursor-pointer flex-col items-center justify-center border border-dashed px-4 pt-4 pb-2 text-center transition-colors ${
           isDragging ? `${c.borderActive} ${c.bgActive}` : `${c.border} ${c.bg}`
         }`}
       >
-        <UploadCloud className={`mb-3 ${c.accent}`} size={26} />
+        <UploadCloud className={`mb-2 ${c.accent}`} size={24} />
         <span className={`font-dm text-sm font-medium ${c.body}`}>Drag your CV here</span>
-        <span className={`mt-1 font-dm text-xs ${c.sub}`}>or click to browse files</span>
+        <span className={`mt-0.5 font-dm text-xs ${c.sub}`}>or click to browse files</span>
         <input
           ref={inputRef}
           required={required}
@@ -148,8 +148,11 @@ export default function CvDropzone({
           onChange={(e) => handleFiles(e.target.files)}
           className="sr-only"
         />
+        <div className="mt-3 w-full space-y-1 px-1 text-center">
+          <p className={`font-dm text-[10px] leading-snug ${c.helper}`}>{acceptedLabel} — max {maxLabel}</p>
+          {footerNote && <p className={`font-dm text-[10px] leading-snug ${c.helper}`}>{footerNote}</p>}
+        </div>
       </label>
-      <p className={`mt-2 font-dm text-[11px] ${c.helper}`}>{acceptedLabel} — max {maxLabel}</p>
       {error && <DropzoneError msg={error} />}
     </div>
   );
