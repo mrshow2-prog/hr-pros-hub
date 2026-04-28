@@ -251,6 +251,12 @@ export default function Career() {
   const [atsError, setAtsError] = useState("");
   const [contactCvError, setContactCvError] = useState("");
   const goalRef = useRef<HTMLTextAreaElement>(null);
+  const [matcherTrigger, setMatcherTrigger] = useState<{ q1Index: number; nonce: number } | null>(null);
+
+  const handleAudienceCta = (q1Index: number) => {
+    document.getElementById("matcher")?.scrollIntoView({ behavior: "smooth" });
+    setMatcherTrigger({ q1Index, nonce: Date.now() });
+  };
 
   const handleServiceClick = (name: string) => {
     setContact((p) => {
