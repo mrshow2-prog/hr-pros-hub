@@ -15,6 +15,23 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const marqueeItems = ["CV Design", "LinkedIn Optimisation", "Interview Coaching", "Personal Branding", "Salary Negotiation", "Career Pivot", "UAE Market Entry", "Outplacement Support", "Executive Presence"];
 
+const TESTIMONIALS: { quote: string; name: string; role: string | null; service: string; source: string }[] = [
+  {
+    quote: "Bishoy did an exceptional job on my CV. He has a keen eye for detail and a great understanding of how to present skills and experience effectively. His ability to tailor the CV to specific job applications was impressive. The end result is a professional and compelling document that truly represents my qualifications.",
+    name: "Mohamed Salah",
+    role: null,
+    service: "CV Writing",
+    source: "LinkedIn · July 2024",
+  },
+  {
+    quote: "I highly recommend working with Bishoy. He has extensive expertise in crafting professional CVs and a real ability to generate ideas that make a profile stand out. An invaluable resource for anyone looking to enhance their professional profile.",
+    name: "Abanoub Nabil",
+    role: "Senior Sales Manager · Fairmont Hotels & Resorts",
+    service: "Resume Review",
+    source: "LinkedIn · July 2024",
+  },
+];
+
 const audience = [
   { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching", q1: 0, reveal: "Sound familiar? You're applying to roles you're qualified for and hearing nothing back." },
   { icon: Clock3, title: "New arrivals to the UAE", desc: "Your CV was built for another market. Your LinkedIn needs to speak to GCC recruiters and hiring managers.", badge: "UAE market entry coaching", q1: 0, reveal: "Sound familiar? You have the experience — but the UAE market doesn't know how to read it yet." },
