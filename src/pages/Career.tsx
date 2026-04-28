@@ -89,6 +89,33 @@ const services = [
   ["Unique to us", "Salary negotiation coaching", ["Market rate benchmarking", "Negotiation script and strategy", "Offer evaluation framework", "Counter-offer coaching"]],
 ];
 
+      <section id="testimonials" className="bg-career-deep px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-6xl">
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">What clients say</p>
+          <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Results speak for themselves.</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {TESTIMONIALS.map((t) => (
+              <article key={t.name} className="flex h-full flex-col border border-career-border bg-career-surface p-7">
+                <div className="mb-5 flex gap-1 text-career-sky" aria-label="5 out of 5 stars">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={16} className="fill-current" />
+                  ))}
+                </div>
+                <blockquote className="mb-6 font-light leading-8 text-paper/75">&ldquo;{t.quote}&rdquo;</blockquote>
+                <div className="mt-auto border-t border-career-border pt-5">
+                  <div className="font-dm text-sm font-bold text-paper">{t.name}</div>
+                  {t.role && <div className="mt-1 text-xs leading-5 text-paper/55">{t.role}</div>}
+                  <div className="mt-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky/70">{t.service}</div>
+                  <div className="mt-1 text-[11px] text-paper/35">{t.source}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-paper/45">
+            <a href="https://www.linkedin.com/in/bmesiha/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-career-sky">More recommendations available on LinkedIn →</a>
+          </p>
+        </div>
+      </section>
 
 type AtsResult = { score: number; strengths: string[]; gaps: string[]; wordCount: number };
 
