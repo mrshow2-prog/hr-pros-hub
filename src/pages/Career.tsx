@@ -243,6 +243,10 @@ export default function Career() {
       const ext = atsFile.name.split(".").pop()?.toLowerCase();
       const text = ext === "pdf" ? await extractPdfText(atsFile) : ext === "docx" ? await extractDocxText(atsFile) : "";
       if (text.trim().length < 120) throw new Error("low-text");
+      if (!looksLikeCv(text)) {
+        setAtsError(NON_CV_MESSAGE);
+        return;
+      }
       setAtsResult(analyseCvText(text, atsFile));
     } catch {
       setAtsError("We couldn't read this file. This usually means it's a designed/image-based CV (Canva, InDesign, etc.) or a scanned document. ATS systems can't read these either — which may already be hurting your job search. Upload a plain Word or PDF export instead.");
