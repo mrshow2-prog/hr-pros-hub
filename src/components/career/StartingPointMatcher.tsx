@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, Compass, RotateCcw, Sparkles } from "lucide-react";
 import { BOOKING_HREF } from "@/lib/contact";
 
