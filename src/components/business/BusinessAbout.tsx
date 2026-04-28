@@ -1,5 +1,18 @@
 import { ABOUT_CREDENTIALS } from "@/data/business";
 
+const ENDORSEMENTS = [
+  {
+    quote:
+      "His professionalism, collaborative spirit, and positive approach made a meaningful impact — and he will certainly be missed.",
+    attribution: "Regional Director · MCN KSA",
+  },
+  {
+    quote:
+      "I wanted you to know how much I enjoyed working with you and to thank you for the advice you gave me.",
+    attribution: "Managing Director · MCN",
+  },
+];
+
 export default function BusinessAbout() {
   return (
     <section id="about" className="px-6 md:px-20 py-24 bg-cream">

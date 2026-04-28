@@ -1,98 +1,92 @@
-Add a post-result CTA strip after both the HR Diagnostic and Emiratisation Calculator results, reusing — and modestly extending — the existing `UpsellStrip` primitive in `src/components/tools/ToolPrimitives.tsx` so the visual language stays consistent with the rest of the page.
+Add a "Professional Endorsements" strip to the Business About section, sitting beneath the existing two-column grid (left: founder copy + button, right: credential badges) so it visually follows both columns and clearly belongs to About — without disturbing the grid.
 
-## 1. Extend `UpsellStrip` (backward-compatible)
+## Note on placement
+The brief says "between the credentials badges and the Ready to talk? CTA". The current About section has no "Ready to talk?" CTA — the only About CTA is "About the Founder →" in the left column, and the "Ready to talk?" CTA lives in the separate Contact section further down the page. The most faithful read is therefore: place the strip at the bottom of the About section (after both columns), so it sits between the credentials and the page-level Contact CTA that follows.
 
-`src/components/tools/ToolPrimitives.tsx` — extend the props so the strip can render an optional primary button and an optional secondary text link, while keeping the current "single uppercase link" mode used by JD Builder, Policy Generator, and Emirates Calculator.
+## Implementation — `src/components/business/BusinessAbout.tsx`
+
+After the closing `</div>` of the two-column grid (current line 51) and before the section's closing `</div>` (line 52), add a full-width endorsements block.
 
 ```tsx
-export function UpsellStrip({
-  title, body,
-  href, link,                         // existing single-link mode
-  ctaLabel, ctaHref,                  // NEW — primary button
-  secondaryLabel, secondaryHref,      // NEW — small underline link
-}: {
-  title: string;
-  body: string;
-  href?: string;
-  link?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-  secondaryLabel?: string;
-  secondaryHref?: string;
-}) {
-  return (
-    <div className="mt-6 flex flex-col gap-4 border border-sienna/20 bg-sienna/10 p-5 md:flex-row md:items-center md:justify-between">
-      <div className="max-w-xl">
-        <strong className="mb-1 block font-medium text-ink">{title}</strong>
-        <p className="font-dm text-sm leading-6 text-ink/60">{body}</p>
-        {secondaryLabel && secondaryHref && (
-          <a href={secondaryHref} className="mt-2 inline-block font-dm text-xs text-ink/55 underline-offset-2 hover:text-sienna hover:underline">
-            {secondaryLabel}
-          </a>
-        )}
-      </div>
-      {ctaLabel && ctaHref ? (
-        <a
-          href={ctaHref}
-          target={ctaHref.startsWith("http") ? "_blank" : undefined}
-          rel={ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
-          className="inline-flex shrink-0 items-center justify-center bg-sienna px-6 py-3 font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-paper transition-opacity hover:opacity-90"
+{/* Professional endorsements — colleague quotes, NOT client testimonials */}
+<div className="mt-20 border-t border-terracotta/15 pt-12">
+  <span
+    className="font-dm font-bold text-xs uppercase block mb-8 text-terracotta"
+    style={{ letterSpacing: "0.18em" }}
+  >
+    Professional Endorsements
+  </span>
+
+  <div className="grid gap-10 md:grid-cols-2 md:gap-14">
+    {ENDORSEMENTS.map((e, i) => (
+      <figure
+        key={e.attribution}
+        className={
+          // subtle separator between the two on mobile (top border on second),
+          // and a vertical hairline between them on desktop
+          i === 1
+            ? "relative border-t border-terracotta/15 pt-10 md:border-t-0 md:pt-0 md:border-l md:pl-14"
+            : "relative"
+        }
+      >
+        <span
+          aria-hidden="true"
+          className="absolute -top-4 -left-1 font-serif text-7xl leading-none text-terracotta/20 select-none"
         >
-          {ctaLabel}
-        </a>
-      ) : (
-        href && link && (
-          <a href={href} className="whitespace-nowrap font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-sienna hover:underline">
-            {link}
-          </a>
-        )
-      )}
-    </div>
-  );
-}
+          “
+        </span>
+        <blockquote
+          className="font-dm leading-relaxed text-moss relative z-10"
+          style={{ fontWeight: 300, fontSize: "1rem" }}
+        >
+          {e.quote}
+        </blockquote>
+        <figcaption
+          className="mt-5 font-dm font-bold text-[0.7rem] uppercase text-ink/55"
+          style={{ letterSpacing: "0.14em" }}
+        >
+          — {e.attribution}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <p className="mt-10 font-dm text-xs text-moss/70">
+    <a
+      href="https://www.linkedin.com/in/bmesiha/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-terracotta hover:underline underline-offset-2"
+    >
+      Full LinkedIn recommendations →
+    </a>
+  </p>
+</div>
 ```
 
-This preserves all four existing call-sites (they keep using `href` + `link`).
+Add the data array at the top of the file (just after the `ABOUT_CREDENTIALS` import):
 
-## 2. HR Diagnostic CTA strip
-
-`src/components/tools/HRDiagnostic.tsx` — after the closing `</div>` of the "Recommended next step" block (line 236), before `</section>` (line 237), insert:
-
-```tsx
-<UpsellStrip
-  title="Your score is a starting point. Not a verdict."
-  body="A 30-minute call with Bishoy costs nothing and leaves you with a clearer picture of what to fix first — and what it would cost to fix it properly."
-  ctaLabel="Book a free 30-minute call →"
-  ctaHref={BOOKING_URL}
-  secondaryLabel="See what a full HR advisory engagement looks like →"
-  secondaryHref="/business"
-/>
+```ts
+const ENDORSEMENTS = [
+  {
+    quote:
+      "His professionalism, collaborative spirit, and positive approach made a meaningful impact — and he will certainly be missed.",
+    attribution: "Regional Director · MCN KSA",
+  },
+  {
+    quote:
+      "I wanted you to know how much I enjoyed working with you and to thank you for the advice you gave me.",
+    attribution: "Managing Director · MCN",
+  },
+];
 ```
 
-Add the imports at the top of the file:
-- `import { UpsellStrip } from "./ToolPrimitives";`
-- `import { BOOKING_URL } from "@/lib/contact";`
-
-## 3. Emirates Calculator CTA strip
-
-`src/components/tools/EmiratesCalculator.tsx` — `UpsellStrip` is already imported. Immediately after the existing `<UpsellStrip … link="See Emiratisation Pack →" />` on line 171 (still inside the `OutputBox`), add a second strip:
-
-```tsx
-<UpsellStrip
-  title="Now you know the number. Here's how to fix it."
-  body="The Emiratisation Readiness Pack starts at AED 3,500 and gives you a 90-day compliance plan within 2 days."
-  ctaLabel="Book a call to get started →"
-  ctaHref={BOOKING_URL}
-/>
-```
-
-Add `import { BOOKING_URL } from "@/lib/contact";` at the top.
-
-## Out of scope
-- Existing UpsellStrip call-sites in JD Builder, Policy Generator, and the first Emirates Calculator strip stay unchanged (they continue to use the `href` + `link` mode).
-- No layout, copy, or behaviour changes to other tools.
+## Design rationale
+- **Section label** uses the exact same eyebrow pattern as the "About" label above it (same colour, weight, tracking) — clearly labelled "Professional Endorsements", as the brief insists.
+- **Large opening quote mark** in `text-terracotta/20` — accent colour at low opacity, positioned top-left of each quote.
+- **Attribution** in muted small caps (`text-ink/55`, `0.14em` tracking) — distinct from the prominent serif used for client testimonials elsewhere.
+- **Subtle separator**: top hairline divides the strip from the credentials/founder columns above; an internal hairline (top border on mobile, left border on desktop) separates the two quotes — understated, no card chrome.
+- All colours use existing tokens (`terracotta`, `moss`, `ink`, `cream`).
 
 ## Files
-- Edited: `src/components/tools/ToolPrimitives.tsx`
-- Edited: `src/components/tools/HRDiagnostic.tsx`
-- Edited: `src/components/tools/EmiratesCalculator.tsx`
+- Edited: `src/components/business/BusinessAbout.tsx`
