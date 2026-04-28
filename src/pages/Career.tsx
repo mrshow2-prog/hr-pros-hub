@@ -326,9 +326,51 @@ export default function Career() {
         <div className="absolute inset-0 bg-career-bg" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_24%,hsl(var(--career-sky)/0.28),transparent_30%),radial-gradient(circle_at_18%_82%,hsl(var(--career-blue)/0.26),transparent_34%),linear-gradient(135deg,hsl(var(--career-deep))_0%,hsl(var(--career-bg))_46%,hsl(var(--career-surface))_100%)]" />
         <div className="absolute inset-x-0 top-20 h-[54vh] opacity-80 md:h-[62vh]">
-          <div className="absolute left-[8%] top-[8%] h-52 w-36 rotate-[-10deg] border border-career-sky/20 bg-paper/5 shadow-2xl shadow-career-deep/30 backdrop-blur-sm md:h-72 md:w-52" />
-          <div className="absolute right-[10%] top-[4%] h-56 w-44 rotate-[8deg] border border-paper/10 bg-career-sky/10 backdrop-blur-md md:h-80 md:w-64" />
-          <div className="absolute left-[38%] top-[18%] h-44 w-72 rotate-[-3deg] border border-paper/10 bg-career-blue/15 backdrop-blur-sm md:h-56 md:w-[28rem]" />
+          {/* Decorative CV cards — desktop only */}
+          <div className="pointer-events-none absolute inset-0 hidden md:block">
+            {/* Card 1 — "The old way" (back, lifeless) */}
+            <div
+              className="absolute left-[14%] top-[18%] h-[340px] w-[260px] -rotate-6 overflow-hidden rounded-sm opacity-0 animate-[fade-up_0.9s_ease-out_0.4s_both]"
+              style={{ backgroundColor: "rgba(232, 227, 219, 0.28)" }}
+              aria-hidden="true"
+            >
+              <div className="absolute inset-x-0 top-0 h-10" style={{ backgroundColor: "rgba(180, 172, 160, 0.15)" }} />
+              <div className="absolute inset-x-5 top-[60px] space-y-3">
+                {[92, 78, 88, 65, 95, 70, 84, 60, 76].map((w, i) => (
+                  <div
+                    key={i}
+                    className="h-1 rounded-[2px]"
+                    style={{ width: `${w}%`, backgroundColor: "rgba(180, 172, 160, 0.2)" }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Card 2 — "The new way" (front, alive) */}
+            <div
+              className="absolute right-[12%] top-[10%] h-[380px] w-[300px] rotate-2 overflow-hidden rounded-md opacity-0 animate-[fade-up_0.9s_ease-out_0.7s_both]"
+              style={{
+                backgroundColor: "hsl(var(--career-deep) / 0.6)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              }}
+              aria-hidden="true"
+            >
+              <div className="absolute left-6 top-6 h-12 w-12 rounded-full border border-career-sky/30" />
+              <div className="absolute left-6 right-6 top-[88px]">
+                <div className="h-3 w-[70%] rounded-[2px] bg-paper/35" />
+                <div className="mt-3 h-1.5 w-[45%] rounded-[2px] bg-paper/20" />
+              </div>
+              <svg className="absolute -bottom-2 -right-2 text-career-sky" width="180" height="180" viewBox="0 0 180 180" fill="none">
+                <path d="M180 100 A 80 80 0 0 0 100 180" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" />
+                <path d="M180 120 A 60 60 0 0 0 120 180" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" />
+                <path d="M180 140 A 40 40 0 0 0 140 180" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
+              </svg>
+              <div className="absolute bottom-6 left-6 flex gap-3">
+                <div className="h-10 w-[60px] rounded-sm bg-paper/[0.08]" />
+                <div className="h-10 w-[60px] rounded-sm bg-paper/[0.08]" />
+              </div>
+            </div>
+          </div>
           <div className="absolute inset-0 [background-image:linear-gradient(hsl(var(--paper)/0.11)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--paper)/0.09)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_75%_70%_at_58%_34%,black_24%,transparent_78%)]" />
           <svg className="absolute inset-0 h-full w-full text-career-sky/35" viewBox="0 0 1200 620" fill="none" aria-hidden="true">
             <path d="M94 432 C 235 268, 368 372, 508 232 S 802 114, 1098 242" stroke="currentColor" strokeWidth="1.2" strokeDasharray="7 13" />
