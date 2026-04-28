@@ -15,13 +15,64 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 const marqueeItems = ["CV Design", "LinkedIn Optimisation", "Interview Coaching", "Personal Branding", "Salary Negotiation", "Career Pivot", "UAE Market Entry", "Outplacement Support", "Executive Presence"];
 
 const audience = [
-  { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching" },
-  { icon: Clock3, title: "New arrivals to the UAE", desc: "Your CV was built for another market. Your LinkedIn needs to speak to GCC recruiters and hiring managers.", badge: "UAE market entry coaching" },
-  { icon: Compass, title: "Professionals in transition", desc: "Redundancy, career pivot, senior step-up. You need a clear narrative and the confidence to own it.", badge: "Career pivot · Outplacement" },
-  { icon: UserRoundCheck, title: "UAE nationals entering private sector", desc: "Translate public-sector experience into private-sector credibility, language, and value.", badge: "Emiratisation career coaching" },
-  { icon: Target, title: "Executives and senior leaders", desc: "Personal branding and thought leadership positioning — not just a CV refresh.", badge: "Personal brand strategy" },
-  { icon: Grid2X2, title: "HR professionals themselves", desc: "You help others advance. Now you need the same sharp thinking applied to your own career.", badge: "Career coaching · Branding" },
+  { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching", q1: 0, reveal: "Sound familiar? You're applying to roles you're qualified for and hearing nothing back." },
+  { icon: Clock3, title: "New arrivals to the UAE", desc: "Your CV was built for another market. Your LinkedIn needs to speak to GCC recruiters and hiring managers.", badge: "UAE market entry coaching", q1: 0, reveal: "Sound familiar? You have the experience — but the UAE market doesn't know how to read it yet." },
+  { icon: Compass, title: "Professionals in transition", desc: "Redundancy, career pivot, senior step-up. You need a clear narrative and the confidence to own it.", badge: "Career pivot · Outplacement", q1: 2, reveal: "Sound familiar? You know what you're worth. The next step is making sure the market agrees." },
+  { icon: UserRoundCheck, title: "UAE nationals entering private sector", desc: "Translate public-sector experience into private-sector credibility, language, and value.", badge: "Emiratisation career coaching", q1: 3, reveal: "Sound familiar? Your background is strong. The language of the private sector just needs unlocking." },
+  { icon: Target, title: "Executives and senior leaders", desc: "Personal branding and thought leadership positioning — not just a CV refresh.", badge: "Personal brand strategy", q1: 0, reveal: "Sound familiar? At your level, the next move isn't found on a job board — it's built." },
+  { icon: Grid2X2, title: "HR professionals themselves", desc: "You help others advance. Now you need the same sharp thinking applied to your own career.", badge: "Career coaching · Branding", q1: 0, reveal: "Sound familiar? You've built careers for others. Yours deserves the same rigour." },
 ];
+
+function AudienceCard({
+  icon: Icon,
+  title,
+  desc,
+  badge,
+  reveal,
+  onCta,
+}: {
+  icon: typeof TrendingUp;
+  title: string;
+  desc: string;
+  badge: string;
+  reveal: string;
+  onCta: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <article
+      onClick={() => setOpen((v) => !v)}
+      className="group relative cursor-pointer bg-career-surface p-7 transition-all duration-200 hover:-translate-y-0.5 hover:bg-career-deep"
+    >
+      <div className="mb-5 grid h-10 w-10 place-items-center border border-career-sky/15 bg-career-sky/10 text-career-sky">
+        <Icon size={18} />
+      </div>
+      <h3 className="mb-3 font-dm text-lg font-bold text-paper">{title}</h3>
+      <p className="mb-5 text-sm leading-7 text-paper/45">{desc}</p>
+      <span className="inline-flex border border-career-sky/20 bg-career-sky/10 px-3 py-1 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{badge}</span>
+      <div
+        className={`grid transition-all duration-200 ease-out ${
+          open ? "mt-5 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0 group-hover:mt-5 group-hover:grid-rows-[1fr] group-hover:opacity-100"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCta();
+            }}
+            className="group/cta inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky underline-offset-4 hover:underline"
+          >
+            This is for you
+            <ArrowUpRight size={14} className="transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 const services = [
   ["Foundation", "CV design & rewrite", ["Full rewrite from scratch", "UAE/GCC market calibration", "ATS-optimised and recruiter-ready", "Up to 2 revision rounds"]],
@@ -200,6 +251,12 @@ export default function Career() {
   const [atsError, setAtsError] = useState("");
   const [contactCvError, setContactCvError] = useState("");
   const goalRef = useRef<HTMLTextAreaElement>(null);
+  const [matcherTrigger, setMatcherTrigger] = useState<{ q1Index: number; nonce: number } | null>(null);
+
+  const handleAudienceCta = (q1Index: number) => {
+    document.getElementById("matcher")?.scrollIntoView({ behavior: "smooth" });
+    setMatcherTrigger({ q1Index, nonce: Date.now() });
+  };
 
   const handleServiceClick = (name: string) => {
     setContact((p) => {
@@ -336,9 +393,9 @@ export default function Career() {
 
       <section id="about" className="bg-career-deep px-6 py-20 md:px-10"><div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2"><div><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Why this exists</p><h2 className="mb-8 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">The best candidate rarely gets the job.</h2><div className="space-y-5 text-base font-light leading-8 text-paper/60"><p>After 16 years seeing thousands of hiring decisions made across 11 markets, the pattern is clear: <strong className="font-medium text-paper">the candidate who best communicates their value wins</strong> — not always the most qualified one.</p><p>Most professionals are vastly underselling themselves. A CV that lists responsibilities instead of impact. A LinkedIn profile that reads like a job posting. An interview that covers what they did rather than what they made possible.</p><p>The Career Studio exists to fix that gap — for professionals whose career materials haven't caught up with their actual capability.</p></div></div><div className="border border-career-border bg-career-sky/5 p-7"><p className="mb-6 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky/70">How it works</p>{["Free 30-min discovery call", "Bespoke engagement scoped", "You show up differently"].map((title, i) => <div key={title} className="mb-6 flex gap-4 last:mb-0"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-career-sky/25 bg-career-sky/10 font-serif text-sm font-bold text-career-sky">{i + 1}</span><div><h3 className="mb-1 font-dm font-bold text-paper">{title}</h3><p className="text-sm leading-6 text-paper/45">{i === 0 ? "Tell me where you are and where you want to be. I'll tell you what's actually holding you back." : i === 1 ? "We agree exactly what we're doing, in what timeframe, with what outcomes." : "Your materials, your narrative, your confidence — aligned and ready for the next opportunity."}</p></div></div>)}<a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 w-full items-center justify-center bg-career-blue px-6 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Book a free discovery call</a></div></div></section>
 
-      <section id="who" className="bg-career-surface px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Who this is for</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Every professional with more to offer.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Six distinct situations. One common thread — your career deserves better representation than it's getting.</p><div className="grid border border-career-border bg-career-border md:grid-cols-2 lg:grid-cols-3">{audience.map(({ icon: Icon, title, desc, badge }) => <article key={title} className="bg-career-surface p-7 transition-colors hover:bg-career-deep"><div className="mb-5 grid h-10 w-10 place-items-center border border-career-sky/15 bg-career-sky/10 text-career-sky"><Icon size={18} /></div><h3 className="mb-3 font-dm text-lg font-bold text-paper">{title}</h3><p className="mb-5 text-sm leading-7 text-paper/45">{desc}</p><span className="inline-flex border border-career-sky/20 bg-career-sky/10 px-3 py-1 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{badge}</span></article>)}</div></div></section>
+      <section id="who" className="bg-career-surface px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Who this is for</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Every professional with more to offer.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Six distinct situations. One common thread — your career deserves better representation than it's getting.</p><div className="grid gap-px border border-career-border bg-career-border md:grid-cols-2 lg:grid-cols-3">{audience.map((a) => <AudienceCard key={a.title} icon={a.icon} title={a.title} desc={a.desc} badge={a.badge} reveal={a.reveal} onCta={() => handleAudienceCta(a.q1)} />)}</div></div></section>
 
-      <StartingPointMatcher />
+      <div id="matcher"><StartingPointMatcher trigger={matcherTrigger} /></div>
 
       <section id="services" className="bg-career-bg px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Career services</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">What we can build together.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Every engagement is scoped individually after a free discovery call. Pricing reflects your situation, not a menu.</p><div className="grid gap-px overflow-hidden rounded-lg border border-career-border bg-career-border shadow-[0_20px_60px_-30px_hsl(var(--career-blue)/0.45)] md:grid-cols-2 lg:grid-cols-3">{services.map(([cat, name, list]) => <button type="button" onClick={() => handleServiceClick(name as string)} key={name as string} className="group relative flex h-full flex-col bg-career-bg p-7 text-left transition-all duration-300 hover:-translate-y-1 hover:bg-career-surface hover:ring-1 hover:ring-inset hover:ring-career-sky/40 active:-translate-y-0.5 active:bg-career-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-career-sky cursor-pointer"><p className="relative mb-4 inline-block self-start font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky after:absolute after:bottom-[-4px] after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-career-sky after:transition-transform after:duration-300 group-hover:after:scale-x-100">{cat}</p><h3 className="mb-3 font-dm text-xl font-bold leading-snug text-paper transition-colors duration-300 group-hover:text-career-sky">{name}</h3><ul className="mb-5 space-y-2">{(list as string[]).map((item) => <li key={item} className="text-sm leading-6 text-paper/55 transition-colors duration-300 before:mr-2 before:text-career-sky before:content-['—'] group-hover:text-paper/75 group-hover:before:text-blush">{item}</li>)}</ul><p className="mt-auto inline-flex items-center gap-2 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky/70 transition-colors duration-300 group-hover:text-paper">Start this conversation <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-1.5" /></p></button>)}</div></div></section>
 
