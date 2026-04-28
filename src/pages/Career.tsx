@@ -197,6 +197,7 @@ export default function Career() {
   const [atsLoading, setAtsLoading] = useState(false);
   const [atsResult, setAtsResult] = useState<AtsResult | null>(null);
   const [atsError, setAtsError] = useState("");
+  const [contactCvError, setContactCvError] = useState("");
 
   const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
