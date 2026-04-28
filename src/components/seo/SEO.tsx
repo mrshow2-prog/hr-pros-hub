@@ -87,8 +87,8 @@ export default function SEO({ title, description, path, image, jsonLd, ogTitle, 
       <meta property="og:image" content={ogImage} />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@peoplestudioae" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={finalOgTitle} />
+      <meta name="twitter:description" content={finalOgDescription} />
       <meta name="twitter:image" content={ogImage} />
       {schemas.map((schema, i) => (
         <script key={i} type="application/ld+json">
