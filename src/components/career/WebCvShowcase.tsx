@@ -106,7 +106,7 @@ function SignatureCv() {
         </div>
         <div className="flex flex-col justify-center px-10 py-8">
           <p className="mb-2 font-dm text-[10px] font-medium uppercase tracking-[0.22em] text-career-sky">Senior HR Professional · UAE & GCC</p>
-          <h1 className="mb-1.5 font-serif text-[40px] font-medium italic leading-[1] tracking-tight text-paper">Sarah Mahmoud</h1>
+          <h2 className="mb-1.5 font-serif text-[40px] font-medium italic leading-[1] tracking-tight text-paper">Sarah Mahmoud</h2>
           <p className="font-dm text-[11px] font-medium uppercase tracking-[0.18em] text-paper/60">Head of Human Resources</p>
         </div>
       </div>
