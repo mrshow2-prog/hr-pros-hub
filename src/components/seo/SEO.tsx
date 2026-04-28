@@ -63,12 +63,16 @@ interface SEOProps {
   path: string;
   image?: string;
   jsonLd?: object[];
+  ogTitle?: string;
+  ogDescription?: string;
 }
 
-export default function SEO({ title, description, path, image, jsonLd }: SEOProps) {
+export default function SEO({ title, description, path, image, jsonLd, ogTitle, ogDescription }: SEOProps) {
   const url = `${BASE_URL}${path}`;
   const ogImage = image ?? DEFAULT_OG_IMAGE;
   const schemas = [LOCAL_BUSINESS_SCHEMA, ...(jsonLd ?? [])];
+  const finalOgTitle = ogTitle ?? title;
+  const finalOgDescription = ogDescription ?? description;
   return (
     <Helmet>
       <title>{title}</title>
@@ -77,14 +81,14 @@ export default function SEO({ title, description, path, image, jsonLd }: SEOProp
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="People.Studio" />
       <meta property="og:locale" content="en_AE" />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={finalOgTitle} />
+      <meta property="og:description" content={finalOgDescription} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={ogImage} />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@peoplestudioae" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={finalOgTitle} />
+      <meta name="twitter:description" content={finalOgDescription} />
       <meta name="twitter:image" content={ogImage} />
       {schemas.map((schema, i) => (
         <script key={i} type="application/ld+json">
