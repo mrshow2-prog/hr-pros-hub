@@ -35,7 +35,7 @@ function EssentialCv() {
       <div className="grid grid-cols-[1fr_92px] items-start gap-6 border-b-2 border-ink bg-[#E8DFD1] px-14 pb-8 pt-10">
         <div>
           <p className="mb-2.5 font-dm text-[10px] font-medium uppercase tracking-[0.22em] text-ink/55">Senior HR Professional · UAE</p>
-          <h1 className="mb-1.5 font-serif text-[48px] font-medium italic leading-[1] tracking-tight text-ink">Sarah Mahmoud</h1>
+          <h2 className="mb-1.5 font-serif text-[48px] font-medium italic leading-[1] tracking-tight text-ink">Sarah Mahmoud</h2>
           <p className="font-dm text-xs font-medium uppercase tracking-[0.16em] text-ink/55">Head of Human Resources</p>
           <div className="mt-4 flex flex-wrap gap-5 font-dm text-xs font-medium text-career-blue">
             <span className="border-b border-career-blue/30 pb-px">sarah@email.com</span>
