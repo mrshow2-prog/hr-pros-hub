@@ -55,6 +55,7 @@ export default function CvDropzone({
   maxBytes = DEFAULT_MAX,
   variant = "ats",
   required,
+  footerNote,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
