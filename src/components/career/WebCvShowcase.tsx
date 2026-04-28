@@ -222,8 +222,14 @@ function ExecutiveCv() {
       </div>
       <div className="flex items-center border-b border-paper/10 bg-career-blue">
         <span className="bg-career-deep px-3.5 py-1.5 font-dm text-[9px] font-bold uppercase tracking-[0.22em] text-paper">Latest</span>
-        <div className="flex-1 overflow-hidden whitespace-nowrap py-1.5 pl-3 font-dm text-[10px] font-medium uppercase tracking-[0.16em] text-paper/85">
-          HR Summit MENA 2024 Speaker · Forbes ME Featured · Emiratisation Expert · PHRi Certified · 14 Yrs Executive HR · 11 MENA Markets · Arabian Business Contributor
+        <div className="flex-1 overflow-hidden">
+          <div className="inline-block whitespace-nowrap py-1.5 pl-3 font-dm text-[10px] font-medium uppercase tracking-[0.16em] text-paper/85 animate-marquee-slow">
+            {Array.from({ length: 2 }).map((_, k) => (
+              <span key={k}>
+                HR Summit MENA 2024 Speaker &nbsp;·&nbsp; Forbes ME Featured &nbsp;·&nbsp; Emiratisation Expert &nbsp;·&nbsp; PHRi Certified &nbsp;·&nbsp; 14 Yrs Executive HR &nbsp;·&nbsp; 11 MENA Markets &nbsp;·&nbsp; Arabian Business Contributor &nbsp;·&nbsp; Future Workplace UAE Keynote &nbsp;·&nbsp; SHRM MENA Panelist &nbsp;·&nbsp;
+              </span>
+            ))}
+          </div>
         </div>
       </div>
       <div className="grid grid-cols-[1fr_240px] bg-ink">
