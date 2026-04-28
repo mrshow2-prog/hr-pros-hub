@@ -61,22 +61,31 @@ interface SEOProps {
   title: string;
   description: string;
   path: string;
+  image?: string;
   jsonLd?: object[];
 }
 
-export default function SEO({ title, description, path, jsonLd }: SEOProps) {
+export default function SEO({ title, description, path, image, jsonLd }: SEOProps) {
   const url = `${BASE_URL}${path}`;
+  const ogImage = image ?? DEFAULT_OG_IMAGE;
   const schemas = [LOCAL_BUSINESS_SCHEMA, ...(jsonLd ?? [])];
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="People.Studio" />
+      <meta property="og:locale" content="en_AE" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
+      <meta property="og:image" content={ogImage} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@peoplestudioae" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
       {schemas.map((schema, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(schema)}
