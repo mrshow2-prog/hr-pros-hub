@@ -35,7 +35,7 @@ function EssentialCv() {
       <div className="grid grid-cols-[1fr_92px] items-start gap-6 border-b-2 border-ink bg-[#E8DFD1] px-14 pb-8 pt-10">
         <div>
           <p className="mb-2.5 font-dm text-[10px] font-medium uppercase tracking-[0.22em] text-ink/55">Senior HR Professional · UAE</p>
-          <h1 className="mb-1.5 font-serif text-[48px] font-medium italic leading-[1] tracking-tight text-ink">Sarah Mahmoud</h1>
+          <h2 className="mb-1.5 font-serif text-[48px] font-medium italic leading-[1] tracking-tight text-ink">Sarah Mahmoud</h2>
           <p className="font-dm text-xs font-medium uppercase tracking-[0.16em] text-ink/55">Head of Human Resources</p>
           <div className="mt-4 flex flex-wrap gap-5 font-dm text-xs font-medium text-career-blue">
             <span className="border-b border-career-blue/30 pb-px">sarah@email.com</span>
@@ -106,7 +106,7 @@ function SignatureCv() {
         </div>
         <div className="flex flex-col justify-center px-10 py-8">
           <p className="mb-2 font-dm text-[10px] font-medium uppercase tracking-[0.22em] text-career-sky">Senior HR Professional · UAE & GCC</p>
-          <h1 className="mb-1.5 font-serif text-[40px] font-medium italic leading-[1] tracking-tight text-paper">Sarah Mahmoud</h1>
+          <h2 className="mb-1.5 font-serif text-[40px] font-medium italic leading-[1] tracking-tight text-paper">Sarah Mahmoud</h2>
           <p className="font-dm text-[11px] font-medium uppercase tracking-[0.18em] text-paper/60">Head of Human Resources</p>
         </div>
       </div>
@@ -237,9 +237,9 @@ function ExecutiveCv() {
           <div className="mb-5 flex items-center gap-2.5 font-dm text-[10px] font-medium uppercase tracking-[0.24em] text-career-sky">
             <span className="h-px w-5 bg-career-sky" /> HR Executive · Thought Leader · Dubai
           </div>
-          <h1 className="mb-1 font-serif text-[54px] font-medium leading-[0.96] tracking-tight text-paper">
+          <h2 className="mb-1 font-serif text-[54px] font-medium leading-[0.96] tracking-tight text-paper">
             Sarah<br /><em className="font-normal italic text-career-sky">Mahmoud</em>
-          </h1>
+          </h2>
           <p className="mt-3.5 font-dm text-[11px] font-light uppercase leading-[1.5] tracking-[0.14em] text-paper/60">
             Chief People Officer · Board Advisor · Speaker
           </p>

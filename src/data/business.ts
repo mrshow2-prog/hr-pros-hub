@@ -51,25 +51,19 @@ export const AUDIENCE_SEGMENTS = [
     tag: "Growing SMEs (20–150 staff)",
     icon: "⚡",
     headline: "Emiratisation has expanded to you. The fines are real.",
-    body: "Companies with 20+ employees in targeted sectors are now subject to quarterly quota enforcement. Most are operating blind.",
+    body: "Companies with 20+ employees in targeted sectors are now subject to annual quota enforcement. Most are operating blind.",
   },
   {
     tag: "Multi-Entity Owners",
     icon: "🏢",
     headline: "One HR partner for all your businesses.",
-    body: "Whether you run a barber shop, restaurant, travel agency, and supermarket — you need one consistent HR framework.",
+    body: "Whether you run a restaurant group, retail chain, property and hospitality portfolio — you need one consistent HR framework.",
   },
   {
     tag: "New Market Entrants",
     icon: "✈",
     headline: "Opening a UAE office? Don't guess the rules.",
     body: "UAE employment law, WPS, Emiratisation, and free zone vs mainland structures are complex. We handle the HR setup.",
-  },
-  {
-    tag: "Referral Partners",
-    icon: "🤝",
-    headline: "Know a business that needs HR? Earn 10%.",
-    body: "Legal firms, PRO services, accountants — if you serve UAE SMEs, your clients need HR. We pay 10% of the first contract value for qualified referrals.",
   },
   {
     tag: "HR Professionals",

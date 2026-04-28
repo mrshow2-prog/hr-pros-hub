@@ -1,24 +1,36 @@
-Add schema.org JSON-LD via the existing `SEO` component.
+Five small fixes across data, components, and the Career footer.
 
-## Steps
+## 1. H1 duplication on Career page
 
-1. **Edit `src/components/seo/SEO.tsx`**:
-   - Add two exported constants: `LOCAL_BUSINESS_SCHEMA` (ProfessionalService) and `PERSON_SCHEMA` (Bishoy Mesiha) using the exact payloads supplied. The LocalBusiness `url` reuses the existing `BASE_URL` constant.
-   - Add optional `jsonLd?: object[]` prop.
-   - Auto-inject `LOCAL_BUSINESS_SCHEMA` on every render, then append any objects passed via `jsonLd`. Render each as `<script type="application/ld+json">` inside `<Helmet>`.
+`src/components/career/WebCvShowcase.tsx` renders three sample CV templates inside the Career page, each starting with an `<h1>` for "Sarah Mahmoud". The Career hero is the legitimate single H1.
 
-2. **Edit `src/pages/Business.tsx`** — pass `jsonLd={[PERSON_SCHEMA]}` to `<SEO />`.
+- Change all three `<h1>` tags in `WebCvShowcase.tsx` (lines 38, 109, 240) to `<h2>` — keep classes/styling identical so visual output is unchanged.
+- Verify Career hero `<h1>` (line 391) remains the only H1 on the page.
 
-3. **Edit `src/pages/Career.tsx`** — pass `jsonLd={[PERSON_SCHEMA]}` to `<SEO />`.
+## 2. Copyright year — make dynamic
 
-Pages `/`, `/tools`, `/profile` already render `<SEO />` and will pick up LocalBusiness automatically — no edits needed.
+Only one `© 2025` exists in the codebase (Career footer, line 419 in `src/pages/Career.tsx`). Replace the static string with:
+
+```
+© {new Date().getFullYear()} People Studio — Bishoy Mesiha Advisory. Dubai, UAE.
+```
+
+(Index and Tools footers don't carry a year — leave them untouched.)
+
+## 3. Growing SMEs — annual, not quarterly
+
+`src/data/business.ts` line 54 — replace "quarterly quota enforcement" with "annual quota enforcement".
+
+## 4. Multi-Entity Owners — better examples
+
+`src/data/business.ts` line 60 — replace "barber shop, restaurant, travel agency, and supermarket" with "restaurant group, retail chain, property and hospitality portfolio".
+
+## 5. Remove Referral Partners audience card
+
+`src/data/business.ts` lines 68–73 — delete the Referral Partners object from `AUDIENCE_SEGMENTS`. No other places consume this entry, so removal is safe and the section's grid will reflow naturally.
 
 ## Files
 
-- Edited: `src/components/seo/SEO.tsx`
-- Edited: `src/pages/Business.tsx`, `src/pages/Career.tsx`
-
-## Notes
-
-- One-line URL swap on custom-domain launch (the shared `BASE_URL` constant).
-- NotFound intentionally untouched.
+- Edited: `src/components/career/WebCvShowcase.tsx`
+- Edited: `src/pages/Career.tsx`
+- Edited: `src/data/business.ts`
