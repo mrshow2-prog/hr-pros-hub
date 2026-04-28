@@ -38,11 +38,10 @@ function AudienceCard({
   reveal: string;
   onCta: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   return (
     <article
-      onClick={() => setOpen((v) => !v)}
-      className="group relative cursor-pointer bg-career-surface p-7 transition-all duration-200 hover:-translate-y-0.5 hover:bg-career-deep"
+      onClick={onCta}
+      className="group relative cursor-pointer bg-career-surface p-7 transition-all duration-200 ease-out hover:z-20 hover:-translate-y-1 hover:bg-career-deep hover:shadow-[0_20px_40px_-12px_hsl(var(--career-deep)/0.6)] hover:ring-1 hover:ring-career-sky/40"
     >
       <div className="mb-5 grid h-10 w-10 place-items-center border border-career-sky/15 bg-career-sky/10 text-career-sky">
         <Icon size={18} />
@@ -50,25 +49,14 @@ function AudienceCard({
       <h3 className="mb-3 font-dm text-lg font-bold text-paper">{title}</h3>
       <p className="mb-5 text-sm leading-7 text-paper/45">{desc}</p>
       <span className="inline-flex border border-career-sky/20 bg-career-sky/10 px-3 py-1 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{badge}</span>
-      <div
-        className={`grid transition-all duration-200 ease-out ${
-          open ? "mt-5 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0 group-hover:mt-5 group-hover:grid-rows-[1fr] group-hover:opacity-100"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCta();
-            }}
-            className="group/cta inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky underline-offset-4 hover:underline"
-          >
-            This is for you
-            <ArrowUpRight size={14} className="transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5" />
-          </button>
-        </div>
+
+      {/* Hover reveal overlay — absolute so it doesn't push siblings */}
+      <div className="pointer-events-none absolute inset-x-0 top-full z-10 origin-top translate-y-0 bg-career-deep px-7 pb-6 pt-3 opacity-0 shadow-[0_20px_40px_-12px_hsl(var(--career-deep)/0.6)] ring-1 ring-career-sky/40 transition-opacity duration-200 ease-out group-hover:pointer-events-auto group-hover:opacity-100">
+        <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
+        <span className="inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky">
+          This is for you
+          <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </span>
       </div>
     </article>
   );
