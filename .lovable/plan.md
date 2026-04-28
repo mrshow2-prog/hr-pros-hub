@@ -1,78 +1,95 @@
-# Drag-and-drop CV upload — Career page
+# Find my starting point — Career matcher
 
-Add a drag-and-drop zone to two file inputs on `src/pages/Career.tsx`:
+## Contradiction check (none blocking)
 
-1. **ATS CV Checker** — required upload (PDF / DOCX)
-2. **Contact form** — optional "Attach CV" field (PDF / DOC / DOCX)
+I checked the existing Career page against the spec. Everything lines up:
 
-Click-to-browse stays fully functional. Analysis logic, output rendering, and other tools are not touched.
+- The 6 service names in the recommendation logic (CV Design & Rewrite, LinkedIn Profile Optimisation, Interview Coaching, Salary Negotiation Coaching, Career Pivot Consulting, Personal Brand Strategy) all match the existing `services` array in `Career.tsx` exactly — we can map results straight to those cards.
+- A booking link already exists site-wide as `BOOKING_HREF` (Calendly). The result CTA will reuse it — no new link needed.
+- Design tokens already used on this page (`career-bg`, `career-surface`, `career-border`, `career-sky`, `career-blue`, `career-deep`, `paper`, `blush`, `font-dm`, `font-serif`, `tracking-widest2`) cover everything the matcher needs — no new tokens.
+- Animation utilities (`animate-fade-in`, `animate-scale-in`) are available globally — no new keyframes.
 
-## What the user sees
+One small thing worth confirming, but I'll proceed with a sensible default unless you say otherwise:
 
-A single styled zone replaces each existing file input:
+- **"See all services ↓" target**: the services grid is `<section id="services">`. I'll smooth-scroll to that anchor.
+- **Reset behaviour**: "Start again" returns to the entry state (button visible), not back to question 1 mid-flow. Cleaner.
 
-- Dashed border using existing tokens (`border-career-sky/35` for ATS, `border-paper/30` for contact form), tinted background (`bg-career-sky/5` / `bg-paper/10`).
-- Upload icon + primary line **"Drag your CV here"**.
-- Smaller secondary line **"or click to browse files"**.
-- Helper text below: **"PDF, DOC, DOCX — max 2MB"** (ATS zone shows "PDF, DOCX — max 2MB" since DOC isn't parseable there).
-- Hover / drag-over state: brighter border + slightly stronger background tint.
-- Selected-file state: keeps current "filename + Replace" chip styling already used in the ATS section; contact form gets an equivalent compact selected state.
-- Errors render in the existing amber inline error block (same component pattern already used for `atsError`). No `alert()`.
+If either of those is wrong, tell me before I build.
 
-## Behaviour
+## What gets built
 
-- Click anywhere on the zone → opens native file picker (wrap input in `<label>`, same as today).
-- Drag over → `preventDefault` + visual highlight.
-- Drop → take **only `files[0]`**, ignore the rest silently.
-- Validate the chosen file:
-  - **Type**: extension in allowed list (`.pdf`, `.docx` for ATS; `.pdf`, `.doc`, `.docx` for contact). Also check MIME where present.
-  - **Size**: ≤ 2MB (`2 * 1024 * 1024`).
-  - On failure: set the field's existing error state with a clear message (e.g. `"Unsupported file type. Use PDF or DOCX."` / `"File is larger than 2MB."`). Do not set the file.
-- On success: clear any error, set the file in state.
-- Mobile: no `dragenter`/`drop` events fire on touch — the same `<label>` click handler still opens the picker, so the zone degrades to a tap-to-browse button with identical styling. No separate mobile branch needed.
+A new section inserted in `src/pages/Career.tsx` immediately above the existing `<section id="services">` block. The services grid itself, the page header, nav, footer, and every other section stay untouched.
 
-## Technical changes
+The matcher is a single self-contained client component with three states driven by local React state — no modal, no drawer, no route change.
 
-**New component**: `src/components/career/CvDropzone.tsx`
-
-Props:
-```ts
-type Variant = "ats" | "contact";
-interface Props {
-  file: File | null;
-  onFile: (f: File | null) => void;
-  onError: (msg: string) => void;
-  error?: string;
-  accept: string;              // e.g. ".pdf,.docx"
-  allowedExt: string[];        // e.g. ["pdf","docx"]
-  maxBytes?: number;           // default 2 * 1024 * 1024
-  variant: Variant;            // controls colour tokens (career-sky vs paper)
-  required?: boolean;
-  label?: string;              // optional override for primary line
-}
+```text
+┌──────────────────────────────────────────────┐
+│ ENTRY                                        │
+│  Not sure where to start?                    │
+│  Answer 3 questions. ~10 seconds.            │
+│  [ Find my starting point → ]                │
+└──────────────────────────────────────────────┘
+        ↓ click
+┌──────────────────────────────────────────────┐
+│ QUESTIONS  (1 of 3 · 2 of 3 · 3 of 3)        │
+│  Question text                               │
+│  [ Option ]                                  │
+│  [ Option ]    ← click highlights, then      │
+│  [ Option ]      300ms later advances        │
+│  [ Option ]                                  │
+└──────────────────────────────────────────────┘
+        ↓ after Q3
+┌──────────────────────────────────────────────┐
+│ RESULT                                       │
+│  Personalised 1–2 sentence insight           │
+│  ┌──────────────────────────────────────┐    │
+│  │ PRIMARY service card (highlighted)   │    │
+│  └──────────────────────────────────────┘    │
+│  You might also benefit from: Secondary      │
+│  [ Book a free 30-minute call → ]            │
+│  See all services ↓                          │
+│  Start again                                 │
+└──────────────────────────────────────────────┘
 ```
 
-Internals:
-- `useRef<HTMLInputElement>` for hidden `<input type="file">`.
-- `useState` for `isDragging`.
-- Handlers: `onDragOver` / `onDragEnter` (preventDefault + setDragging true), `onDragLeave` (false), `onDrop` (preventDefault, setDragging false, take `e.dataTransfer.files[0]`, run validate).
-- `validate(file)` returns `{ ok, msg }`; on `!ok` calls `onError(msg)` and returns. On ok calls `onFile(file)` and `onError("")`.
-- Rendered as a `<label>` wrapping the icon, text, helper line, hidden `<input>`, and (when `file` present) a filename row with a Replace affordance — preserves current ATS look.
-- Tailwind classes use existing tokens only (`border-career-sky/35`, `bg-career-sky/5`, `text-career-sky`, `border-paper/30`, `bg-paper/10`, `text-paper/55`, etc.). Drag-over state bumps border opacity (`/60`) and bg (`/15`).
+## Recommendation logic (resolved)
 
-**`src/pages/Career.tsx` edits**:
+Order of precedence, applied in this exact order:
 
-- Import `CvDropzone`.
-- ATS section (~line 325): replace the current `{atsFile ? <selected-file row> : <label upload>}` block with `<CvDropzone variant="ats" file={atsFile} onFile={setAtsFile} onError={setAtsError} error={atsError} accept=".pdf,.docx" allowedExt={["pdf","docx"]} required />`. Remove the now-duplicate amber error block beneath it (the dropzone renders its own validation error in the same amber style; the existing parse-failure `atsError` from `handleAtsSubmit` still needs to render — keep that block but only show it when the error is the parse-failure copy, OR simpler: keep one shared amber error block under the dropzone that always shows `atsError`). Final approach: keep the existing amber block as-is; the dropzone calls `setAtsError` for upload-validation messages, and `handleAtsSubmit` keeps using it for parse failures.
-- Contact form (~line 327): replace the "Attach CV (optional)" label/input block with `<CvDropzone variant="contact" file={contactCv} onFile={setContactCv} onError={setContactCvError} error={contactCvError} accept=".pdf,.doc,.docx" allowedExt={["pdf","doc","docx"]} />`. Add new state `const [contactCvError, setContactCvError] = useState("")`. Keep the existing helper note ("file uploads aren't attached to the enquiry yet…") below the dropzone.
+1. **Primary** = derived from Q2:
+   - "don't get interviews" → CV design & rewrite (secondary: LinkedIn profile optimisation)
+   - "get interviews but don't get offers" → Interview coaching (secondary: Salary negotiation coaching)
+   - "don't know what I want" → Career pivot consulting (secondary: Personal brand strategy)
+   - "underpaid" → Salary negotiation coaching (secondary: LinkedIn profile optimisation)
+2. **Q1 override**: if Q1 = "Just made redundant" → primary becomes Career pivot consulting (secondary kept from Q2 mapping, unless that secondary is already Career pivot consulting, in which case secondary falls back to Personal brand strategy).
+3. **Q3 override**: if Q3 = "Director / Head of / VP" or "C-suite or board level" → secondary becomes Personal brand strategy (replacing whatever was there). If primary already = Personal brand strategy, secondary falls back to LinkedIn profile optimisation.
 
-No changes to:
-- `handleAtsSubmit`, `analyseCvText`, `looksLikeCv`, `extractPdfText`, `extractDocxText`
-- ATS result display
-- Contact submit handler / payload
-- Any other tool or page
+## Personalised insight headlines (one per primary outcome)
 
-## Files touched
+- CV design & rewrite → "Your experience isn't the problem. Your CV isn't showing it."
+- Interview coaching → "You're getting in the room. The gap is what happens in the room."
+- Salary negotiation coaching → "Before you negotiate, you need leverage. Here's how to build it."
+- Career pivot consulting → "The hardest part isn't the move. It's knowing which move."
+- Career pivot consulting (when triggered by redundancy) → "Speed matters now, but direction matters more. Let's get both right."
+- Personal brand strategy (only if it ever becomes primary via fallback) → "At your level, the role finds you — if the market knows who you are."
 
-- **NEW** `src/components/career/CvDropzone.tsx`
-- **EDIT** `src/pages/Career.tsx` (imports, ATS upload block, contact CV block, add `contactCvError` state)
+## Behaviour details
+
+- Selecting an answer instantly highlights it (border + bg shift in `career-sky`), waits 300ms, then advances with a fade/slide transition (`animate-fade-in`).
+- Progress indicator: small "1 of 3" text in `font-dm uppercase tracking-widest2 text-career-sky`.
+- Mobile: options stack full-width, `min-h-12` (48px) tap targets.
+- "See all services ↓" → `document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })`.
+- "Start again" → resets state to entry; small muted `text-paper/45 underline-offset-4 hover:underline`.
+- Result CTA reuses `BOOKING_HREF` with the same styling as other primary buttons on the page (`bg-career-blue text-paper`).
+- The primary service card in the result reuses the visual language of the existing service cards but with an elevated treatment: `border-career-sky/60 bg-career-sky/15 shadow-[0_0_0_1px_hsl(var(--career-sky)/0.4)]`.
+
+## Technical implementation
+
+- New file: `src/components/career/StartingPointMatcher.tsx` — self-contained, no props, manages its own state (`step: 'entry' | 0 | 1 | 2 | 'result'`, `answers: [number?, number?, number?]`).
+- Edit: `src/pages/Career.tsx` — import the component and render `<StartingPointMatcher />` as a new `<section className="bg-career-bg px-6 pt-20 md:px-10">` block placed immediately before the existing `<section id="services">`. The services section keeps its existing top padding so the spacing reads naturally.
+- No changes to `services` array, no new data files, no edge functions, no DB.
+- Pure client-side; no analytics added unless you want them (let me know).
+
+## Out of scope (explicitly not touched)
+
+Services grid contents and styling, page header, nav, footer, ATS checker, Web CV section, About section, contact form.
