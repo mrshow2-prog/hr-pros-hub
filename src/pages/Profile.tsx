@@ -5,6 +5,7 @@ import MetricsTicker from "@/components/cv/MetricsTicker";
 import ExperienceMap from "@/components/cv/ExperienceMap";
 import Timeline from "@/components/cv/Timeline";
 import SkillBars from "@/components/cv/SkillBars";
+import SEO from "@/components/seo/SEO";
 import { ACHIEVEMENTS, EDUCATION, LANGUAGES, PHOTO_URL, PROFILE_STATS, PUBLICATIONS } from "@/data/profile";
 
 const PRINT_CSS = `

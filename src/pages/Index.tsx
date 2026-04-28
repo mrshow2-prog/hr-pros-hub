@@ -1,11 +1,17 @@
 import { Link } from "react-router-dom";
 import { CAREER_PILLS, SERVICE_PILLS } from "@/data/business";
 import PsLogo from "@/components/ui/PsLogo";
+import SEO from "@/components/seo/SEO";
 import { COMPANY_EMAIL } from "@/lib/contact";
 
 const Index = () => {
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-paper text-ink font-dm md:h-[100svh] md:min-h-[100svh] md:overflow-hidden">
+      <SEO
+        title="People.Studio — HR Advisory & Career Studio · UAE & GCC"
+        description="Independent HR advisory and career coaching for UAE and GCC professionals and businesses. Emiratisation, HR setup, org design, CV and LinkedIn coaching — by Bishoy Mesiha."
+        path="/"
+      />
       {/* Header */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 md:px-10 md:py-6">
         <PsLogo size="lg" className="pointer-events-auto" />
