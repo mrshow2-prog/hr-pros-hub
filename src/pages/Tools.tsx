@@ -25,6 +25,7 @@ export default function Tools() {
         title="Free HR Tools UAE · Diagnostic, Emiratisation Calculator & Policy Generator — People.Studio"
         description="Free UAE HR tools — no signup required. HR health diagnostic, Emiratisation fine calculator, AI policy generator, and job description builder. Built for UAE and GCC businesses."
         path="/tools"
+        ogTitle="Free HR Tools UAE · Emiratisation Calculator & HR Diagnostic — People.Studio"
       />
       <ToolsNav />
 
