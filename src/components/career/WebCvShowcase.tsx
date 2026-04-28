@@ -510,7 +510,7 @@ export default function WebCvShowcase() {
         </div>
 
         {/* RIGHT: PACKAGES */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1" onMouseLeave={() => setActive("executive")}>
           {PACKAGES.map((pkg) => {
             const isActive = active === pkg.id;
             return (
