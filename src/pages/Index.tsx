@@ -244,7 +244,7 @@ const Index = () => {
 
       {/* Footer — sticky bottom on desktop/tablet, in-flow on mobile */}
       <footer className="relative z-30 flex flex-wrap items-center justify-between gap-3 bg-paper px-6 py-4 font-dm text-[0.66rem] font-medium uppercase tracking-wider2 text-ink/50 md:absolute md:inset-x-0 md:bottom-0 md:bg-transparent md:px-10">
-        <span className="text-ink/45 md:text-paper/55">© People.Studio</span>
+        <span className="text-ink/45 md:text-paper/55">© {new Date().getFullYear()} People.Studio · Dubai, UAE</span>
       </footer>
     </div>
   );
