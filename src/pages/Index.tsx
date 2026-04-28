@@ -135,7 +135,7 @@ const Index = () => {
         <div className="contents md:contents">
           {/* Eyebrow */}
           <div className="relative z-10 bg-olive px-6 pt-16 text-paper md:bg-transparent md:px-10 md:pt-0 lg:px-24 md:[grid-column:2] md:[grid-row:1]">
-            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-paper/65 before:block before:h-px before:w-7 before:bg-blush md:ml-auto md:mr-0">
+            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-paper/65 before:block before:h-px before:w-7 before:bg-blush md:mx-0">
               <span className="text-blush">02</span>
               <span>Career Studio</span>
             </div>
@@ -145,7 +145,7 @@ const Index = () => {
           <div className="relative z-10 bg-olive px-6 pt-6 text-paper md:bg-transparent md:px-10 md:pt-5 lg:px-24 md:[grid-column:2] md:[grid-row:2]">
             <h2
               id="cs-head"
-              className="mx-auto max-w-xl font-serif text-[clamp(2.4rem,4.6vw,4.8rem)] font-normal leading-[0.98] text-paper text-balance md:ml-auto md:mr-0"
+              className="mx-auto max-w-xl font-serif text-[clamp(2.4rem,4.6vw,4.8rem)] font-normal leading-[0.98] text-paper text-balance md:mx-0"
             >
               Your career,
               <br />
@@ -156,7 +156,7 @@ const Index = () => {
 
           {/* Lede */}
           <div className="relative z-10 bg-olive px-6 pt-6 text-paper md:bg-transparent md:px-10 md:pt-5 lg:px-24 md:[grid-column:2] md:[grid-row:3]">
-            <p className="mx-auto max-w-md text-[1rem] font-light leading-7 text-paper/90 md:ml-auto md:mr-0">
+            <p className="mx-auto max-w-md text-[1rem] font-light leading-7 text-paper/90 md:mx-0">
               For HR and people professionals across the UAE and GCC who are ready to take their next step seriously. CV, LinkedIn, and coaching — written by an HR director, not a copywriter.
             </p>
           </div>
@@ -164,7 +164,7 @@ const Index = () => {
           {/* Pills */}
           <div className="relative z-10 bg-olive px-6 pt-7 text-paper md:bg-transparent md:px-10 md:pt-6 lg:px-24 md:[grid-column:2] md:[grid-row:4]">
             <div
-              className="mx-auto flex max-w-xl flex-wrap content-start gap-2 border-t border-paper/15 pt-5 md:ml-auto md:mr-0"
+              className="mx-auto flex max-w-xl flex-wrap content-start gap-2 border-t border-paper/15 pt-5 md:mx-0"
               aria-label="Career services"
             >
               <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-paper/60">
@@ -180,7 +180,7 @@ const Index = () => {
 
           {/* CTAs */}
           <div className="relative z-10 bg-olive px-6 pt-7 text-paper md:bg-transparent md:px-10 md:pt-6 lg:px-24 md:[grid-column:2] md:[grid-row:5]">
-            <div className="mx-auto flex max-w-xl flex-wrap items-center gap-6 md:ml-auto md:mr-0">
+            <div className="mx-auto flex max-w-xl flex-wrap items-center gap-6 md:mx-0">
               <Link
                 to="/career"
                 className="inline-flex min-h-12 items-center gap-2 rounded-md bg-blush px-6 font-dm text-sm font-medium text-ink transition-colors hover:bg-clay focus:outline-none focus:ring-2 focus:ring-blush focus:ring-offset-2 focus:ring-offset-olive"
@@ -192,7 +192,7 @@ const Index = () => {
 
           {/* Stat strip */}
           <div className="relative z-10 bg-olive px-6 pt-8 pb-24 text-paper md:bg-transparent md:px-10 md:pt-7 md:pb-0 lg:px-24 md:[grid-column:2] md:[grid-row:6]">
-            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-paper/60 md:ml-auto md:mr-0">
+            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-paper/60 md:mx-0">
               <div>
                 <span className="block font-serif text-3xl italic leading-none text-paper">
                   11
