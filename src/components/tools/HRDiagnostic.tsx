@@ -235,6 +235,15 @@ export default function HRDiagnostic() {
             <button onClick={reset} className="border border-ink/15 px-6 py-3 font-dm text-xs font-bold uppercase tracking-wider2 text-ink/55 hover:text-ink">Retake</button>
           </div>
         </div>
+
+        <UpsellStrip
+          title="Your score is a starting point. Not a verdict."
+          body="A 30-minute call with Bishoy costs nothing and leaves you with a clearer picture of what to fix first — and what it would cost to fix it properly."
+          ctaLabel="Book a free 30-minute call →"
+          ctaHref={BOOKING_URL}
+          secondaryLabel="See what a full HR advisory engagement looks like →"
+          secondaryHref="/business"
+        />
       </section>
     );
   }
