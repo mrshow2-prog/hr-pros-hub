@@ -1,95 +1,48 @@
-# Find my starting point — Career matcher
+# Career services — interactive cards + contact handoff
 
-## Contradiction check (none blocking)
+Make the "What we can build together" grid feel alive on hover, show clearer grid separation, and route clicks straight to the contact form at the bottom of the page with the chosen service prefilled.
 
-I checked the existing Career page against the spec. Everything lines up:
+## Scope
 
-- The 6 service names in the recommendation logic (CV Design & Rewrite, LinkedIn Profile Optimisation, Interview Coaching, Salary Negotiation Coaching, Career Pivot Consulting, Personal Brand Strategy) all match the existing `services` array in `Career.tsx` exactly — we can map results straight to those cards.
-- A booking link already exists site-wide as `BOOKING_HREF` (Calendly). The result CTA will reuse it — no new link needed.
-- Design tokens already used on this page (`career-bg`, `career-surface`, `career-border`, `career-sky`, `career-blue`, `career-deep`, `paper`, `blush`, `font-dm`, `font-serif`, `tracking-widest2`) cover everything the matcher needs — no new tokens.
-- Animation utilities (`animate-fade-in`, `animate-scale-in`) are available globally — no new keyframes.
+Only edits the services grid section in `src/pages/Career.tsx` (around line 326) and the contact form's textarea binding in the same file. No changes to the matcher, ATS tool, contact submit logic, copy elsewhere, nav, or footer.
 
-One small thing worth confirming, but I'll proceed with a sensible default unless you say otherwise:
+## What changes
 
-- **"See all services ↓" target**: the services grid is `<section id="services">`. I'll smooth-scroll to that anchor.
-- **Reset behaviour**: "Start again" returns to the entry state (button visible), not back to question 1 mid-flow. Cleaner.
+**Grid visibility**
+- Keep the current `border border-career-border bg-career-border` parent with `gap-px` between cards so each card has clean dividing lines.
+- Add an outer rounded container and a subtle shadow so the whole grid reads as one structured block.
+- Force `md:grid-cols-2 lg:grid-cols-3` (already set) and ensure cards stretch to equal height (`h-full flex flex-col`).
 
-If either of those is wrong, tell me before I build.
+**Hover interactivity** (per card, all using existing tokens — `career-sky`, `career-blue`, `career-surface`, `paper`)
+- Lift: `transition-all duration-300 hover:-translate-y-1`
+- Background shift: `hover:bg-career-surface` (already there) plus a soft inner glow via `hover:ring-1 hover:ring-career-sky/40`
+- Category pill: on hover, underline expands (use `after:` pseudo bar that scales from 0 → 100% width).
+- Title: color shifts from `text-paper` → `text-career-sky` on hover.
+- Bullets: left dash shifts from `before:text-career-sky` to brighter on group-hover (`group-hover:before:text-blush`).
+- CTA row: change copy from "Pricing on call" to "Start this conversation", brighten on hover (`text-career-sky/70` → `group-hover:text-paper`), arrow translates further (`group-hover:translate-x-1.5 group-hover:-translate-y-0.5`).
+- Cursor: `cursor-pointer`.
+- Focus ring for keyboard users: `focus-visible:ring-2 focus-visible:ring-career-sky focus-visible:outline-none`.
 
-## What gets built
+**Click → contact form**
+- Wrap each card as a `<button type="button">` (semantic, keyboard-accessible) instead of `<article>`. Keep the same internal markup.
+- On click: set `contact.goal` to a prefilled sentence — e.g. `I'd like to learn more about: {service name}.\n\n` (preserves existing user text by appending only if `goal` is empty; otherwise prepend a new line so we don't wipe what they typed).
+- Then smooth-scroll to `#contact` using `document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })`.
+- After scroll, focus the goal textarea so the cursor lands ready to type. Add an `id="contact-goal"` and `ref` to the textarea.
 
-A new section inserted in `src/pages/Career.tsx` immediately above the existing `<section id="services">` block. The services grid itself, the page header, nav, footer, and every other section stay untouched.
+**Mobile**
+- The lift/translate effects are kept (work fine on touch via active state); add `active:bg-career-surface active:-translate-y-0.5` so tapping shows feedback.
+- Cards remain full-width single column on small screens (existing behavior).
 
-The matcher is a single self-contained client component with three states driven by local React state — no modal, no drawer, no route change.
+## Technical notes
 
-```text
-┌──────────────────────────────────────────────┐
-│ ENTRY                                        │
-│  Not sure where to start?                    │
-│  Answer 3 questions. ~10 seconds.            │
-│  [ Find my starting point → ]                │
-└──────────────────────────────────────────────┘
-        ↓ click
-┌──────────────────────────────────────────────┐
-│ QUESTIONS  (1 of 3 · 2 of 3 · 3 of 3)        │
-│  Question text                               │
-│  [ Option ]                                  │
-│  [ Option ]    ← click highlights, then      │
-│  [ Option ]      300ms later advances        │
-│  [ Option ]                                  │
-└──────────────────────────────────────────────┘
-        ↓ after Q3
-┌──────────────────────────────────────────────┐
-│ RESULT                                       │
-│  Personalised 1–2 sentence insight           │
-│  ┌──────────────────────────────────────┐    │
-│  │ PRIMARY service card (highlighted)   │    │
-│  └──────────────────────────────────────┘    │
-│  You might also benefit from: Secondary      │
-│  [ Book a free 30-minute call → ]            │
-│  See all services ↓                          │
-│  Start again                                 │
-└──────────────────────────────────────────────┘
-```
+- File: `src/pages/Career.tsx` only.
+- Add a `handleServiceClick(name: string)` helper near the other handlers.
+- The services array stays unchanged; `name` is the second tuple element.
+- The textarea currently has no `id`; add `id="contact-goal"` and a `useRef<HTMLTextAreaElement>` so we can focus it after scroll (wrap focus in a ~400ms `setTimeout` so it runs after smooth scroll begins).
+- No new dependencies, no design tokens added — uses `career-sky`, `career-blue`, `career-surface`, `career-border`, `paper`, `blush` already in the theme, plus existing `animate-fade-in` / Tailwind transition utilities.
 
-## Recommendation logic (resolved)
+## Out of scope
 
-Order of precedence, applied in this exact order:
-
-1. **Primary** = derived from Q2:
-   - "don't get interviews" → CV design & rewrite (secondary: LinkedIn profile optimisation)
-   - "get interviews but don't get offers" → Interview coaching (secondary: Salary negotiation coaching)
-   - "don't know what I want" → Career pivot consulting (secondary: Personal brand strategy)
-   - "underpaid" → Salary negotiation coaching (secondary: LinkedIn profile optimisation)
-2. **Q1 override**: if Q1 = "Just made redundant" → primary becomes Career pivot consulting (secondary kept from Q2 mapping, unless that secondary is already Career pivot consulting, in which case secondary falls back to Personal brand strategy).
-3. **Q3 override**: if Q3 = "Director / Head of / VP" or "C-suite or board level" → secondary becomes Personal brand strategy (replacing whatever was there). If primary already = Personal brand strategy, secondary falls back to LinkedIn profile optimisation.
-
-## Personalised insight headlines (one per primary outcome)
-
-- CV design & rewrite → "Your experience isn't the problem. Your CV isn't showing it."
-- Interview coaching → "You're getting in the room. The gap is what happens in the room."
-- Salary negotiation coaching → "Before you negotiate, you need leverage. Here's how to build it."
-- Career pivot consulting → "The hardest part isn't the move. It's knowing which move."
-- Career pivot consulting (when triggered by redundancy) → "Speed matters now, but direction matters more. Let's get both right."
-- Personal brand strategy (only if it ever becomes primary via fallback) → "At your level, the role finds you — if the market knows who you are."
-
-## Behaviour details
-
-- Selecting an answer instantly highlights it (border + bg shift in `career-sky`), waits 300ms, then advances with a fade/slide transition (`animate-fade-in`).
-- Progress indicator: small "1 of 3" text in `font-dm uppercase tracking-widest2 text-career-sky`.
-- Mobile: options stack full-width, `min-h-12` (48px) tap targets.
-- "See all services ↓" → `document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })`.
-- "Start again" → resets state to entry; small muted `text-paper/45 underline-offset-4 hover:underline`.
-- Result CTA reuses `BOOKING_HREF` with the same styling as other primary buttons on the page (`bg-career-blue text-paper`).
-- The primary service card in the result reuses the visual language of the existing service cards but with an elevated treatment: `border-career-sky/60 bg-career-sky/15 shadow-[0_0_0_1px_hsl(var(--career-sky)/0.4)]`.
-
-## Technical implementation
-
-- New file: `src/components/career/StartingPointMatcher.tsx` — self-contained, no props, manages its own state (`step: 'entry' | 0 | 1 | 2 | 'result'`, `answers: [number?, number?, number?]`).
-- Edit: `src/pages/Career.tsx` — import the component and render `<StartingPointMatcher />` as a new `<section className="bg-career-bg px-6 pt-20 md:px-10">` block placed immediately before the existing `<section id="services">`. The services section keeps its existing top padding so the spacing reads naturally.
-- No changes to `services` array, no new data files, no edge functions, no DB.
-- Pure client-side; no analytics added unless you want them (let me know).
-
-## Out of scope (explicitly not touched)
-
-Services grid contents and styling, page header, nav, footer, ATS checker, Web CV section, About section, contact form.
+- The matcher block above the grid.
+- ATS review form, contact form layout/submit, edge function.
+- Any copy except the per-card CTA label.
