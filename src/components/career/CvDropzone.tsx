@@ -1,4 +1,4 @@
-import { DragEvent, useRef, useState } from "react";
+import { DragEvent, ReactNode, useRef, useState } from "react";
 import { AlertTriangle, Edit3, FileText, UploadCloud } from "lucide-react";
 
 type Variant = "ats" | "contact";
@@ -13,6 +13,7 @@ interface Props {
   maxBytes?: number;
   variant?: Variant;
   required?: boolean;
+  footerNote?: ReactNode;
 }
 
 const DEFAULT_MAX = 2 * 1024 * 1024;
