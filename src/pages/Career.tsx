@@ -1,5 +1,5 @@
 import { useState, useRef, FormEvent } from "react";
-import { AlertTriangle, ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, Compass, Edit3, FileText, Grid2X2, Linkedin, Loader2, Mail, RotateCcw, Target, TrendingUp, Upload, UserRoundCheck } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, Compass, Edit3, FileText, Grid2X2, Linkedin, Loader2, Mail, RotateCcw, Star, Target, TrendingUp, Upload, UserRoundCheck } from "lucide-react";
 import CvDropzone from "@/components/career/CvDropzone";
 import StartingPointMatcher from "@/components/career/StartingPointMatcher";
 import JSZip from "jszip";
@@ -14,6 +14,23 @@ import { supabase } from "@/integrations/supabase/client";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const marqueeItems = ["CV Design", "LinkedIn Optimisation", "Interview Coaching", "Personal Branding", "Salary Negotiation", "Career Pivot", "UAE Market Entry", "Outplacement Support", "Executive Presence"];
+
+const TESTIMONIALS: { quote: string; name: string; role: string | null; service: string; source: string }[] = [
+  {
+    quote: "Bishoy did an exceptional job on my CV. He has a keen eye for detail and a great understanding of how to present skills and experience effectively. His ability to tailor the CV to specific job applications was impressive. The end result is a professional and compelling document that truly represents my qualifications.",
+    name: "Mohamed Salah",
+    role: null,
+    service: "CV Writing",
+    source: "LinkedIn · July 2024",
+  },
+  {
+    quote: "I highly recommend working with Bishoy. He has extensive expertise in crafting professional CVs and a real ability to generate ideas that make a profile stand out. An invaluable resource for anyone looking to enhance their professional profile.",
+    name: "Abanoub Nabil",
+    role: "Senior Sales Manager · Fairmont Hotels & Resorts",
+    service: "Resume Review",
+    source: "LinkedIn · July 2024",
+  },
+];
 
 const audience = [
   { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching", q1: 0, reveal: "Sound familiar? You're applying to roles you're qualified for and hearing nothing back." },
@@ -405,6 +422,34 @@ export default function Career() {
       <section id="about" className="bg-career-deep px-6 py-20 md:px-10"><div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2"><div><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Why this exists</p><h2 className="mb-8 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">The best candidate rarely gets the job.</h2><div className="space-y-5 text-base font-light leading-8 text-paper/60"><p>After 16 years seeing thousands of hiring decisions made across 11 markets, the pattern is clear: <strong className="font-medium text-paper">the candidate who best communicates their value wins</strong> — not always the most qualified one.</p><p>Most professionals are vastly underselling themselves. A CV that lists responsibilities instead of impact. A LinkedIn profile that reads like a job posting. An interview that covers what they did rather than what they made possible.</p><p>The Career Studio exists to fix that gap — for professionals whose career materials haven't caught up with their actual capability.</p></div></div><div className="border border-career-border bg-career-sky/5 p-7"><p className="mb-6 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky/70">How it works</p>{["Free 30-min discovery call", "Bespoke engagement scoped", "You show up differently"].map((title, i) => <div key={title} className="mb-6 flex gap-4 last:mb-0"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-career-sky/25 bg-career-sky/10 font-serif text-sm font-bold text-career-sky">{i + 1}</span><div><h3 className="mb-1 font-dm font-bold text-paper">{title}</h3><p className="text-sm leading-6 text-paper/45">{i === 0 ? "Tell me where you are and where you want to be. I'll tell you what's actually holding you back." : i === 1 ? "We agree exactly what we're doing, in what timeframe, with what outcomes." : "Your materials, your narrative, your confidence — aligned and ready for the next opportunity."}</p></div></div>)}<a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 w-full items-center justify-center bg-career-blue px-6 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Book a free discovery call</a></div></div></section>
 
       <section id="who" className="bg-career-surface px-6 py-20 md:px-10"><div className="mx-auto max-w-6xl"><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">Who this is for</p><h2 className="mb-4 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Every professional with more to offer.</h2><p className="mb-12 max-w-xl font-light leading-8 text-paper/45">Six distinct situations. One common thread — your career deserves better representation than it's getting.</p><div className="grid gap-px border border-career-border bg-career-border md:grid-cols-2 lg:grid-cols-3">{audience.map((a) => <AudienceCard key={a.title} icon={a.icon} title={a.title} desc={a.desc} badge={a.badge} reveal={a.reveal} onCta={() => handleAudienceCta(a.q1)} />)}</div></div></section>
+
+      <section id="testimonials" className="bg-career-deep px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-6xl">
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">What clients say</p>
+          <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Results speak for themselves.</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {TESTIMONIALS.map((t) => (
+              <article key={t.name} className="flex h-full flex-col border border-career-border bg-career-surface p-7">
+                <div className="mb-5 flex gap-1 text-career-sky" aria-label="5 out of 5 stars">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={16} className="fill-current" />
+                  ))}
+                </div>
+                <blockquote className="mb-6 font-light leading-8 text-paper/75">&ldquo;{t.quote}&rdquo;</blockquote>
+                <div className="mt-auto border-t border-career-border pt-5">
+                  <div className="font-dm text-sm font-bold text-paper">{t.name}</div>
+                  {t.role && <div className="mt-1 text-xs leading-5 text-paper/55">{t.role}</div>}
+                  <div className="mt-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky/70">{t.service}</div>
+                  <div className="mt-1 text-[11px] text-paper/35">{t.source}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-paper/45">
+            <a href="https://www.linkedin.com/in/bmesiha/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-career-sky">More recommendations available on LinkedIn →</a>
+          </p>
+        </div>
+      </section>
 
       <div id="matcher"><StartingPointMatcher trigger={matcherTrigger} /></div>
 
