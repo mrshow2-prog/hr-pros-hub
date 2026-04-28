@@ -237,9 +237,9 @@ function ExecutiveCv() {
           <div className="mb-5 flex items-center gap-2.5 font-dm text-[10px] font-medium uppercase tracking-[0.24em] text-career-sky">
             <span className="h-px w-5 bg-career-sky" /> HR Executive · Thought Leader · Dubai
           </div>
-          <h1 className="mb-1 font-serif text-[54px] font-medium leading-[0.96] tracking-tight text-paper">
+          <h2 className="mb-1 font-serif text-[54px] font-medium leading-[0.96] tracking-tight text-paper">
             Sarah<br /><em className="font-normal italic text-career-sky">Mahmoud</em>
-          </h1>
+          </h2>
           <p className="mt-3.5 font-dm text-[11px] font-light uppercase leading-[1.5] tracking-[0.14em] text-paper/60">
             Chief People Officer · Board Advisor · Speaker
           </p>
