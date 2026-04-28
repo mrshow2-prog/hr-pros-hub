@@ -1,74 +1,52 @@
-# Interactive Web CV Showcase
+# Career hero — coded background cards
 
-Replace the current static Web CV section on the Career page with a three-column interactive layout: a left intro column, a center browser-framed live preview, and a right column of 3 hover-able package cards (Essential / Signature / Executive). Hovering or tapping a package card swaps the CV mockup shown inside the browser frame. Existing fonts (Fraunces serif + DM Sans) and existing `career-*` color tokens are preserved — no new fonts introduced.
+Replace the three placeholder floating shapes currently sitting behind the hero text with **two** purpose-built decorative cards built entirely in CSS/SVG. Keep the dot grid texture and SVG path lines exactly as they are.
 
-## Layout
+## What changes
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│  Personal brand web-CV                                           │
-│  ┌──────────┐  ┌──────────────────────┐  ┌────────────────────┐  │
-│  │ EYEBROW  │  │ ●●●  url/sarah-...★★★│  │ Essential   ★★★    │  │
-│  │ Headline │  │ ┌──────────────────┐ │  │ desc...            │  │
-│  │ Subline  │  │ │  CV PREVIEW      │ │  ├────────────────────┤  │
-│  │          │  │ │  (swaps on hover)│ │  │ Signature  ★★★★    │  │
-│  │ [CTA →]  │  │ │                  │ │  │ desc...            │  │
-│  │          │  │ └──────────────────┘ │  ├────────────────────┤  │
-│  │          │  │                      │  │ Executive ★★★★★ ◀  │  │
-│  │          │  └──────────────────────┘  │ desc...            │  │
-│  └──────────┘                            └────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
-```
+In `src/pages/Career.tsx`, inside the hero `<section>` (lines 328–338), the wrapper div containing the three placeholder cards keeps the texture grid and SVG paths but the three card divs (current lines 329–331) are replaced with two new card components.
 
-Mobile (< lg): stacks to a single column — copy → browser preview → packages.
+Everything else — headline, subline, CTAs, stats, nav, marquee, all other sections — is untouched.
 
-## Behaviour
+## The two cards
 
-1. **Default state**: Executive package is active, Executive CV mockup visible, URL bar shows `peoplestudio.ae/cv/sarah-executive ★★★★★`.
-2. **Hover/tap a package card** (desktop hover, mobile tap): the active state moves to that card; the CV mockup inside the browser frame cross-fades (200ms opacity) to the matching design; URL slug + star count update.
-3. **Mouse leaves the package list**: stays on whichever was last hovered (sticky), so users can read the preview without it snapping back.
-4. **Active card styling**: subtle background tint using `career-sky/10`, left ring/border in `career-sky/40`, stars become fully opaque + colored, "Get started →" CTA reveals.
-5. **Inactive cards**: muted text, faded stars, hidden CTA — all reveal on hover.
-6. **Click on any package card or its CTA**: smooth-scrolls to the existing contact form (same behaviour as service cards).
-7. **Existing left CTA "View sample CV page"** keeps linking to `/profile`.
+**Card 1 — "The old way"** (back, left-of-centre, lifeless)
+- ~260×340 px, rotated −6°, positioned slightly left and slightly lower than Card 2, behind it (lower z-index)
+- Surface: warm light gray `#E8E3DB` at ~28% opacity
+- Header band: ~40px tall across the top, slightly darker gray (~15% opacity)
+- 9 horizontal "text line" bars below: 4px tall, 2px radius, ~20% opacity warm gray, evenly spaced, widths varied between 60% and 95% of card width (e.g. 92, 78, 88, 65, 95, 70, 84, 60, 76 %) so it feels organic
+- No shadow, no border glow — flat and forgettable
 
-## CV preview designs (3 mockups)
+**Card 2 — "The new way"** (front, right-of-centre, alive)
+- ~300×380 px, rotated +2°, positioned right-of-centre and slightly higher, in front of Card 1 (higher z-index)
+- Surface: deep navy `#0D1B26` at ~60% opacity (uses `hsl(var(--career-deep)/0.6)` to stay on-token)
+- Box shadow: `0 20px 60px rgba(0,0,0,0.3)` — gives it dimension
+- Contents:
+  - **Profile circle**: 48px, ring-only border in `career-sky` at ~30% opacity, no fill, near top-left
+  - **Name bar**: ~70% width × 12px, radius 2, cream/`paper` at 35% opacity
+  - **Title bar**: ~45% width × 6px, `paper` at 20% opacity, just below name bar
+  - **Concentric arcs** (lower-right): inline SVG, three quarter-circles (radii ~40, 60, 80), stroke-only, `career-sky` at 10–15% opacity each — echoes the Signature CV orbital motif
+  - **Two stat blocks** near bottom: each ~60×40, slightly lighter navy than the card surface (e.g. `paper/8`), arranged side-by-side, no labels
 
-Each mockup is a self-contained scaled-down "page" rendered inside the browser viewport. Built with existing fonts (`font-serif` = Fraunces, `font-dm` = DM Sans) and career palette only — no Sienna/Olive/Blush colors from the upload, mapped instead to:
-- paper background → `career-light` / off-white
-- accent (was sienna/blush) → `career-blue`
-- muted text → `career-deep/60`
+## Entrance animation
 
-**Essential** — single-page CV: clay-tinted hero with photo + name + title + contact row; Profile paragraph; Career Highlights list (4 rows); Education line.
+- Both cards: fade in + translateY 12px → 0, **0.9s ease-out**, runs once
+- Card 1 delay 0.4s, Card 2 delay 0.7s
+- No looping animation after entrance
 
-**Signature** — richer profile: olive-tinted hero with portrait, eyebrow, name, title; 4-up metrics strip (Years / Markets / C-suite / PHRi); narrow scrolling ticker of expertise tags; two-column body with Narrative + Career Timeline (with dot-and-line) on the left, Skill bars + Contact card on the right; "Download PDF" pill.
+Implemented with a small inline `@keyframes` block in a `<style>` tag inside the hero section (or via a Tailwind arbitrary `animate-[...]` utility referencing existing `fade-up` keyframes — `fade-up` already exists in `tailwind.config.ts` with the right shape, so I'll use `animate-[fade-up_0.9s_ease-out_0.4s_both]` and `...0.7s_both` to avoid touching the config).
 
-**Executive** — personal-brand site: dark nav strip with name watermark + section links; "Latest" press ticker; large hero with display name (italic accent on surname) + positioning line + portrait; quote band with attribution; two-column body — Executive bio + Speaking/Thought-leadership list on the left, Media tags + "Work with Sarah" contact card with "Book a conversation" button on the right.
+## Responsive
 
-All three use the existing portrait `PHOTO_URL` from `src/data/profile.ts`.
+- Wrap the cards in a container with `hidden md:block` so they disappear entirely below 768px
+- The hero text falls back to the existing solid background (gradient + dot grid stay; cards just don't render)
 
-The mockups are rendered at a fixed design width (~720px) and CSS-scaled (`transform: scale(...)`) to fit the browser viewport area, so they read like real screenshots regardless of column width. Reuse the previous `sampleWebCvPreview` import is no longer needed and gets removed.
+## Preserved
 
-## Browser frame
+- The dot grid mask overlay (current line 332) — kept
+- The SVG dashed path lines (current lines 333–337) — kept
+- Hero text, CTAs, stats, nav, marquee, every other section — unchanged
 
-- Dark chrome bar (`career-deep`), three traffic-light dots (red / amber / green), pill-shaped URL bar showing `peoplestudio.ae/cv/<slug>` with a trailing star rating that matches the active tier.
-- Viewport area is a fixed-aspect container (~`aspect-[4/5]` on desktop) with `overflow: hidden`, paper-cream background, and the three CV previews absolutely positioned inside, cross-fading on tier change.
-- Outer frame: rounded corners, subtle drop shadow + 1px hairline ring in `career-sky/15` so it lifts off the dark `career-deep` section background.
+## Files
 
-## Package cards
-
-- Stacked vertically, 2px gap between cards.
-- Each card: package name in italic Fraunces, star row (3 / 4 / 5 lit stars in `career-sky`), 2-line description in DM Sans, hidden "Get started →" CTA that reveals on hover/active.
-- Hover/active treatment uses opacity transitions on stars + description for the same "lights up on focus" feel as the reference.
-
-## Files to edit
-
-- **`src/pages/Career.tsx`** — Replace the existing `#web-cv` section markup. Remove the `sampleWebCvPreview` import and the `webCvLevels` array (no longer needed in this shape). Insert a new `<WebCvShowcase />` section component (defined in the same file or a new file).
-- **New component `src/components/career/WebCvShowcase.tsx`** — Encapsulates: state for active tier, three CV mockup sub-components (`EssentialCv`, `SignatureCv`, `ExecutiveCv`), browser frame, package list, and the scroll-to-contact handler. Pure presentational, no new dependencies.
-- **No changes** to fonts, tailwind config, color tokens, or any other section.
-
-## Out of scope (intentionally skipped from the reference)
-
-- The "AI chat widget" floating bubble inside the Executive preview.
-- Counting-up number animations and per-element scroll-reveal on the Signature/Executive previews (kept simple — preview just swaps in).
-- The marquee tickers inside the CV mockups will be static text strips (no animation) to keep the section calm and the implementation lean. Can be animated in a follow-up if desired.
+- `src/pages/Career.tsx` — edit the hero section's decorative-cards container only (lines 328–338); replace the three card divs with the two new cards described above.
