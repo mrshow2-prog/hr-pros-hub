@@ -152,10 +152,26 @@ const recommend = (a: [number, number, number]): { primary: ServiceKey; secondar
   return { primary, secondary, redundancy };
 };
 
-export default function StartingPointMatcher() {
+type MatcherTrigger = { q1Index: number; nonce: number } | null;
+
+export default function StartingPointMatcher({ trigger }: { trigger?: MatcherTrigger }) {
   const [step, setStep] = useState<Step>("entry");
   const [answers, setAnswers] = useState<[number?, number?, number?]>([undefined, undefined, undefined]);
   const [pending, setPending] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!trigger) return;
+    const { q1Index } = trigger;
+    setAnswers([q1Index, undefined, undefined]);
+    setPending(q1Index);
+    setStep(0);
+    const t = window.setTimeout(() => {
+      setPending(null);
+      setStep(1);
+    }, 400);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger?.nonce]);
 
   const reset = () => {
     setAnswers([undefined, undefined, undefined]);
