@@ -2,6 +2,9 @@ import { Helmet } from "react-helmet-async";
 
 // TODO: update when custom domain is connected.
 const BASE_URL = "https://people-studio.lovable.app";
+// TODO: replace with branded 1200×630 OG card
+const DEFAULT_OG_IMAGE =
+  "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c1c94bce-cab3-4e13-9216-06ef8f51ff27";
 
 export const LOCAL_BUSINESS_SCHEMA = {
   "@context": "https://schema.org",
@@ -58,22 +61,31 @@ interface SEOProps {
   title: string;
   description: string;
   path: string;
+  image?: string;
   jsonLd?: object[];
 }
 
-export default function SEO({ title, description, path, jsonLd }: SEOProps) {
+export default function SEO({ title, description, path, image, jsonLd }: SEOProps) {
   const url = `${BASE_URL}${path}`;
+  const ogImage = image ?? DEFAULT_OG_IMAGE;
   const schemas = [LOCAL_BUSINESS_SCHEMA, ...(jsonLd ?? [])];
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="People.Studio" />
+      <meta property="og:locale" content="en_AE" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
+      <meta property="og:image" content={ogImage} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@peoplestudioae" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
       {schemas.map((schema, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(schema)}
