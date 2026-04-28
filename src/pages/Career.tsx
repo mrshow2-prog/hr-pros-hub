@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { AlertTriangle, ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, Compass, Edit3, FileText, Grid2X2, Linkedin, Loader2, Mail, RotateCcw, Star, Target, TrendingUp, Upload, UserRoundCheck } from "lucide-react";
 import CvDropzone from "@/components/career/CvDropzone";
+import StartingPointMatcher from "@/components/career/StartingPointMatcher";
 import JSZip from "jszip";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
