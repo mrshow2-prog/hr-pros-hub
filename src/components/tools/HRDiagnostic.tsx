@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import { DIAGNOSTIC_DIMS } from "@/data/tools";
 import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
-import { FieldLabel, SuggestionBox, ToolInput, ToolSelect } from "./ToolPrimitives";
+import { FieldLabel, SuggestionBox, ToolInput, ToolSelect, UpsellStrip } from "./ToolPrimitives";
+import { BOOKING_URL } from "@/lib/contact";
 
 type AnswerMap = Record<string, number>;
 type CompanyType = "mainland" | "freezone" | "gcc" | "other" | "";
