@@ -7,7 +7,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import PsLogo from "@/components/ui/PsLogo";
 import WebCvShowcase from "@/components/career/WebCvShowcase";
-import SEO from "@/components/seo/SEO";
+import SEO, { PERSON_SCHEMA } from "@/components/seo/SEO";
 import { BOOKING_HREF, COMPANY_EMAIL } from "@/lib/contact";
 import { supabase } from "@/integrations/supabase/client";
 
