@@ -9,7 +9,7 @@ import BusinessRetainers from "@/components/business/BusinessRetainers";
 import BusinessAbout from "@/components/business/BusinessAbout";
 import BusinessContact from "@/components/business/BusinessContact";
 import BookCallBanner from "@/components/ui/BookCallBanner";
-import SEO from "@/components/seo/SEO";
+import SEO, { PERSON_SCHEMA } from "@/components/seo/SEO";
 
 export default function Business() {
   return (
@@ -18,6 +18,7 @@ export default function Business() {
         title="HR Advisory UAE · Emiratisation, Compliance & Fractional HR — People.Studio"
         description="Senior HR advisory for UAE SMEs. Emiratisation compliance, HR foundation packs, org design, and fractional HR director retainers. Fixed fees. Direct access to Bishoy Mesiha."
         path="/business"
+        jsonLd={[PERSON_SCHEMA]}
       />
       <BusinessNav />
       <BusinessHero />

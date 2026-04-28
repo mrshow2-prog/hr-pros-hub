@@ -1,21 +1,24 @@
-Add unique per-route SEO metadata using `react-helmet-async`.
+Add schema.org JSON-LD via the existing `SEO` component.
 
 ## Steps
 
-1. Install `react-helmet-async` and wrap the app in `<HelmetProvider>` in `src/App.tsx`.
-2. Create `src/components/seo/SEO.tsx` — reusable component with `title`, `description`, `path` props. Renders `<title>`, `<meta name="description">`, OG + Twitter title/description/url, and `<link rel="canonical">`. Uses a single `BASE_URL` constant set to `https://people-studio.lovable.app` (easy one-line swap when custom domain lands).
-3. Add `<SEO ... />` at the top of each page with the exact copy supplied:
-   - **/** — "People.Studio — HR Advisory & Career Studio · UAE & GCC"
-   - **/business** — "HR Advisory UAE · Emiratisation, Compliance & Fractional HR — People.Studio"
-   - **/career** — "Career Studio UAE · CV, LinkedIn & Career Coaching — People.Studio"
-   - **/tools** — "Free HR Tools UAE · Diagnostic, Emiratisation Calculator & Policy Generator — People.Studio"
-   - **/profile** — "Signature CV Sample · People.Studio Career Studio"
-4. Trim `index.html` to a neutral fallback title/description (Helmet overrides per route).
+1. **Edit `src/components/seo/SEO.tsx`**:
+   - Add two exported constants: `LOCAL_BUSINESS_SCHEMA` (ProfessionalService) and `PERSON_SCHEMA` (Bishoy Mesiha) using the exact payloads supplied. The LocalBusiness `url` reuses the existing `BASE_URL` constant.
+   - Add optional `jsonLd?: object[]` prop.
+   - Auto-inject `LOCAL_BUSINESS_SCHEMA` on every render, then append any objects passed via `jsonLd`. Render each as `<script type="application/ld+json">` inside `<Helmet>`.
 
-NotFound is intentionally skipped (404s should not be indexed).
+2. **Edit `src/pages/Business.tsx`** — pass `jsonLd={[PERSON_SCHEMA]}` to `<SEO />`.
+
+3. **Edit `src/pages/Career.tsx`** — pass `jsonLd={[PERSON_SCHEMA]}` to `<SEO />`.
+
+Pages `/`, `/tools`, `/profile` already render `<SEO />` and will pick up LocalBusiness automatically — no edits needed.
 
 ## Files
 
-- New: `src/components/seo/SEO.tsx`
-- Edited: `src/App.tsx`, `src/pages/Index.tsx`, `src/pages/Business.tsx`, `src/pages/Career.tsx`, `src/pages/Tools.tsx`, `src/pages/Profile.tsx`, `index.html`
-- Dependency: `react-helmet-async`
+- Edited: `src/components/seo/SEO.tsx`
+- Edited: `src/pages/Business.tsx`, `src/pages/Career.tsx`
+
+## Notes
+
+- One-line URL swap on custom-domain launch (the shared `BASE_URL` constant).
+- NotFound intentionally untouched.
