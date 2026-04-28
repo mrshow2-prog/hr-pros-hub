@@ -334,8 +334,14 @@ export default function Career() {
             <span className="hidden border-l border-career-border pl-3 font-dm text-[10px] font-bold uppercase tracking-wider2 text-paper/35 sm:inline">Career Studio</span>
           </div>
           <div className="hidden items-center gap-6 md:flex">
-            {["Who", "Services", "Web CV", "ATS Review"].map((label) => (
-              <a key={label} href={`#${label.toLowerCase().replace(" ", "-")}`} className="font-dm text-xs font-bold uppercase tracking-wider2 text-paper/45 transition-colors hover:text-career-sky">
+            {[
+              { label: "Why", href: "#about" },
+              { label: "Web CV", href: "#web-cv" },
+              { label: "Who", href: "#who" },
+              { label: "Services", href: "#services" },
+              { label: "ATS Review", href: "#ats-review" },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="font-dm text-xs font-bold uppercase tracking-wider2 text-paper/45 transition-colors hover:text-career-sky">
                 {label}
               </a>
             ))}
