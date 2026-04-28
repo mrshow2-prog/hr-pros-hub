@@ -1,96 +1,98 @@
-Add a two-card testimonials section to `/career`, slotted between the "Who this is for" section and the `#matcher` block.
+Add a post-result CTA strip after both the HR Diagnostic and Emiratisation Calculator results, reusing — and modestly extending — the existing `UpsellStrip` primitive in `src/components/tools/ToolPrimitives.tsx` so the visual language stays consistent with the rest of the page.
 
-## Placement
+## 1. Extend `UpsellStrip` (backward-compatible)
 
-In `src/pages/Career.tsx`, insert a new `<section id="testimonials">` between line 407 (the `#who` section) and line 409 (the `#matcher` div).
-
-## Markup (using existing career design tokens)
+`src/components/tools/ToolPrimitives.tsx` — extend the props so the strip can render an optional primary button and an optional secondary text link, while keeping the current "single uppercase link" mode used by JD Builder, Policy Generator, and Emirates Calculator.
 
 ```tsx
-<section id="testimonials" className="bg-career-deep px-6 py-20 md:px-10">
-  <div className="mx-auto max-w-6xl">
-    <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">
-      What clients say
-    </p>
-    <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">
-      Results speak for themselves.
-    </h2>
-
-    <div className="grid gap-6 md:grid-cols-2">
-      {TESTIMONIALS.map((t) => (
-        <article
-          key={t.name}
-          className="flex h-full flex-col border border-career-border bg-career-surface p-7"
+export function UpsellStrip({
+  title, body,
+  href, link,                         // existing single-link mode
+  ctaLabel, ctaHref,                  // NEW — primary button
+  secondaryLabel, secondaryHref,      // NEW — small underline link
+}: {
+  title: string;
+  body: string;
+  href?: string;
+  link?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+}) {
+  return (
+    <div className="mt-6 flex flex-col gap-4 border border-sienna/20 bg-sienna/10 p-5 md:flex-row md:items-center md:justify-between">
+      <div className="max-w-xl">
+        <strong className="mb-1 block font-medium text-ink">{title}</strong>
+        <p className="font-dm text-sm leading-6 text-ink/60">{body}</p>
+        {secondaryLabel && secondaryHref && (
+          <a href={secondaryHref} className="mt-2 inline-block font-dm text-xs text-ink/55 underline-offset-2 hover:text-sienna hover:underline">
+            {secondaryLabel}
+          </a>
+        )}
+      </div>
+      {ctaLabel && ctaHref ? (
+        <a
+          href={ctaHref}
+          target={ctaHref.startsWith("http") ? "_blank" : undefined}
+          rel={ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
+          className="inline-flex shrink-0 items-center justify-center bg-sienna px-6 py-3 font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-paper transition-opacity hover:opacity-90"
         >
-          {/* 5 star row using lucide Star, fill + color via text-career-sky */}
-          <div className="mb-5 flex gap-1 text-career-sky" aria-label="5 out of 5 stars">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={16} className="fill-current" />
-            ))}
-          </div>
-
-          <blockquote className="mb-6 font-light leading-8 text-paper/75">
-            "{t.quote}"
-          </blockquote>
-
-          <div className="mt-auto border-t border-career-border pt-5">
-            <div className="font-dm text-sm font-bold text-paper">{t.name}</div>
-            {t.role && (
-              <div className="mt-1 text-xs leading-5 text-paper/55">{t.role}</div>
-            )}
-            <div className="mt-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky/70">
-              {t.service}
-            </div>
-            <div className="mt-1 text-[11px] text-paper/35">{t.source}</div>
-          </div>
-        </article>
-      ))}
+          {ctaLabel}
+        </a>
+      ) : (
+        href && link && (
+          <a href={href} className="whitespace-nowrap font-dm text-[0.72rem] font-bold uppercase tracking-wider2 text-sienna hover:underline">
+            {link}
+          </a>
+        )
+      )}
     </div>
-
-    <p className="mt-8 text-sm text-paper/45">
-      <a
-        href="https://www.linkedin.com/in/bmesiha/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 hover:text-career-sky"
-      >
-        More recommendations available on LinkedIn →
-      </a>
-    </p>
-  </div>
-</section>
+  );
+}
 ```
 
-## Data (defined at top of `Career.tsx` alongside other locals)
+This preserves all four existing call-sites (they keep using `href` + `link`).
 
-```ts
-const TESTIMONIALS = [
-  {
-    quote: "Bishoy did an exceptional job on my CV. He has a keen eye for detail and a great understanding of how to present skills and experience effectively. His ability to tailor the CV to specific job applications was impressive. The end result is a professional and compelling document that truly represents my qualifications.",
-    name: "Mohamed Salah",
-    role: null,
-    service: "CV Writing",
-    source: "LinkedIn · July 2024",
-  },
-  {
-    quote: "I highly recommend working with Bishoy. He has extensive expertise in crafting professional CVs and a real ability to generate ideas that make a profile stand out. An invaluable resource for anyone looking to enhance their professional profile.",
-    name: "Abanoub Nabil",
-    role: "Senior Sales Manager · Fairmont Hotels & Resorts",
-    service: "Resume Review",
-    source: "LinkedIn · July 2024",
-  },
-];
+## 2. HR Diagnostic CTA strip
+
+`src/components/tools/HRDiagnostic.tsx` — after the closing `</div>` of the "Recommended next step" block (line 236), before `</section>` (line 237), insert:
+
+```tsx
+<UpsellStrip
+  title="Your score is a starting point. Not a verdict."
+  body="A 30-minute call with Bishoy costs nothing and leaves you with a clearer picture of what to fix first — and what it would cost to fix it properly."
+  ctaLabel="Book a free 30-minute call →"
+  ctaHref={BOOKING_URL}
+  secondaryLabel="See what a full HR advisory engagement looks like →"
+  secondaryHref="/business"
+/>
 ```
 
-## Imports
-Add `Star` to the existing `lucide-react` import in `Career.tsx`.
+Add the imports at the top of the file:
+- `import { UpsellStrip } from "./ToolPrimitives";`
+- `import { BOOKING_URL } from "@/lib/contact";`
 
-## Design notes
-- Section background `bg-career-deep` to alternate from the `bg-career-surface` "Who this is for" above and the matcher below.
-- Cards use `bg-career-surface` + `border-career-border` — the same surface tokens used by other cards on the page.
-- Stars use `text-career-sky` (the page's accent) with `fill-current` so they read as solid filled stars.
-- Source label is in `text-paper/35` muted to match other small-print muting on the page.
-- Grid: stacked on mobile, side-by-side at `md:`.
+## 3. Emirates Calculator CTA strip
+
+`src/components/tools/EmiratesCalculator.tsx` — `UpsellStrip` is already imported. Immediately after the existing `<UpsellStrip … link="See Emiratisation Pack →" />` on line 171 (still inside the `OutputBox`), add a second strip:
+
+```tsx
+<UpsellStrip
+  title="Now you know the number. Here's how to fix it."
+  body="The Emiratisation Readiness Pack starts at AED 3,500 and gives you a 90-day compliance plan within 2 days."
+  ctaLabel="Book a call to get started →"
+  ctaHref={BOOKING_URL}
+/>
+```
+
+Add `import { BOOKING_URL } from "@/lib/contact";` at the top.
+
+## Out of scope
+- Existing UpsellStrip call-sites in JD Builder, Policy Generator, and the first Emirates Calculator strip stay unchanged (they continue to use the `href` + `link` mode).
+- No layout, copy, or behaviour changes to other tools.
 
 ## Files
-- Edited: `src/pages/Career.tsx`
+- Edited: `src/components/tools/ToolPrimitives.tsx`
+- Edited: `src/components/tools/HRDiagnostic.tsx`
+- Edited: `src/components/tools/EmiratesCalculator.tsx`
