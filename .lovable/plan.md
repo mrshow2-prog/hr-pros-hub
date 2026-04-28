@@ -1,36 +1,50 @@
-## Status check of the three SEO items
+## Status: Already implemented
 
-### 1. OG titles — PARTIALLY DONE
-The `SEO` component already supports a per-page `ogTitle` prop and falls back to `title` when not provided. Since each page passes a unique `title`, the og:title is already unique per page — not the generic site title.
+Both post-result CTAs requested are already present in the codebase, gated behind the results-visible state, and use the page's existing `UpsellStrip` component pattern (the same primitive used for every other tool upsell on this page).
 
-- `/business` → og:title = page title ✓
-- `/career` → og:title = page title ✓
-- `/` → og:title = page title ✓
-- `/profile` → og:title = page title ✓
-- `/tools` → explicitly overrides `ogTitle` to "Free HR Tools UAE · Emiratisation Calculator & HR Diagnostic — People.Studio" (different from spec's request to match the title tag exactly)
+### 1. HR Diagnostic CTA — `src/components/tools/HRDiagnostic.tsx`
 
-**Action needed:** Decide whether to keep the Tools `ogTitle` override (current shorter variant) or replace it to exactly match the title tag per the new spec.
+Rendered inside the `if (showResults)` branch (line 168), immediately after the recommendation/result container, at lines 239–246:
 
-### 2. Meta descriptions — DONE
-- `/career` description already matches the requested copy (verbatim, "Written by an HR director who has made thousands of hiring decisions.").
-- `/tools` description already reads "Free UAE HR tools — no signup required. HR health diagnostic, Emiratisation fine calculator, AI policy generator, and job description builder. Built for UAE and GCC businesses." — matches except "JD builder" is written out as "job description builder".
+```tsx
+<UpsellStrip
+  title="Your score is a starting point. Not a verdict."
+  body="A 30-minute call with Bishoy costs nothing and leaves you with a clearer picture of what to fix first — and what it would cost to fix it properly."
+  ctaLabel="Book a free 30-minute call →"
+  ctaHref={BOOKING_URL}              // → https://calendly.com/peoplestudio
+  secondaryLabel="See what a full HR advisory engagement looks like →"
+  secondaryHref="/business"
+/>
+```
 
-**Action needed:** None functionally; optionally tighten "job description builder" → "JD builder" if you want exact match.
+Only renders when `showResults === true`. Does not appear on page load or during the questionnaire.
 
-### 3. Copyright year — NOT DONE on homepage; DONE on career
-- `src/pages/Career.tsx` footer already uses `© {new Date().getFullYear()} People Studio — Bishoy Mesiha Advisory. Dubai, UAE.` ✓
-- `src/pages/Index.tsx` (line 247) still shows static `© People.Studio` with no year. ✗
+### 2. Emiratisation Calculator CTA — `src/components/tools/EmiratesCalculator.tsx`
 
-**Action needed:** Update Index footer to `© {new Date().getFullYear()} People.Studio · Dubai, UAE`.
+Rendered inside the `{result && ( … )}` block, immediately after the existing "Want a full compliance plan?" upsell:
 
----
+```tsx
+<UpsellStrip
+  title="Now you know the number. Here's how to fix it."
+  body="The Emiratisation Readiness Pack starts at AED 3,500 and gives you a 90-day compliance plan within 2 days."
+  ctaLabel="Book a call to get started →"
+  ctaHref={BOOKING_URL}              // → https://calendly.com/peoplestudio
+/>
+```
 
-## Proposed fixes
+Only renders after `Calculate my obligation` is clicked and `result` is set.
 
-1. **`src/pages/Index.tsx` (line 247)** — replace `© People.Studio` with `© {new Date().getFullYear()} People.Studio · Dubai, UAE`.
+### Why the previous attempts may have looked "missing"
 
-2. **`src/pages/Tools.tsx` (line 28)** — remove the `ogTitle` override so og:title falls back to the full title tag (matches the spec exactly), OR update it to the full title string. Recommend removing the override for consistency with other pages.
+The CTAs use `UpsellStrip` (the established design-token component) instead of raw `<div className="rounded-lg border …">` blocks with `bg-primary` / `text-muted-foreground`. Those Tailwind tokens are not part of this project's palette — the Tools page uses `sienna`, `clay`, `paper`, `ink`, etc. Inserting the literal snippet from the brief would render as an off-brand white-on-grey card that looks broken next to the rest of the page.
 
-3. **`src/pages/Tools.tsx` (line 26)** — optionally change "job description builder" → "JD builder" to match the spec verbatim.
+### Recommended action
 
-No other pages need changes — all other og:titles and descriptions already match the spec.
+**No code changes.** Both CTAs are live, correctly gated, point to `https://calendly.com/peoplestudio`, and match the page's visual language.
+
+If you'd prefer the literal raw-div styling from the brief instead of the branded `UpsellStrip`, say the word and I'll swap them — but I'd recommend against it for visual consistency.
+
+### Files to verify in preview
+
+- `/tools` → HR Diagnostic tab → complete the questionnaire → CTA appears below the recommendation card.
+- `/tools` → Emiratisation Calculator tab → enter inputs → click Calculate → CTA appears below the breakdown.
