@@ -5,6 +5,7 @@ import MetricsTicker from "@/components/cv/MetricsTicker";
 import ExperienceMap from "@/components/cv/ExperienceMap";
 import Timeline from "@/components/cv/Timeline";
 import SkillBars from "@/components/cv/SkillBars";
+import SEO from "@/components/seo/SEO";
 import { ACHIEVEMENTS, EDUCATION, LANGUAGES, PHOTO_URL, PROFILE_STATS, PUBLICATIONS } from "@/data/profile";
 
 const PRINT_CSS = `
@@ -31,6 +32,11 @@ export default function Profile() {
 
   return (
     <div className="bg-cream text-ink font-dm min-h-screen">
+      <SEO
+        title="Signature CV Sample · People.Studio Career Studio"
+        description="See a live example of a People.Studio Signature CV — a hosted personal brand page for senior professionals across the UAE and GCC."
+        path="/profile"
+      />
       {/* Sample profile notice */}
       <div className="no-print sticky top-0 z-40 border-b border-ink/10 bg-blush text-ink">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-2.5 md:px-10">

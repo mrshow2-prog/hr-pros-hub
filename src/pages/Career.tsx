@@ -7,6 +7,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import PsLogo from "@/components/ui/PsLogo";
 import WebCvShowcase from "@/components/career/WebCvShowcase";
+import SEO from "@/components/seo/SEO";
 import { BOOKING_HREF, COMPANY_EMAIL } from "@/lib/contact";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -303,6 +304,11 @@ export default function Career() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-career-bg font-dm text-paper">
+      <SEO
+        title="Career Studio UAE · CV, LinkedIn & Career Coaching — People.Studio"
+        description="Career coaching, CV design, LinkedIn optimisation, and personal brand websites for professionals across the UAE and GCC. Written by an HR director who has made thousands of hiring decisions."
+        path="/career"
+      />
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-career-border bg-career-bg/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
           <div className="flex items-center gap-3">

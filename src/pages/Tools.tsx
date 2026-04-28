@@ -5,6 +5,7 @@ import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
 import PolicyGenerator from "@/components/tools/PolicyGenerator";
 import JDBuilder from "@/components/tools/JDBuilder";
 import BookCallBanner from "@/components/ui/BookCallBanner";
+import SEO from "@/components/seo/SEO";
 
 const tabs = [
   { id: "diagnostic", label: "HR Diagnostic" },
@@ -20,6 +21,11 @@ export default function Tools() {
 
   return (
     <div className="min-h-screen bg-paper font-dm text-ink">
+      <SEO
+        title="Free HR Tools UAE · Diagnostic, Emiratisation Calculator & Policy Generator — People.Studio"
+        description="Free UAE HR tools — no signup required. HR health diagnostic, Emiratisation fine calculator, AI policy generator, and job description builder. Built for UAE and GCC businesses."
+        path="/tools"
+      />
       <ToolsNav />
 
       <main>
