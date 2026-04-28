@@ -1,48 +1,64 @@
-# Career services — interactive cards + contact handoff
+# Interactive "Who this is for" cards → matcher hand-off
 
-Make the "What we can build together" grid feel alive on hover, show clearer grid separation, and route clicks straight to the contact form at the bottom of the page with the chosen service prefilled.
+Enhance the 6 audience cards on the Career page with hover/tap reveals, and wire each card's CTA to auto-open the "Find my starting point" matcher with Q1 pre-selected.
 
-## Scope
+## What changes (visible)
 
-Only edits the services grid section in `src/pages/Career.tsx` (around line 326) and the contact form's textarea binding in the same file. No changes to the matcher, ATS tool, contact submit logic, copy elsewhere, nav, or footer.
+- Cards stay identical at rest (same icon, title, copy, tag).
+- On hover (desktop) or tap (mobile), card lifts very slightly and a panel fades in below the tag (200ms) containing:
+  - "Sound familiar? …" line in muted tone (matches existing `text-paper/45` body)
+  - "This is for you →" inline CTA in `text-career-sky` with underline-on-hover (matches existing inline link style)
+- Mobile: tap toggles open/closed; second tap closes. Tapping the CTA itself triggers the matcher hand-off.
+- Clicking "This is for you →":
+  1. Smooth-scrolls to the matcher section
+  2. Matcher auto-advances from entry → Q1 with the mapped answer pre-selected and visible as registered
+  3. After 400ms, advances to Q2 (user answers Q2 and Q3 normally)
 
-## What changes
+Per-card mapping (Q1 index in `StartingPointMatcher.tsx`'s questions[0].options):
+- Career-driven professionals → option 0 ("Employed, but actively looking…")
+- New arrivals to the UAE → option 0
+- Professionals in transition → option 2 ("Just made redundant…")
+- UAE nationals entering private sector → option 3 ("Exploring options…")
+- Executives and senior leaders → option 0
+- HR professionals themselves → option 0
 
-**Grid visibility**
-- Keep the current `border border-career-border bg-career-border` parent with `gap-px` between cards so each card has clean dividing lines.
-- Add an outer rounded container and a subtle shadow so the whole grid reads as one structured block.
-- Force `md:grid-cols-2 lg:grid-cols-3` (already set) and ensure cards stretch to equal height (`h-full flex flex-col`).
+Reveal copy uses the exact strings from the brief.
 
-**Hover interactivity** (per card, all using existing tokens — `career-sky`, `career-blue`, `career-surface`, `paper`)
-- Lift: `transition-all duration-300 hover:-translate-y-1`
-- Background shift: `hover:bg-career-surface` (already there) plus a soft inner glow via `hover:ring-1 hover:ring-career-sky/40`
-- Category pill: on hover, underline expands (use `after:` pseudo bar that scales from 0 → 100% width).
-- Title: color shifts from `text-paper` → `text-career-sky` on hover.
-- Bullets: left dash shifts from `before:text-career-sky` to brighter on group-hover (`group-hover:before:text-blush`).
-- CTA row: change copy from "Pricing on call" to "Start this conversation", brighten on hover (`text-career-sky/70` → `group-hover:text-paper`), arrow translates further (`group-hover:translate-x-1.5 group-hover:-translate-y-0.5`).
-- Cursor: `cursor-pointer`.
-- Focus ring for keyboard users: `focus-visible:ring-2 focus-visible:ring-career-sky focus-visible:outline-none`.
+## Technical changes
 
-**Click → contact form**
-- Wrap each card as a `<button type="button">` (semantic, keyboard-accessible) instead of `<article>`. Keep the same internal markup.
-- On click: set `contact.goal` to a prefilled sentence — e.g. `I'd like to learn more about: {service name}.\n\n` (preserves existing user text by appending only if `goal` is empty; otherwise prepend a new line so we don't wipe what they typed).
-- Then smooth-scroll to `#contact` using `document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })`.
-- After scroll, focus the goal textarea so the cursor lands ready to type. Add an `id="contact-goal"` and `ref` to the textarea.
+**1. `src/components/career/StartingPointMatcher.tsx`** — add an imperative trigger.
+- Add an optional prop `trigger?: { q1Index: number; nonce: number } | null`.
+- A `useEffect` watches `trigger?.nonce`. When it changes:
+  - Set `answers` to `[q1Index, undefined, undefined]`
+  - Set `pending = q1Index` and `step = 0` (so the user sees the chip selected on Q1)
+  - After 400ms: clear `pending`, `setStep(1)` (advance to Q2)
+- Existing manual flow is unchanged.
 
-**Mobile**
-- The lift/translate effects are kept (work fine on touch via active state); add `active:bg-career-surface active:-translate-y-0.5` so tapping shows feedback.
-- Cards remain full-width single column on small screens (existing behavior).
+**2. `src/pages/Career.tsx`** — three edits:
+- Extend the `audience` array entries with `q1: number` and `reveal: string` fields (per mapping above). Keep existing fields untouched.
+- Add state: `const [matcherTrigger, setMatcherTrigger] = useState<{ q1Index: number; nonce: number } | null>(null);`
+- Add a handler:
+  ```ts
+  const handleAudienceCta = (q1Index: number) => {
+    document.getElementById("matcher")?.scrollIntoView({ behavior: "smooth" });
+    setMatcherTrigger({ q1Index, nonce: Date.now() });
+  };
+  ```
+- Replace the inline `<article>` map in the `#who` section with a new local `AudienceCard` component (defined in the same file, or inline JSX) that:
+  - Wraps the existing card markup unchanged
+  - Adds `group` class + `useState` `open` for mobile tap toggle
+  - On click of the card body: toggles `open` (mobile only via `md:hidden` logic — actually use a single state that works for both: hover via `group-hover`, tap via `open`)
+  - Renders the reveal panel with classes: `mt-5 transition-all duration-200 opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-40` plus `${open ? "opacity-100 max-h-40" : ""}` for tap-toggled state
+  - The "This is for you →" is a `<button type="button">` with `onClick` calling `handleAudienceCta(q1)` (and `e.stopPropagation()` so it doesn't also toggle the card)
+- Add `id="matcher"` to the `<StartingPointMatcher />` wrapper (or pass through). Since the matcher already renders its own `<section>`, simplest is to wrap the `<StartingPointMatcher />` placement in `<div id="matcher">` in `Career.tsx`.
+- Pass `trigger={matcherTrigger}` to `<StartingPointMatcher />`.
 
-## Technical notes
-
-- File: `src/pages/Career.tsx` only.
-- Add a `handleServiceClick(name: string)` helper near the other handlers.
-- The services array stays unchanged; `name` is the second tuple element.
-- The textarea currently has no `id`; add `id="contact-goal"` and a `useRef<HTMLTextAreaElement>` so we can focus it after scroll (wrap focus in a ~400ms `setTimeout` so it runs after smooth scroll begins).
-- No new dependencies, no design tokens added — uses `career-sky`, `career-blue`, `career-surface`, `career-border`, `paper`, `blush` already in the theme, plus existing `animate-fade-in` / Tailwind transition utilities.
+**3. Visual tokens used (no new colours)**:
+- Reveal "Sound familiar? …": `text-sm leading-6 text-paper/55`
+- CTA: `font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky underline-offset-4 hover:underline inline-flex items-center gap-1.5`
+- Card hover lift: `hover:-translate-y-0.5 transition-transform` added to existing `transition-colors` on the article
 
 ## Out of scope
 
-- The matcher block above the grid.
-- ATS review form, contact form layout/submit, edge function.
-- Any copy except the per-card CTA label.
+- No changes to section headline, subline, card copy, icons, badges, layout, services grid, or any other page element.
+- No changes to matcher visual design or recommendation logic.
