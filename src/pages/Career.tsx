@@ -15,13 +15,64 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 const marqueeItems = ["CV Design", "LinkedIn Optimisation", "Interview Coaching", "Personal Branding", "Salary Negotiation", "Career Pivot", "UAE Market Entry", "Outplacement Support", "Executive Presence"];
 
 const audience = [
-  { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching" },
-  { icon: Clock3, title: "New arrivals to the UAE", desc: "Your CV was built for another market. Your LinkedIn needs to speak to GCC recruiters and hiring managers.", badge: "UAE market entry coaching" },
-  { icon: Compass, title: "Professionals in transition", desc: "Redundancy, career pivot, senior step-up. You need a clear narrative and the confidence to own it.", badge: "Career pivot · Outplacement" },
-  { icon: UserRoundCheck, title: "UAE nationals entering private sector", desc: "Translate public-sector experience into private-sector credibility, language, and value.", badge: "Emiratisation career coaching" },
-  { icon: Target, title: "Executives and senior leaders", desc: "Personal branding and thought leadership positioning — not just a CV refresh.", badge: "Personal brand strategy" },
-  { icon: Grid2X2, title: "HR professionals themselves", desc: "You help others advance. Now you need the same sharp thinking applied to your own career.", badge: "Career coaching · Branding" },
+  { icon: TrendingUp, title: "Career-driven professionals", desc: "You're capable and you know it. But your CV lists what you did, not what you made possible.", badge: "CV · LinkedIn · Interview coaching", q1: 0, reveal: "Sound familiar? You're applying to roles you're qualified for and hearing nothing back." },
+  { icon: Clock3, title: "New arrivals to the UAE", desc: "Your CV was built for another market. Your LinkedIn needs to speak to GCC recruiters and hiring managers.", badge: "UAE market entry coaching", q1: 0, reveal: "Sound familiar? You have the experience — but the UAE market doesn't know how to read it yet." },
+  { icon: Compass, title: "Professionals in transition", desc: "Redundancy, career pivot, senior step-up. You need a clear narrative and the confidence to own it.", badge: "Career pivot · Outplacement", q1: 2, reveal: "Sound familiar? You know what you're worth. The next step is making sure the market agrees." },
+  { icon: UserRoundCheck, title: "UAE nationals entering private sector", desc: "Translate public-sector experience into private-sector credibility, language, and value.", badge: "Emiratisation career coaching", q1: 3, reveal: "Sound familiar? Your background is strong. The language of the private sector just needs unlocking." },
+  { icon: Target, title: "Executives and senior leaders", desc: "Personal branding and thought leadership positioning — not just a CV refresh.", badge: "Personal brand strategy", q1: 0, reveal: "Sound familiar? At your level, the next move isn't found on a job board — it's built." },
+  { icon: Grid2X2, title: "HR professionals themselves", desc: "You help others advance. Now you need the same sharp thinking applied to your own career.", badge: "Career coaching · Branding", q1: 0, reveal: "Sound familiar? You've built careers for others. Yours deserves the same rigour." },
 ];
+
+function AudienceCard({
+  icon: Icon,
+  title,
+  desc,
+  badge,
+  reveal,
+  onCta,
+}: {
+  icon: typeof TrendingUp;
+  title: string;
+  desc: string;
+  badge: string;
+  reveal: string;
+  onCta: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <article
+      onClick={() => setOpen((v) => !v)}
+      className="group relative cursor-pointer bg-career-surface p-7 transition-all duration-200 hover:-translate-y-0.5 hover:bg-career-deep"
+    >
+      <div className="mb-5 grid h-10 w-10 place-items-center border border-career-sky/15 bg-career-sky/10 text-career-sky">
+        <Icon size={18} />
+      </div>
+      <h3 className="mb-3 font-dm text-lg font-bold text-paper">{title}</h3>
+      <p className="mb-5 text-sm leading-7 text-paper/45">{desc}</p>
+      <span className="inline-flex border border-career-sky/20 bg-career-sky/10 px-3 py-1 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{badge}</span>
+      <div
+        className={`grid transition-all duration-200 ease-out ${
+          open ? "mt-5 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0 group-hover:mt-5 group-hover:grid-rows-[1fr] group-hover:opacity-100"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCta();
+            }}
+            className="group/cta inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky underline-offset-4 hover:underline"
+          >
+            This is for you
+            <ArrowUpRight size={14} className="transition-transform group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 const services = [
   ["Foundation", "CV design & rewrite", ["Full rewrite from scratch", "UAE/GCC market calibration", "ATS-optimised and recruiter-ready", "Up to 2 revision rounds"]],
