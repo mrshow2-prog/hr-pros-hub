@@ -62,6 +62,58 @@ export default function BusinessAbout() {
             ))}
           </div>
         </div>
+
+        <div className="mt-20 border-t border-terracotta/15 pt-12">
+          <span
+            className="font-dm font-bold text-xs uppercase block mb-8 text-terracotta"
+            style={{ letterSpacing: "0.18em" }}
+          >
+            Professional Endorsements
+          </span>
+
+          <div className="grid gap-10 md:grid-cols-2 md:gap-14">
+            {ENDORSEMENTS.map((e, i) => (
+              <figure
+                key={e.attribution}
+                className={
+                  i === 1
+                    ? "relative border-t border-terracotta/15 pt-10 md:border-t-0 md:pt-0 md:border-l md:border-terracotta/15 md:pl-14"
+                    : "relative"
+                }
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-4 -left-1 font-serif text-7xl leading-none text-terracotta/20 select-none"
+                >
+                  &ldquo;
+                </span>
+                <blockquote
+                  className="relative z-10 font-dm leading-relaxed text-moss"
+                  style={{ fontWeight: 300, fontSize: "1rem" }}
+                >
+                  {e.quote}
+                </blockquote>
+                <figcaption
+                  className="mt-5 font-dm font-bold text-[0.7rem] uppercase text-ink/55"
+                  style={{ letterSpacing: "0.14em" }}
+                >
+                  — {e.attribution}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+
+          <p className="mt-10 font-dm text-xs text-moss/70">
+            <a
+              href="https://www.linkedin.com/in/bmesiha/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline-offset-2 hover:text-terracotta hover:underline"
+            >
+              Full LinkedIn recommendations →
+            </a>
+          </p>
+        </div>
       </div>
     </section>
   );
