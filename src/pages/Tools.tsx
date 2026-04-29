@@ -47,7 +47,7 @@ export default function Tools() {
         </section>
 
         <div className="border-b border-ink/10 px-5 md:px-10">
-          <div className="mx-auto flex max-w-5xl overflow-x-auto">
+          <div className="no-scrollbar mx-auto flex max-w-5xl overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
