@@ -35,10 +35,13 @@ export default function Tools() {
               Free tools — no signup required
             </div>
             <h1 className="mb-5 font-serif text-5xl font-normal leading-[1.04] text-ink md:text-6xl">
-              Use these.<br />No strings attached.
+              Use these.
+              <br />
+              No strings attached.
             </h1>
             <p className="max-w-2xl font-dm text-base font-light leading-8 text-ink/60">
-              Four practical HR tools for UAE and GCC business owners: a full HR diagnostic, Emiratisation calculator, starter policy generator, and job description builder.
+              Four practical HR tools for UAE and GCC business owners: a full HR diagnostic, Emiratisation calculator,
+              starter policy generator, and job description builder.
             </p>
           </div>
         </section>
@@ -50,7 +53,9 @@ export default function Tools() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`mb-[-1px] flex-shrink-0 border-b-2 px-5 py-4 font-dm text-[0.72rem] font-bold uppercase tracking-wider2 transition-colors ${
-                  activeTab === tab.id ? "border-sienna text-sienna" : "border-transparent text-ink/40 hover:text-ink/75"
+                  activeTab === tab.id
+                    ? "border-sienna text-sienna"
+                    : "border-transparent text-ink/40 hover:text-ink/75"
                 }`}
               >
                 {tab.label}
@@ -68,6 +73,11 @@ export default function Tools() {
       </main>
 
       <BookCallBanner />
+      <footer className="border-t border-ink/10 px-6 py-6 text-center md:px-20">
+        <p className="font-dm text-xs text-ink/35">
+          © {new Date().getFullYear()} People.Studio · Bishoy Mesiha Advisory · Dubai, UAE
+        </p>
+      </footer>
     </div>
   );
 }

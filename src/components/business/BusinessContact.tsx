@@ -38,7 +38,7 @@ export default function BusinessContact() {
   const contacts = [
     { label: "Email", val: COMPANY_EMAIL, href: `mailto:${COMPANY_EMAIL}` },
     { label: "Phone", val: "+971 58 178 4948", href: "tel:+971581784948" },
-    { label: "LinkedIn", val: "linkedin.com/in/peoplestudio", href: "https://linkedin.com" },
+    { label: "LinkedIn", val: "linkedin.com/in/bmesiha", href: "https://www.linkedin.com/in/bmesiha/" },
     { label: "Markets", val: "UAE · KSA · Qatar · Kuwait · Bahrain", href: null as string | null },
   ];
 
@@ -55,23 +55,32 @@ export default function BusinessContact() {
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <div>
-            <span className="font-dm font-bold text-xs uppercase block mb-5 text-cream/70" style={{ letterSpacing: "0.18em" }}>
+            <span
+              className="font-dm font-bold text-xs uppercase block mb-5 text-cream/70"
+              style={{ letterSpacing: "0.18em" }}
+            >
               Contact
             </span>
-            <h2 className="font-serif font-bold mb-6 text-cream" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.02em" }}>
+            <h2
+              className="font-serif font-bold mb-6 text-cream"
+              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.02em" }}
+            >
               Let's talk about
               <br />
               your business.
             </h2>
             <p className="font-dm text-cream/80 mb-10 max-w-md leading-relaxed" style={{ fontWeight: 300 }}>
-              Free 30-minute discovery call. No obligation. We'll discuss your situation, identify the most urgent risks, and
-              tell you exactly what we'd recommend.
+              Free 30-minute discovery call. No obligation. We'll discuss your situation, identify the most urgent
+              risks, and tell you exactly what we'd recommend.
             </p>
 
             <div className="space-y-5">
               {contacts.map((c) => (
                 <div key={c.label}>
-                  <div className="font-dm font-bold text-xs uppercase mb-1 text-cream/55" style={{ letterSpacing: "0.12em" }}>
+                  <div
+                    className="font-dm font-bold text-xs uppercase mb-1 text-cream/55"
+                    style={{ letterSpacing: "0.12em" }}
+                  >
                     {c.label}
                   </div>
                   {c.href ? (
@@ -91,7 +100,10 @@ export default function BusinessContact() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {fields.map((f) => (
                   <div key={f.id}>
-                    <label className="font-dm font-bold text-xs uppercase block mb-2 text-cream/70" style={{ letterSpacing: "0.1em" }}>
+                    <label
+                      className="font-dm font-bold text-xs uppercase block mb-2 text-cream/70"
+                      style={{ letterSpacing: "0.1em" }}
+                    >
                       {f.label}
                     </label>
                     <input
@@ -113,7 +125,10 @@ export default function BusinessContact() {
                   </div>
                 ))}
                 <div>
-                  <label className="font-dm font-bold text-xs uppercase block mb-2 text-cream/70" style={{ letterSpacing: "0.1em" }}>
+                  <label
+                    className="font-dm font-bold text-xs uppercase block mb-2 text-cream/70"
+                    style={{ letterSpacing: "0.1em" }}
+                  >
                     Tell me about your situation
                   </label>
                   <textarea
@@ -149,7 +164,8 @@ export default function BusinessContact() {
                 <div>
                   <div className="font-serif font-bold text-2xl mb-3 text-cream">Message sent.</div>
                   <p className="font-dm text-cream/75" style={{ fontWeight: 300 }}>
-                    Thanks {form.name || "—"}, your enquiry is in our inbox. We'll reply to {form.email} within one business day.
+                    Thanks {form.name || "—"}, your enquiry is in our inbox. We'll reply to {form.email} within one
+                    business day.
                   </p>
                 </div>
               </div>
