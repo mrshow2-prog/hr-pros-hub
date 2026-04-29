@@ -130,7 +130,7 @@ const Index = () => {
                 </span>
               </div>
               <p className="hidden max-w-56 text-right font-serif italic leading-5 md:block">
-                For SMEs of 20–150 staff — the sweet spot.
+                For SMEs of 1 to 150 staff — the sweet spot.
               </p>
             </div>
           </div>
