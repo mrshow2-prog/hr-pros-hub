@@ -14,6 +14,14 @@ import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
+// Static profile page lives at /public/Chef-M-Khalil/index.html — bypass SPA router.
+const StaticProfileRedirect = ({ to }: { to: string }) => {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+};
+
 const queryClient = new QueryClient();
 
 const ScrollToTop = () => {
@@ -45,6 +53,8 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/career" element={<Career />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/Chef-M-Khalil" element={<StaticProfileRedirect to="/Chef-M-Khalil/index.html" />} />
+          <Route path="/Chef-M-Khalil/" element={<StaticProfileRedirect to="/Chef-M-Khalil/index.html" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
