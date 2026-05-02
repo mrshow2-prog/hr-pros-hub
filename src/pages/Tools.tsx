@@ -73,11 +73,8 @@ export default function Tools() {
       </main>
 
       <BookCallBanner />
-      <footer className="border-t border-ink/10 px-6 py-6 text-center md:px-20">
-        <p className="font-dm text-xs text-ink/35">
-          © {new Date().getFullYear()} People.Studio · Bishoy Mesiha Advisory · Dubai, UAE
-        </p>
-      </footer>
+      <SiteFooter />
+
     </div>
   );
 }
