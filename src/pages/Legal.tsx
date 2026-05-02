@@ -143,12 +143,8 @@ export default function Legal() {
         </div>
       </main>
 
-      <footer className="border-t border-ink/10 px-6 py-6 font-dm text-[0.66rem] font-medium uppercase tracking-wider2 text-ink/50 md:px-10">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">
-          <span>© {new Date().getFullYear()} People.Studio · Dubai, UAE</span>
-          <Link to="/" className="hover:text-ink">Back to home →</Link>
-        </div>
-      </footer>
+      <SiteFooter />
+
     </div>
   );
 }
