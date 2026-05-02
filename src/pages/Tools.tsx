@@ -5,6 +5,7 @@ import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
 import PolicyGenerator from "@/components/tools/PolicyGenerator";
 import JDBuilder from "@/components/tools/JDBuilder";
 import BookCallBanner from "@/components/ui/BookCallBanner";
+import SiteFooter from "@/components/ui/SiteFooter";
 import SEO from "@/components/seo/SEO";
 
 const tabs = [
@@ -73,11 +74,8 @@ export default function Tools() {
       </main>
 
       <BookCallBanner />
-      <footer className="border-t border-ink/10 px-6 py-6 text-center md:px-20">
-        <p className="font-dm text-xs text-ink/35">
-          © {new Date().getFullYear()} People.Studio · Bishoy Mesiha Advisory · Dubai, UAE
-        </p>
-      </footer>
+      <SiteFooter />
+
     </div>
   );
 }
