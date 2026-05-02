@@ -11,6 +11,7 @@ import Business from "./pages/Business";
 import Profile from "./pages/Profile";
 import Tools from "./pages/Tools";
 import Career from "./pages/Career";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
