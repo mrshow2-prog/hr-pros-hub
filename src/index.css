@@ -144,4 +144,7 @@
   .legal-prose p a {
     @apply text-sienna;
   }
+  .legal-prose strong {
+    @apply font-medium text-ink;
+  }
 }
