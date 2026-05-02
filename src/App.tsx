@@ -14,6 +14,14 @@ import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
+// Static profile page lives at /public/Chef-M-Khalil/index.html — bypass SPA router.
+const StaticProfileRedirect = ({ to }: { to: string }) => {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+};
+
 const queryClient = new QueryClient();
 
 const ScrollToTop = () => {
