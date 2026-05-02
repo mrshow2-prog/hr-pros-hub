@@ -79,41 +79,28 @@ export default function Legal() {
             title="Privacy Policy"
           >
             <p>
-              People Studio ("we", "us", "our") respects your privacy. This policy explains what
-              information we collect when you use our website, free tools, or engage us for advisory
-              services, and how we handle it.
+              <strong>Who we are:</strong> People Studio HR is a Dubai-based HR consultancy led by Bishoy Mesiha. We currently operate under the trade license of Tajmeel Events Organizing and Managing Co. L.L.C (License No. 1335626, Dubai DED). All data responsibilities belong solely to People Studio HR.
             </p>
-
-            <h3>What we collect</h3>
-            <ul>
-              <li>Contact details you provide — name, email, phone, company.</li>
-              <li>Information shared during enquiries, consultations, or tool submissions.</li>
-              <li>Basic analytics — pages visited, device type, referrer.</li>
-            </ul>
-
-            <h3>How we use it</h3>
-            <ul>
-              <li>To respond to enquiries and deliver requested services.</li>
-              <li>To send tool outputs (e.g. policies, JDs, diagnostics) you request by email.</li>
-              <li>To improve our tools and content.</li>
-            </ul>
-
-            <h3>Sharing</h3>
             <p>
-              We do not sell your data. We share information only with service providers required to
-              run this site (hosting, email delivery), bound to confidentiality. We may disclose
-              information where required by UAE law.
+              <strong>What we collect:</strong> Name, email, phone, job title, company name — submitted via contact forms or email. Usage data via analytics tools (aggregated and anonymised).
             </p>
-
-            <h3>Retention &amp; your rights</h3>
             <p>
-              We keep enquiry and engagement records for as long as needed to provide services and to
-              meet legal obligations. You may request access, correction, or deletion of your data by
-              writing to{" "}
+              <strong>How we use it:</strong> To respond to enquiries, deliver services, and improve the website. We do not sell or share your data with third parties for marketing.
+            </p>
+            <p>
+              <strong>Legal basis:</strong> Consent, contract performance, or legitimate interest — in accordance with UAE Federal Decree-Law No. 45 of 2021 on Personal Data Protection.
+            </p>
+            <p>
+              <strong>Retention:</strong> Client data is kept for a minimum of 5 years after an engagement ends. Enquiry data is kept for 12 months.
+            </p>
+            <p>
+              <strong>Your rights:</strong> Access, correct, or request deletion of your data at any time. Contact:{" "}
               <a href={`mailto:${COMPANY_EMAIL}`} className="text-sienna underline-offset-4 hover:underline">
                 {COMPANY_EMAIL}
               </a>
-              .
+            </p>
+            <p>
+              <strong>Cookies:</strong> We use analytics cookies. You can disable them via your browser without affecting your ability to contact us.
             </p>
           </LegalSection>
 
@@ -124,42 +111,19 @@ export default function Legal() {
             title="Terms of Service"
           >
             <p>
-              By accessing this website or engaging People Studio, you agree to these terms. If you do
-              not agree, please do not use the site or services.
+              This website is for informational purposes only. Nothing here constitutes legal, financial, or regulatory advice.
             </p>
-
-            <h3>Services</h3>
             <p>
-              People Studio provides independent HR advisory, career coaching, and related
-              consulting. Specific deliverables, fees, and timelines are agreed in writing for each
-              engagement.
+              <strong>Intellectual property:</strong> All content — text, tools, frameworks, and design — belongs to People Studio HR and Bishoy Mesiha. Do not reproduce or distribute without written permission.
             </p>
-
-            <h3>Use of free tools</h3>
             <p>
-              Tools provided on this site (diagnostics, calculators, generators) are offered as
-              starting points. They do not constitute legal advice and should be reviewed by a
-              qualified professional before being relied upon.
+              <strong>Tools and calculators:</strong> The Emiratisation calculator and HR diagnostic are indicative only. They do not constitute a compliance assessment. People Studio HR accepts no liability for decisions made based on tool outputs.
             </p>
-
-            <h3>Intellectual property</h3>
             <p>
-              All content, frameworks, templates, and tool outputs remain the intellectual property of
-              People Studio unless explicitly assigned in a signed agreement. You may use outputs
-              within your own organisation; redistribution or resale is not permitted.
+              <strong>Limitation of liability:</strong> To the fullest extent permitted by UAE law, People Studio HR is not liable for any loss arising from use of or reliance on this website.
             </p>
-
-            <h3>Liability</h3>
             <p>
-              To the fullest extent permitted by law, People Studio is not liable for indirect or
-              consequential losses arising from use of this website, free tools, or advisory outputs.
-              Engagement-specific liability is governed by the relevant signed agreement.
-            </p>
-
-            <h3>Governing law</h3>
-            <p>
-              These terms are governed by the laws of the United Arab Emirates and the courts of
-              Dubai have exclusive jurisdiction.
+              <strong>Governing law:</strong> Laws of the Emirate of Dubai and the UAE. Disputes subject to Dubai Courts jurisdiction.
             </p>
           </LegalSection>
 
@@ -170,37 +134,10 @@ export default function Legal() {
             title="Disclaimer"
           >
             <p>
-              Information on this website — including blog posts, tool outputs, calculators, and
-              templates — is provided for general guidance only. It is not a substitute for tailored
-              legal, regulatory, or professional advice.
+              People Studio HR provides HR advisory and consultancy services based on professional expertise and UAE and regional employment law as understood at the time of engagement. Our services are not legal advice. For legally binding matters, engage a UAE-licensed legal practitioner — we can facilitate introductions.
             </p>
-
-            <h3>UAE Labour Law &amp; Emiratisation</h3>
             <p>
-              References to UAE Labour Law, MOHRE rules, Nitaqat, or Emiratisation quotas reflect our
-              understanding at the time of writing. Regulations change. Always verify current
-              requirements with the relevant authority or a licensed advisor before acting.
-            </p>
-
-            <h3>Tool outputs</h3>
-            <p>
-              Generated policies, job descriptions, and diagnostic results are starting drafts. They
-              should be reviewed and adapted to your specific organisation, sector, and jurisdiction
-              before use.
-            </p>
-
-            <h3>External links</h3>
-            <p>
-              Where we link to third-party websites or resources, we do not endorse and are not
-              responsible for their content.
-            </p>
-
-            <p className="pt-2 text-ink/55">
-              Questions? Write to{" "}
-              <a href={`mailto:${COMPANY_EMAIL}`} className="text-sienna underline-offset-4 hover:underline">
-                {COMPANY_EMAIL}
-              </a>
-              .
+              Deliverable accuracy depends on the information provided by the client. People Studio HR is not liable for regulatory penalties arising from a client's failure to implement recommendations, changes in law after delivery, or outcomes from a client's internal implementation of our work.
             </p>
           </LegalSection>
         </div>
