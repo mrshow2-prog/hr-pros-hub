@@ -5,6 +5,7 @@ import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
 import PolicyGenerator from "@/components/tools/PolicyGenerator";
 import JDBuilder from "@/components/tools/JDBuilder";
 import BookCallBanner from "@/components/ui/BookCallBanner";
+import SiteFooter from "@/components/ui/SiteFooter";
 import SEO from "@/components/seo/SEO";
 
 const tabs = [
