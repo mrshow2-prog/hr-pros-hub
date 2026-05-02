@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PsLogo from "@/components/ui/PsLogo";
+import SiteFooter from "@/components/ui/SiteFooter";
 import SEO from "@/components/seo/SEO";
 import { COMPANY_EMAIL } from "@/lib/contact";
 
