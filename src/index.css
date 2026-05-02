@@ -1,3 +1,7 @@
+:root {
+  color-scheme: light only;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
