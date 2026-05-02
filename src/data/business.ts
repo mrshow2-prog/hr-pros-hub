@@ -99,6 +99,22 @@ export const SERVICES = [
     deliverables: ["Quota calculation for your business", "Gap analysis", "Nafis subsidy walkthrough", "90-day compliance plan", "2-day delivery"],
   },
   {
+    tag: "Compliance",
+    name: "Saudization Readiness Pack",
+    price: "AED 4,500",
+    priceNote: "flat fee",
+    desc: "Navigate Nitaqat tiers, quotas, and HRDF incentives with confidence.",
+    deliverables: ["Nitaqat band assessment", "Saudization quota & gap analysis", "HRDF subsidy walkthrough", "90-day compliance roadmap", "3-day delivery"],
+  },
+  {
+    tag: "Talent",
+    name: "Talent Mapping",
+    price: "AED 8,500–14,000",
+    priceNote: "based on scope",
+    desc: "Know who's out there before you need them — competitor and market intelligence.",
+    deliverables: ["Target company & role mapping", "Confidential candidate longlist", "Compensation benchmarks", "Availability & motivation insights", "Succession & pipeline view"],
+  },
+  {
     tag: "Foundation",
     name: "HR Foundation Pack",
     price: "AED 7,500",
