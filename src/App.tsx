@@ -53,6 +53,8 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/career" element={<Career />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/Chef-M-Khalil" element={<StaticProfileRedirect to="/Chef-M-Khalil/index.html" />} />
+          <Route path="/Chef-M-Khalil/" element={<StaticProfileRedirect to="/Chef-M-Khalil/index.html" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
