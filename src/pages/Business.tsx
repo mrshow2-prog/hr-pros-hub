@@ -9,6 +9,7 @@ import BusinessRetainers from "@/components/business/BusinessRetainers";
 import BusinessAbout from "@/components/business/BusinessAbout";
 import BusinessContact from "@/components/business/BusinessContact";
 import BookCallBanner from "@/components/ui/BookCallBanner";
+import SiteFooter from "@/components/ui/SiteFooter";
 import SEO, { PERSON_SCHEMA } from "@/components/seo/SEO";
 
 export default function Business() {
