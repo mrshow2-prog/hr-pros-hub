@@ -1,6 +1,8 @@
 // Business page data
 export const SERVICE_PILLS = [
   "Emiratisation",
+  "Saudization",
+  "Talent Mapping",
   "HR Setup",
   "Org Design",
   "Retainers",
