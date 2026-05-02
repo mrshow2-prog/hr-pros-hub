@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chef Mohamed Khalil — Culinary Leader in Luxury Hospitality</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Lato:wght@300;400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   RESET & VARIABLES
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #f5f0e8;
+  --bg-secondary:  #ede6d8;
+  --bg-surface:    #e4dbd0;
+  --bg-card:       #faf7f2;
+  --gold:          #9b7240;
+  --gold-light:    #b88d55;
+  --gold-dark:     #7a5830;
+  --terracotta:    #a86248;
+  --cream:         #2c2018;
+  --cream-muted:   #5a4a3c;
+  --text-muted:    #9a8678;
+  --border:        rgba(110,82,55,.15);
+  --border-hover:  rgba(110,82,55,.38);
+  --radius:        3px;
+  --ease:          cubic-bezier(.25,.46,.45,.94);
+  --transition:    all .4s var(--ease);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--cream);
+  font-family: 'Lato', system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+h1,h2,h3,h4,h5 {
+  font-family: 'Playfair Display', Georgia, serif;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+a { color: var(--gold); text-decoration: none; transition: var(--transition); }
+a:hover { color: var(--gold-light); }
+img { display: block; max-width: 100%; }
+button { font-family: inherit; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+section { padding: 110px 0; }
+
+.section-label {
+  display: block;
+  font-size: .72rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .8rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--cream);
+  margin-bottom: .4rem;
+}
+
+.section-divider {
+  width: 56px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--terracotta));
+  margin: 1.5rem 0 3rem;
+}
+
+/* Fade-in on scroll */
+.fade-in {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+.fade-in.visible { opacity: 1; transform: none; }
+
+/* Delay helpers */
+.delay-1 { transition-delay: .1s; }
+.delay-2 { transition-delay: .2s; }
+.delay-3 { transition-delay: .3s; }
+.delay-4 { transition-delay: .4s; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 1rem 2.5rem;
+  font-size: .8rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: var(--gold); color: #faf7f2; }
+.btn-primary:hover { background: var(--gold-light); color: #faf7f2; }
+.btn-outline { background: transparent; border: 1.5px solid var(--gold); color: var(--gold); }
+.btn-outline:hover { background: var(--gold); color: #faf7f2; }
+/* Outline buttons inside hero stay light */
+#hero .btn-outline { border-color: rgba(240,228,204,.7); color: #f0e4cc; }
+#hero .btn-outline:hover { background: var(--gold); border-color: var(--gold); color: #faf7f2; }
+
+/* ============================================================
+   HERO LIGHT-THEME OVERRIDES (hero has dark photo bg, rest is light)
+============================================================ */
+#hero .hero-name         { color: #f0e4cc; }
+#hero .hero-tagline      { color: #c8b898; }
+#hero .hero-stat-lbl     { color: #c8b898; }
+#hero .hero-stat-num     { color: #d4a85a; }
+#hero .hero-stat-num sup { color: #c47a5a; }
+#hero .scroll-hint span  { color: #c8b898; }
+.hero-eyebrow            { color: #d4a85a !important; }
+
+#navbar:not(.scrolled) .nav-logo    { color: #f0e4cc; }
+#navbar:not(.scrolled) .nav-links a { color: #c8b898; }
+#navbar:not(.scrolled) .nav-links a:hover { color: #d4a85a; }
+#navbar:not(.scrolled) .hamburger span { background: #f0e4cc; }
+#navbar:not(.scrolled) .nav-cta {
+  background: var(--gold) !important;
+  color: #f5f0e8 !important;
+}
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+#navbar {
+  position: fixed;
+  top: 0; width: 100%;
+  z-index: 900;
+  padding: 1.6rem 0;
+  transition: background .4s ease, padding .4s ease, border-color .4s ease;
+  border-bottom: 1px solid transparent;
+}
+#navbar.scrolled {
+  background: rgba(245,240,232,.97);
+  backdrop-filter: blur(12px);
+  padding: 1rem 0;
+  border-color: var(--border);
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--cream);
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.nav-logo em { color: var(--gold); font-style: italic; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  font-size: .75rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+  font-weight: 400;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-cta {
+  background: var(--gold) !important;
+  color: var(--bg-primary) !important;
+  padding: .55rem 1.4rem;
+  font-weight: 700 !important;
+}
+.nav-cta:hover { background: var(--gold-light) !important; }
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--cream);
+  transition: var(--transition);
+}
+
+/* ============================================================
+   HERO
+============================================================ */
+#hero {
+  position: relative;
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 0;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-color: #2a1f16;
+  background-image: url('photos/7.png');
+  background-size: cover;
+  background-position: center top;
+  transform: scale(1.08);
+  transition: transform .15s linear;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    rgba(10,8,6,.92) 0%,
+    rgba(20,15,10,.78) 55%,
+    rgba(10,8,6,.55) 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  padding-top: 80px;
+}
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: .72rem;
+  letter-spacing: .4em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.6rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.hero-name {
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  color: var(--cream);
+  line-height: .95;
+  margin-bottom: 1rem;
+  font-weight: 900;
+}
+.hero-name em { color: var(--gold); font-style: italic; }
+
+.hero-tagline {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  color: var(--cream-muted);
+  font-weight: 400;
+  letter-spacing: .04em;
+  margin-bottom: 2.8rem;
+}
+
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.hero-stats-row {
+  display: flex;
+  gap: 3.5rem;
+  margin-top: 4rem;
+}
+.hero-stat { }
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  color: var(--gold);
+  font-weight: 700;
+  line-height: 1;
+}
+.hero-stat-num sup { font-size: 1.4rem; color: var(--terracotta); }
+.hero-stat-lbl {
+  font-size: .68rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+  margin-top: .35rem;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+}
+.scroll-hint span {
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+}
+.scroll-line {
+  width: 1px;
+  height: 55px;
+  background: linear-gradient(to bottom, var(--gold) 0%, transparent 100%);
+  animation: scrollPulse 2.2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%,100% { opacity:1; transform: scaleY(1); }
+  50% { opacity:.25; transform: scaleY(.6) translateY(8px); }
+}
+
+/* ============================================================
+   ABOUT
+============================================================ */
+#about { background: var(--bg-secondary); }
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 6rem;
+  align-items: start;
+}
+
+.about-image-wrap { position: relative; }
+.about-img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  object-position: top;
+  filter: sepia(10%) brightness(.95) contrast(1.05);
+}
+.about-img-frame {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -1.5rem;
+  width: 180px;
+  height: 180px;
+  border: 2px solid var(--gold);
+  pointer-events: none;
+  z-index: -1;
+}
+.about-quote {
+  position: absolute;
+  bottom: 2.5rem;
+  left: -1.8rem;
+  background: #2c2018;
+  border-left: 3px solid var(--gold);
+  padding: 1.3rem 1.6rem;
+  max-width: 270px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: .95rem;
+  color: #f0e4cc;
+  line-height: 1.6;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+
+.about-text p {
+  color: var(--cream-muted);
+  font-size: 1.02rem;
+  margin-bottom: 1.5rem;
+}
+.about-highlights {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+.highlight {
+  border-top: 1px solid var(--border);
+  padding-top: .9rem;
+}
+.highlight-lbl {
+  font-size: .68rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+.highlight-val { font-size: .95rem; color: var(--cream); }
+
+/* ============================================================
+   STATS STRIP
+============================================================ */
+.stats-strip {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4.5rem 0;
+}
+.stats-strip .container {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+}
+.stat-item {
+  text-align: center;
+  padding: 1.5rem;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-num span { font-size: 2rem; color: var(--terracotta); }
+.stat-lbl {
+  font-size: .7rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+  margin-top: .5rem;
+}
+
+/* ============================================================
+   CUISINE SPECIALTIES
+============================================================ */
+#specialties { background: var(--bg-primary); }
+.specialties-grid {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 1.2rem;
+}
+.specialty-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+.specialty-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--terracotta));
+  transform: scaleX(0);
+  transition: transform .4s var(--ease);
+  transform-origin: left;
+}
+.specialty-card:hover {
+  background: var(--bg-card);
+  transform: translateY(-5px);
+  border-color: var(--border-hover);
+}
+.specialty-card:hover::after { transform: scaleX(1); }
+.specialty-emoji { font-size: 2.4rem; margin-bottom: 1rem; }
+.specialty-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--cream);
+  margin-bottom: .5rem;
+}
+.specialty-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ============================================================
+   CAREER TIMELINE
+============================================================ */
+#experience { background: var(--bg-secondary); }
+.timeline {
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 0%, var(--gold) 10%, var(--gold) 90%, transparent 100%);
+}
+.tl-item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  margin-bottom: 2.5rem;
+  align-items: start;
+}
+.tl-dot {
+  display: flex;
+  justify-content: center;
+  padding-top: 1.4rem;
+}
+.tl-dot-inner {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--gold);
+  outline: 3px solid var(--bg-secondary);
+  box-shadow: 0 0 0 5px rgba(200,150,62,.25);
+}
+.tl-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 1.8rem 2.2rem;
+  transition: border-color .3s;
+  text-align: left;
+}
+.tl-content:hover { border-color: var(--border-hover); }
+.tl-period {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.tl-role {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.12rem;
+  color: var(--cream);
+  margin-bottom: .2rem;
+}
+.tl-hotel {
+  font-size: .82rem;
+  color: var(--terracotta);
+  margin-bottom: .9rem;
+}
+.tl-desc {
+  font-size: .83rem;
+  color: var(--cream-muted);
+  line-height: 1.72;
+}
+.tl-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin-top: 1rem;
+  justify-content: flex-start;
+}
+.tag {
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: rgba(200,150,62,.08);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  padding: .2rem .6rem;
+}
+
+/* ============================================================
+   SIGNATURE DISHES GALLERY
+============================================================ */
+#gallery { background: var(--bg-primary); }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: .8rem;
+}
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 1;
+  background: var(--bg-surface);
+}
+.gallery-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .7s var(--ease);
+}
+.gallery-item:hover img { transform: scale(1.1); }
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,8,6,.9) 0%, rgba(10,8,6,.1) 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity .4s;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.2rem;
+}
+.gallery-item:hover .gallery-overlay { opacity: 1; }
+.gallery-dish-name {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: .9rem;
+  color: var(--cream);
+  line-height: 1.3;
+}
+.gallery-plus {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  width: 46px; height: 46px;
+  border: 2px solid rgba(255,255,255,.8);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 1.4rem;
+  transition: transform .35s var(--ease);
+  pointer-events: none;
+}
+.gallery-item:hover .gallery-plus { transform: translate(-50%,-50%) scale(1); }
+
+/* ============================================================
+   CHEF PHOTOS
+============================================================ */
+#chef-photos { background: var(--bg-secondary); }
+.photos-masonry {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  grid-auto-rows: 220px;
+  gap: .6rem;
+}
+.photo-item {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-surface);
+}
+.photo-item.tall { grid-row: span 2; }
+.photo-item.wide { grid-column: span 2; }
+.photo-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform .65s var(--ease);
+}
+.photo-item:hover img { transform: scale(1.07); }
+.photo-overlay {
+  position: absolute; inset: 0;
+  background: rgba(10,8,6,.4);
+  opacity: 0;
+  transition: opacity .35s;
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-item:hover .photo-overlay { opacity: 1; }
+.photo-expand {
+  width: 50px; height: 50px;
+  border: 2px solid rgba(255,255,255,.85);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+/* ============================================================
+   AWARDS
+============================================================ */
+#awards { background: var(--bg-primary); }
+.awards-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.4rem; }
+.award-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.award-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--terracotta));
+  transform: scaleX(0);
+  transition: transform .4s var(--ease);
+  transform-origin: left;
+}
+.award-card:hover {
+  background: var(--bg-card);
+  transform: translateY(-4px);
+  border-color: var(--border-hover);
+}
+.award-card:hover::before { transform: scaleX(1); }
+.award-card.guinness {
+  grid-column: span 3;
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(200,150,62,.08) 100%);
+  border-color: rgba(200,150,62,.4);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  text-align: left;
+  gap: 2.5rem;
+  align-items: center;
+  padding: 3rem;
+}
+.award-card.guinness::before { transform: scaleX(1); }
+.award-icon { font-size: 3.2rem; margin-bottom: .9rem; }
+.award-card.guinness .award-icon { font-size: 5rem; margin: 0; }
+.award-year {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.award-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--cream);
+  margin-bottom: .6rem;
+  line-height: 1.3;
+}
+.award-card.guinness .award-title { font-size: 1.6rem; }
+.award-desc { font-size: .82rem; color: var(--cream-muted); line-height: 1.65; }
+
+/* ============================================================
+   CERTIFICATIONS DOCUMENTS
+============================================================ */
+#certifications { background: var(--bg-secondary); }
+.cert-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.4rem; }
+.cert-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.cert-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-hover);
+}
+.cert-thumb {
+  aspect-ratio: 3/4;
+  background: var(--bg-card);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative;
+  gap: .5rem;
+  overflow: hidden;
+}
+.cert-thumb-icon { font-size: 3.5rem; opacity: .55; color: var(--gold); }
+.cert-thumb-label { font-size: .72rem; color: var(--cream-muted); text-align: center; padding: 0 1rem; }
+.cert-thumb-hover {
+  position: absolute; inset: 0;
+  background: rgba(10,8,6,.6);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity .35s;
+}
+.cert-item:hover .cert-thumb-hover { opacity: 1; }
+.cert-expand-btn {
+  width: 48px; height: 48px;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 1.3rem;
+}
+.cert-footer {
+  padding: .9rem 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.cert-name { font-size: .82rem; color: var(--cream); }
+.cert-badge {
+  display: inline-block;
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(200,150,62,.1);
+  border: 1px solid var(--border);
+  padding: .15rem .5rem;
+  margin-top: .3rem;
+}
+
+/* ============================================================
+   SKILLS
+============================================================ */
+#skills { background: var(--bg-primary); }
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4rem; }
+.skills-group h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  color: var(--cream);
+  margin-bottom: 1.6rem;
+  padding-bottom: .7rem;
+  border-bottom: 1px solid var(--border);
+}
+.bar-item { margin-bottom: 1.25rem; }
+.bar-label { font-size: .78rem; color: var(--cream-muted); margin-bottom: .4rem; }
+.bar-track {
+  height: 3px;
+  background: var(--bg-surface);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--terracotta));
+  width: 0;
+  transition: width 1.3s var(--ease) .15s;
+  border-radius: 2px;
+}
+.soft-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+.soft-tag {
+  font-size: .73rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--cream-muted);
+  padding: .35rem .75rem;
+  letter-spacing: .03em;
+}
+
+/* ============================================================
+   EDUCATION
+============================================================ */
+#education { background: var(--bg-secondary); }
+.edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; }
+.edu-group h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--cream);
+  margin-bottom: 2rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.edu-item {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.6rem;
+  padding-bottom: 1.6rem;
+  border-bottom: 1px solid rgba(200,150,62,.08);
+}
+.edu-item:last-child { border-bottom: none; }
+.edu-year {
+  font-size: .72rem;
+  letter-spacing: .12em;
+  color: var(--gold);
+  min-width: 48px;
+  padding-top: .15rem;
+  flex-shrink: 0;
+}
+.edu-degree { font-size: .95rem; color: var(--cream); margin-bottom: .2rem; }
+.edu-school { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+
+.cert-list-row {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: .7rem 0;
+  border-bottom: 1px solid rgba(200,150,62,.08);
+}
+.cert-list-row:last-child { border-bottom: none; }
+.cert-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.cert-row-name { font-size: .88rem; color: var(--cream-muted); flex: 1; }
+.cert-row-year { font-size: .72rem; color: var(--gold); white-space: nowrap; }
+
+/* ============================================================
+   CONTACT
+============================================================ */
+#contact { background: var(--bg-primary); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 6rem; }
+.contact-info h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  color: var(--cream);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+.contact-info p { color: var(--cream-muted); font-size: .95rem; margin-bottom: 2.5rem; }
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 1.3rem;
+}
+.contact-icon-box {
+  width: 44px; height: 44px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.contact-lbl {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.contact-val { font-size: .95rem; color: var(--cream); }
+
+.contact-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.3rem;
+}
+.fgroup { display: flex; flex-direction: column; gap: .4rem; }
+.fgroup.full { grid-column: span 2; }
+.fgroup label {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.fgroup input,
+.fgroup select,
+.fgroup textarea {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  padding: .9rem 1.1rem;
+  font-size: .9rem;
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  outline: none;
+  transition: border-color .3s;
+}
+.fgroup input::placeholder, .fgroup textarea::placeholder { color: var(--text-muted); }
+.fgroup input:focus, .fgroup textarea:focus { border-color: var(--gold); }
+.fgroup select { appearance: none; cursor: pointer; }
+.fgroup select option { background: var(--bg-surface); }
+.fgroup textarea { resize: vertical; min-height: 130px; }
+.form-submit { grid-column: span 2; }
+.form-submit .btn { width: 100%; justify-content: center; }
+
+/* ============================================================
+   FOOTER
+============================================================ */
+footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  padding: 3.5rem 0;
+  text-align: center;
+}
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--cream);
+}
+.footer-logo em { color: var(--gold); font-style: italic; }
+.footer-rule { width: 40px; height: 1px; background: var(--gold); margin: 1.2rem auto; }
+.footer-info { font-size: .78rem; color: var(--text-muted); letter-spacing: .08em; line-height: 1.8; }
+
+/* ============================================================
+   LIGHTBOX
+============================================================ */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,4,3,.97);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.lightbox.active { opacity: 1; pointer-events: all; }
+.lb-close {
+  position: fixed;
+  top: 1.5rem; right: 1.8rem;
+  width: 48px; height: 48px;
+  background: rgba(44,32,24,.85);
+  border: 1px solid rgba(200,150,62,.3);
+  color: #f0e4cc;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  z-index: 10001;
+}
+.lb-close:hover { background: var(--gold); color: #faf7f2; }
+.lb-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px; height: 52px;
+  background: rgba(44,32,24,.85);
+  border: 1px solid rgba(200,150,62,.3);
+  color: #f0e4cc;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  z-index: 10001;
+}
+.lb-nav:hover { background: var(--gold); color: #faf7f2; }
+.lb-prev { left: 1.2rem; }
+.lb-next { right: 1.2rem; }
+.lb-content {
+  position: relative;
+  max-width: 92vw;
+  max-height: 88vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-img {
+  max-width: 90vw;
+  max-height: 86vh;
+  object-fit: contain;
+  box-shadow: 0 20px 80px rgba(0,0,0,.7);
+}
+.lb-iframe {
+  width: min(92vw, 920px);
+  height: 88vh;
+  border: none;
+  background: #fff;
+}
+.lb-caption {
+  position: fixed;
+  bottom: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #c8b898;
+  text-align: center;
+  z-index: 10001;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.lb-counter {
+  position: fixed;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: .65rem;
+  letter-spacing: .25em;
+  color: #9a8678;
+  z-index: 10001;
+  pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 1100px) {
+  .specialties-grid { grid-template-columns: repeat(3,1fr); }
+  .gallery-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .about-image-wrap { max-width: 420px; margin: 0 auto; }
+  .stats-strip .container { grid-template-columns: repeat(2,1fr); }
+  .stat-item:nth-child(2) { border-right: none; }
+  .awards-grid { grid-template-columns: 1fr 1fr; }
+  .award-card.guinness { grid-column: span 2; grid-template-columns: 1fr; text-align: center; }
+  .cert-grid { grid-template-columns: repeat(3,1fr); }
+  .skills-grid { grid-template-columns: 1fr 1fr; }
+  .edu-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .contact-grid { grid-template-columns: 1fr; gap: 4rem; }
+}
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-card);
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    z-index: 850;
+    padding: 2rem;
+  }
+  .nav-links.open a { font-size: 1.3rem; letter-spacing: .1em; }
+  section { padding: 70px 0; }
+  .hero-stats-row { gap: 2rem; flex-wrap: wrap; }
+  .timeline::before { left: 18px; }
+  .tl-item { grid-template-columns: 40px 1fr; }
+  .tl-content { padding: 1.2rem 1.4rem; }
+  .gallery-grid { grid-template-columns: repeat(2,1fr); }
+  .photos-masonry { grid-template-columns: repeat(2,1fr); grid-auto-rows: 180px; }
+  .photo-item.wide { grid-column: span 2; }
+  .photo-item.tall { grid-row: span 1; }
+  .awards-grid { grid-template-columns: 1fr; }
+  .award-card.guinness { grid-column: span 1; }
+  .cert-grid { grid-template-columns: repeat(2,1fr); }
+  .skills-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .specialties-grid { grid-template-columns: repeat(2,1fr); }
+  .contact-form { grid-template-columns: 1fr; }
+  .fgroup.full { grid-column: span 1; }
+  .form-submit { grid-column: span 1; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION
+============================================================ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo">Chef <em>M. Khalil</em></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#awards">Awards</a></li>
+      <li><a href="#certifications">Certificates</a></li>
+      <li><a href="#contact" class="nav-cta">Book / Hire</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<section id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow fade-in">Senior Chef De Cuisine &nbsp;·&nbsp; Dubai, UAE</div>
+    <h1 class="hero-name fade-in delay-1">Mohamed<br><em>Khalil</em></h1>
+    <p class="hero-tagline fade-in delay-2">Culinary Leader in Luxury Hospitality</p>
+    <div class="hero-actions fade-in delay-3">
+      <a href="#contact" class="btn btn-primary">Book a Consultation</a>
+      <a href="#gallery" class="btn btn-outline">View My Work</a>
+      <a href="Chef Mohamed Khalil CV.pdf" download class="btn btn-outline">⬇ Download CV</a>
+    </div>
+    <div class="hero-stats-row fade-in delay-4">
+      <div class="hero-stat">
+        <div class="hero-stat-num">19<sup>+</sup></div>
+        <div class="hero-stat-lbl">Years Experience</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">5<sup>★</sup></div>
+        <div class="hero-stat-lbl">Luxury Hotels</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-lbl">Countries</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">7<sup>+</sup></div>
+        <div class="hero-stat-lbl">Awards &amp; Medals</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Explore</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ABOUT
+============================================================ -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-image-wrap fade-in">
+        <img src="photos/13.png" alt="Chef Mohamed Khalil" class="about-img">
+        <div class="about-img-frame"></div>
+        <div class="about-quote">
+          "Cuisine is the art of turning simple ingredients into extraordinary moments."
+        </div>
+      </div>
+      <div class="fade-in delay-2">
+        <span class="section-label">The Chef</span>
+        <h2 class="section-title">A Culinary Vision Built on 19 Years of Excellence</h2>
+        <div class="section-divider"></div>
+        <p>Senior Chef De Cuisine whose career has been forged across the finest 5-star resorts in the UAE, Oman, and Egypt. From the grand kitchens of Atlantis The Palm and Four Seasons to leading the pre-opening of Anantara World Islands Dubai, Chef Khalil brings a rare blend of technical mastery and visionary leadership.</p>
+        <p>Specializing in multi-cuisine execution — Arabic, Asian, Mediterranean, Steakhouse, and International — he is equally at home designing an intimate tasting menu as orchestrating a grand VIP banquet for hundreds of guests. Every plate is a statement of precision, seasonality, and artistry.</p>
+        <p>A builder of kitchens and people alike: he has reduced food costs by up to 20%, earned TripAdvisor's top restaurant recognition in Oman, won multiple Salon Culinaire medals, and led a team to a Guinness World Record achievement.</p>
+        <div class="about-highlights">
+          <div class="highlight">
+            <div class="highlight-lbl">Current Role</div>
+            <div class="highlight-val">Senior Chef De Cuisine</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-lbl">Location</div>
+            <div class="highlight-val">Dubai, UAE</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-lbl">Cuisine Mastery</div>
+            <div class="highlight-val">Arabic · Asian · Mediterranean · International</div>
+          </div>
+          <div class="highlight">
+            <div class="highlight-lbl">Languages</div>
+            <div class="highlight-val">Arabic (Native) · English (Fluent)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="container">
+    <div class="stat-item fade-in">
+      <div class="stat-num">19<span>+</span></div>
+      <div class="stat-lbl">Years of Excellence</div>
+    </div>
+    <div class="stat-item fade-in delay-1">
+      <div class="stat-num">6</div>
+      <div class="stat-lbl">F&amp;B Outlets Managed</div>
+    </div>
+    <div class="stat-item fade-in delay-2">
+      <div class="stat-num">20<span>%</span></div>
+      <div class="stat-lbl">Food Cost Reduction</div>
+    </div>
+    <div class="stat-item fade-in delay-3">
+      <div class="stat-num">7<span>+</span></div>
+      <div class="stat-lbl">Awards &amp; Medals</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CUISINE SPECIALTIES
+============================================================ -->
+<section id="specialties">
+  <div class="container">
+    <span class="section-label fade-in">Culinary Expertise</span>
+    <h2 class="section-title fade-in">Mastery Across Five Cuisines</h2>
+    <div class="section-divider"></div>
+    <div class="specialties-grid">
+      <div class="specialty-card fade-in">
+        <div class="specialty-emoji">🫙</div>
+        <div class="specialty-name">Arabic Cuisine</div>
+        <div class="specialty-desc">Authentic Levantine and Gulf traditions — mezze, slow-braised meats, and fragrant rice dishes elevated with a contemporary sensibility.</div>
+      </div>
+      <div class="specialty-card fade-in delay-1">
+        <div class="specialty-emoji">🍜</div>
+        <div class="specialty-name">Asian Cuisine</div>
+        <div class="specialty-desc">From Japanese precision and wok mastery to the bold aromatics of Southeast Asia — a deep and versatile Asian repertoire.</div>
+      </div>
+      <div class="specialty-card fade-in delay-2">
+        <div class="specialty-emoji">🫒</div>
+        <div class="specialty-name">Mediterranean</div>
+        <div class="specialty-desc">Sun-drenched flavours of Italy, Greece, and Spain — hand-made pastas, wood-fired meats, and the finest fresh seafood.</div>
+      </div>
+      <div class="specialty-card fade-in delay-3">
+        <div class="specialty-emoji">🥩</div>
+        <div class="specialty-name">Steakhouse</div>
+        <div class="specialty-desc">Premium dry-aged cuts and precise cookery — a What's On Award–winning Best Steakhouse concept built on bold flavours and flawless execution.</div>
+      </div>
+      <div class="specialty-card fade-in delay-4">
+        <div class="specialty-emoji">🌍</div>
+        <div class="specialty-name">International</div>
+        <div class="specialty-desc">Cross-cultural menus crafted for luxury resort guests — creative, balanced, and designed to surprise and delight from first course to last.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CAREER TIMELINE
+============================================================ -->
+<section id="experience">
+  <div class="container">
+    <span class="section-label fade-in">Career Journey</span>
+    <h2 class="section-title fade-in">19 Years of Culinary Leadership</h2>
+    <div class="section-divider"></div>
+    <div class="timeline">
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Sep 2021 — Apr 2026</div>
+          <div class="tl-role">Senior Chef De Cuisine</div>
+          <div class="tl-hotel">Anantara World Islands Resort · Dubai, UAE</div>
+          <div class="tl-desc">Spearheaded end-to-end culinary pre-opening operations, architecting the full kitchen infrastructure from scratch — comprehensive SOPs, recipe manuals, staffing structures, supplier networks, and procurement workflows. Directed all kitchen divisions including hot and cold production, specialty outlets, pool-side service, and large-scale banqueting. Held full P&amp;L accountability for food cost budgets, achieving sustained optimization through precision portioning, vendor negotiations, and waste reduction initiatives. Cultivated a high-performing brigade through structured mentorship programs and clear performance frameworks. Served as strategic culinary partner to the Executive Sous Chef and General Manager in shaping the resort's dining identity and guest experience. Maintained exemplary HACCP and Dubai Municipality compliance records across all audit cycles.</div>
+          <div class="tl-tags">
+            <span class="tag">Pre-Opening Leadership</span>
+            <span class="tag">P&amp;L Accountability</span>
+            <span class="tag">SOP Development</span>
+            <span class="tag">Banquet &amp; Events</span>
+            <span class="tag">HACCP Compliance</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Jan 2021 — Aug 2021</div>
+          <div class="tl-role">Chef De Cuisine</div>
+          <div class="tl-hotel">Anantara Palm Resort · Dubai, UAE</div>
+          <div class="tl-desc">Assumed full operational command across 5 F&amp;B outlets within a 300-room luxury resort with private villas and residences. Led a brigade of 8 chefs, engineering dynamic seasonal menus spanning Arabic, Asian, Mediterranean, and International cuisines. Delivered high-profile VIP banquets in close collaboration with Events, F&amp;B, and Operations teams. Maintained rigorous HACCP compliance and introduced daily culinary briefings and tasting sessions to uphold quality standards and inspire culinary creativity across the team.</div>
+          <div class="tl-tags">
+            <span class="tag">5 Outlets</span>
+            <span class="tag">Menu Engineering</span>
+            <span class="tag">VIP Banqueting</span>
+            <span class="tag">HACCP Compliance</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Mar 2018 — Dec 2020</div>
+          <div class="tl-role">Chef De Cuisine</div>
+          <div class="tl-hotel">Anantara Al Baleed Resort · Salalah, Oman</div>
+          <div class="tl-desc">Delivered comprehensive culinary leadership across 6 F&amp;B outlets in a 136-room beachfront luxury resort. Commanded a team of 10 chefs across fine dining, casual, pool-side, and banqueting venues. Designed seasonal menus that showcased Oriental, Mediterranean, Steakhouse, and International cuisines, championing local sourcing and a sustainability program incorporating waste segregation and KPI tracking. Restaurant elevated to TripAdvisor's top-rated dining destination in Oman (2018). Recognised as Best Job Coach at Al Baleed Resort (2018). Delivered consistent excellence in MICE and VIP banqueting with exemplary audit results.</div>
+          <div class="tl-tags">
+            <span class="tag">TripAdvisor Top-Rated</span>
+            <span class="tag">6 Outlets</span>
+            <span class="tag">Fine Dining</span>
+            <span class="tag">Sustainability</span>
+            <span class="tag">Best Job Coach Award</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Feb 2016 — Mar 2018</div>
+          <div class="tl-role">Junior Sous Chef</div>
+          <div class="tl-hotel">Anantara Palm Resort · Dubai, UAE</div>
+          <div class="tl-desc">Rose through accelerated promotions from Demi Chef de Partie to Junior Sous Chef, demonstrating consistent leadership potential and culinary excellence. Served as the lead culinary trainer for incoming hires, building structured onboarding programs that reduced ramp-up time and elevated brigade standards. Assisted in kitchen budget management, vendor relationship oversight, and team-wide quality control implementation. Earned Silver and Bronze Medals at Salon Culinaire Dubai 2016. Core team member in achieving the Guinness World Record for the World's Largest Mango Sticky Rice.</div>
+          <div class="tl-tags">
+            <span class="tag">Salon Culinaire 🥈🥉</span>
+            <span class="tag">Guinness World Record</span>
+            <span class="tag">Culinary Training</span>
+            <span class="tag">Brigade Leadership</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Mar 2015 — Feb 2016</div>
+          <div class="tl-role">Chef De Partie</div>
+          <div class="tl-hotel">Anantara Palm Resort · Dubai, UAE</div>
+          <div class="tl-desc">Took full ownership of a dedicated kitchen section, supervising and mentoring Demi Chefs and Commis to ensure consistent output and skills development. Implemented HACCP protocols, managed inventory and portion control, and collaborated closely with Sous and Executive Chefs on menu execution and seasonal specials. Won 2 Bronze Medals at Salon Culinaire Dubai 2015. Contributing team member in securing the What's On Award for Best Steakhouse in Dubai (2016).</div>
+          <div class="tl-tags">
+            <span class="tag">Best Steakhouse Award</span>
+            <span class="tag">Salon Culinaire 🥉🥉</span>
+            <span class="tag">Section Management</span>
+            <span class="tag">Mentorship</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Feb 2014 — Mar 2015</div>
+          <div class="tl-role">Demi Chef De Partie</div>
+          <div class="tl-hotel">Anantara Palm Resort · Dubai, UAE</div>
+          <div class="tl-desc">Supported the Chef de Partie in the daily management of a busy section, maintaining mise en place discipline, quality standards, and smooth service flow across all meal periods. Demonstrated competitive culinary skill by winning 2 Bronze Medals at Salon Culinaire Dubai 2014, marking the beginning of a decorated competition career.</div>
+          <div class="tl-tags">
+            <span class="tag">Salon Culinaire 🥉🥉</span>
+            <span class="tag">Mise en Place</span>
+            <span class="tag">Quality Standards</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">May 2012 — Jan 2014</div>
+          <div class="tl-role">1st Commis Chef</div>
+          <div class="tl-hotel">Atlantis The Palm · Dubai, UAE</div>
+          <div class="tl-desc">Built essential foundations at one of Dubai's most iconic and demanding luxury resorts — a 1,500-room property hosting some of the world's most discerning guests. Rotated across multiple outlets, supporting high-volume banquet production, themed restaurant kitchens, and live cooking stations. The scale, pace, and standards of Atlantis instilled the operational discipline and culinary rigour that would define the next decade of a distinguished career.</div>
+          <div class="tl-tags">
+            <span class="tag">1,500-Room Resort</span>
+            <span class="tag">High-Volume Production</span>
+            <span class="tag">Live Cooking</span>
+            <span class="tag">Multi-Outlet Rotation</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-in">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-content">
+          <div class="tl-period">Jan 2009 — Apr 2012</div>
+          <div class="tl-role">Commis Chef</div>
+          <div class="tl-hotel">Four Seasons First Residence, Cairo &amp; Ole Café Español, Alexandria</div>
+          <div class="tl-desc">Career foundations forged across two culturally and technically distinct luxury environments. At Four Seasons First Residence Cairo, immersed in the meticulous service standards, classical French techniques, and impeccable presentation expectations of one of Africa's most prestigious hotel properties. Subsequently at Ole Café Español, developed a deep fluency in authentic Mediterranean and Spanish cuisine — from charcuterie and tapas to paella and fresh seafood preparations. These formative years established the discipline, palate, and global culinary perspective that underpin every role since.</div>
+          <div class="tl-tags">
+            <span class="tag">Four Seasons</span>
+            <span class="tag">Mediterranean Cuisine</span>
+            <span class="tag">Spanish Cuisine</span>
+            <span class="tag">Classical Techniques</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /timeline -->
+  </div>
+</section>
+
+<!-- ============================================================
+     SIGNATURE DISHES GALLERY
+============================================================ -->
+<section id="gallery">
+  <div class="container">
+    <span class="section-label fade-in">Culinary Creations</span>
+    <h2 class="section-title fade-in">Signature Dishes</h2>
+    <div class="section-divider"></div>
+    <div class="gallery-grid" id="dishGrid"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHEF PHOTOS
+============================================================ -->
+<section id="chef-photos">
+  <div class="container">
+    <span class="section-label fade-in">Behind the Pass</span>
+    <h2 class="section-title fade-in">Chef in Action</h2>
+    <div class="section-divider"></div>
+    <div class="photos-masonry" id="photoGrid"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     AWARDS
+============================================================ -->
+<section id="awards">
+  <div class="container">
+    <span class="section-label fade-in">Recognition</span>
+    <h2 class="section-title fade-in">Awards &amp; Achievements</h2>
+    <div class="section-divider"></div>
+    <div class="awards-grid">
+
+      <div class="award-card guinness fade-in">
+        <div class="award-icon">🏆</div>
+        <div>
+          <div class="award-year">2016 — Dubai, UAE</div>
+          <div class="award-title">Guinness World Record</div>
+          <div class="award-desc">Led team contribution in achieving <strong>The World's Largest Mango Sticky Rice</strong>, a landmark culinary feat recognized globally by Guinness World Records. A testament to extraordinary precision, coordination, and ambition — a truly once-in-a-career achievement.</div>
+        </div>
+      </div>
+
+      <div class="award-card fade-in">
+        <div class="award-icon">🎖️</div>
+        <div class="award-year">2024 — Dubai, UAE</div>
+        <div class="award-title">Certificate of Appreciation</div>
+        <div class="award-desc">Issued by the Office of the Deputy Chairman of Police &amp; Public Security, Dubai — in recognition of outstanding service and exemplary professional contribution.</div>
+      </div>
+
+      <div class="award-card fade-in delay-1">
+        <div class="award-icon">🥇</div>
+        <div class="award-year">2017 — New Zealand</div>
+        <div class="award-title">Highest Scoring Chef</div>
+        <div class="award-desc">Taste New Zealand Chef of the Year Competition — achieving the highest individual score among all competing chefs from across the region.</div>
+      </div>
+
+      <div class="award-card fade-in delay-2">
+        <div class="award-icon">🍽️</div>
+        <div class="award-year">2016 — Dubai, UAE</div>
+        <div class="award-title">Best Steakhouse</div>
+        <div class="award-desc">What's On Awards — Award Winner for Best Steakhouse in Dubai, recognizing exceptional quality, service, and culinary excellence under Chef Khalil's leadership.</div>
+      </div>
+
+      <div class="award-card fade-in">
+        <div class="award-icon">🥈</div>
+        <div class="award-year">2016 — Dubai, UAE</div>
+        <div class="award-title">Silver &amp; Bronze Medals</div>
+        <div class="award-desc">Salon Culinaire, Dubai — Double-medal recognition at one of the Middle East's most prestigious and competitive culinary championships.</div>
+      </div>
+
+      <div class="award-card fade-in delay-1">
+        <div class="award-icon">⭐</div>
+        <div class="award-year">2018 — Salalah, Oman</div>
+        <div class="award-title">TripAdvisor Top-Rated</div>
+        <div class="award-desc">Restaurant recognized among TripAdvisor's top-rated dining experiences in Oman for outstanding quality, service, and guest satisfaction.</div>
+      </div>
+
+      <div class="award-card fade-in delay-2">
+        <div class="award-icon">🥉</div>
+        <div class="award-year">2014 &amp; 2015 — Dubai, UAE</div>
+        <div class="award-title">4× Bronze Medals</div>
+        <div class="award-desc">Salon Culinaire, Dubai — Four bronze medals across two consecutive competition years, demonstrating sustained competitive excellence and consistent craft.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CERTIFICATIONS
+============================================================ -->
+<section id="certifications">
+  <div class="container">
+    <span class="section-label fade-in">Official Documents</span>
+    <h2 class="section-title fade-in">Certifications &amp; Documents</h2>
+    <div class="section-divider"></div>
+    <div class="cert-grid" id="certGrid"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SKILLS
+============================================================ -->
+<section id="skills">
+  <div class="container">
+    <span class="section-label fade-in">Expertise</span>
+    <h2 class="section-title fade-in">Skills &amp; Competencies</h2>
+    <div class="section-divider"></div>
+    <div class="skills-grid">
+
+      <div class="skills-group fade-in">
+        <h3>Core Competencies</h3>
+        <div class="bar-item">
+          <div class="bar-label">Culinary Leadership &amp; Vision</div>
+          <div class="bar-track"><div class="bar-fill" data-w="97"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Menu Development &amp; Design</div>
+          <div class="bar-track"><div class="bar-fill" data-w="95"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Food Cost Control &amp; Budgeting</div>
+          <div class="bar-track"><div class="bar-fill" data-w="93"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Pre-Opening Project Leadership</div>
+          <div class="bar-track"><div class="bar-fill" data-w="90"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Team Training &amp; Mentorship</div>
+          <div class="bar-track"><div class="bar-fill" data-w="94"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">VIP &amp; Banquet Event Execution</div>
+          <div class="bar-track"><div class="bar-fill" data-w="92"></div></div>
+        </div>
+      </div>
+
+      <div class="skills-group fade-in delay-1">
+        <h3>Technical Skills</h3>
+        <div class="bar-item">
+          <div class="bar-label">Multi-Cuisine Execution</div>
+          <div class="bar-track"><div class="bar-fill" data-w="96"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">HACCP &amp; Food Safety</div>
+          <div class="bar-track"><div class="bar-fill" data-w="98"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Sous Vide &amp; Modern Techniques</div>
+          <div class="bar-track"><div class="bar-fill" data-w="90"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Plating &amp; Food Styling</div>
+          <div class="bar-track"><div class="bar-fill" data-w="93"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Vendor &amp; Supply Chain Management</div>
+          <div class="bar-track"><div class="bar-fill" data-w="87"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Kitchen Systems (Micros / POS)</div>
+          <div class="bar-track"><div class="bar-fill" data-w="85"></div></div>
+        </div>
+      </div>
+
+      <div class="skills-group fade-in delay-2">
+        <h3>Soft Skills</h3>
+        <div class="soft-tags">
+          <span class="soft-tag">Leadership</span>
+          <span class="soft-tag">Cross-Cultural Communication</span>
+          <span class="soft-tag">Problem-Solving Under Pressure</span>
+          <span class="soft-tag">Team Building</span>
+          <span class="soft-tag">Guest-Centric Mentality</span>
+          <span class="soft-tag">Conflict Resolution</span>
+          <span class="soft-tag">Adaptability</span>
+          <span class="soft-tag">Attention to Detail</span>
+          <span class="soft-tag">Time Management</span>
+          <span class="soft-tag">Morale Management</span>
+          <span class="soft-tag">Certified First Aider</span>
+          <span class="soft-tag">Fire Safety Certified</span>
+          <span class="soft-tag">KPI &amp; Forecasting</span>
+          <span class="soft-tag">Inventory Management</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     EDUCATION
+============================================================ -->
+<section id="education">
+  <div class="container">
+    <span class="section-label fade-in">Academic Background</span>
+    <h2 class="section-title fade-in">Education &amp; Training</h2>
+    <div class="section-divider"></div>
+    <div class="edu-grid">
+
+      <div class="edu-group fade-in">
+        <h3>Academic Degrees</h3>
+        <div class="edu-item">
+          <div class="edu-year">2009</div>
+          <div>
+            <div class="edu-degree">Bachelor of Hotel Management</div>
+            <div class="edu-school">Alexandria Hotel Institute (EGOTH), Egypt</div>
+          </div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-year">2006</div>
+          <div>
+            <div class="edu-degree">Bachelor's in Culinary Arts</div>
+            <div class="edu-school">Alexandria Hotel Institute (EGOTH), Egypt</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:2.5rem;">Professional Reference</h3>
+        <div class="edu-item">
+          <div class="edu-year">REF</div>
+          <div>
+            <div class="edu-degree">Chef Dominic Petzold</div>
+            <div class="edu-school">
+              Cluster Executive Chef — Anantara The Palm Dubai<br>
+              <a href="tel:+971504161817">+971 50 416 1817</a><br>
+              <a href="mailto:dpetzold@anantara.com">dpetzold@anantara.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edu-group fade-in delay-2">
+        <h3>Professional Certifications</h3>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Agile Leadership Program</div>
+          <div class="cert-row-year">2024</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Basic Food Hygiene — Dubai Municipality</div>
+          <div class="cert-row-year">2023</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Basic Food Hygiene 2 — TUV Middle East</div>
+          <div class="cert-row-year">2023</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Basic Food Hygiene 1 — TUV Middle East</div>
+          <div class="cert-row-year">2022</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Forbes Service Training</div>
+          <div class="cert-row-year">2021</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Fire Safety Certificate</div>
+          <div class="cert-row-year">2021</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Management Maestro — Lobster Ink</div>
+          <div class="cert-row-year">2020</div>
+        </div>
+        <div class="cert-list-row">
+          <div class="cert-dot"></div>
+          <div class="cert-row-name">Certified First Aider</div>
+          <div class="cert-row-year">—</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CONTACT
+============================================================ -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+
+      <div class="fade-in">
+        <span class="section-label">Let's Connect</span>
+        <h3 class="section-title" style="font-size:clamp(1.7rem,3vw,2.6rem);">
+          Available for Opportunities &amp; Freelance Engagements
+        </h3>
+        <div class="section-divider"></div>
+        <p>Whether you're looking for an Executive Chef to elevate your property, planning a high-end private event, or exploring a freelance culinary partnership — Chef Khalil is open for consultation, bookings, and full-time positions across the UAE and internationally.</p>
+        <div class="contact-row">
+          <div class="contact-icon-box">📞</div>
+          <div>
+            <div class="contact-lbl">Phone / WhatsApp</div>
+            <div class="contact-val"><a href="tel:+971585146800">+971 58 514 6800</a></div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-icon-box">✉️</div>
+          <div>
+            <div class="contact-lbl">Email</div>
+            <div class="contact-val"><a href="mailto:MKhalil.Culinary@gmail.com">MKhalil.Culinary@gmail.com</a></div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-icon-box">📍</div>
+          <div>
+            <div class="contact-lbl">Based In</div>
+            <div class="contact-val">Dubai, United Arab Emirates</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-icon-box">🌐</div>
+          <div>
+            <div class="contact-lbl">Nationality</div>
+            <div class="contact-val">Egyptian · Military Status: Exempted</div>
+          </div>
+        </div>
+        <div style="margin-top:2rem;">
+          <a href="Chef Mohamed Khalil CV.pdf" download class="btn btn-primary" style="gap:.6rem;">⬇ &nbsp;Download Full CV (PDF)</a>
+        </div>
+      </div>
+
+      <div class="fade-in delay-2">
+        <form class="contact-form" onsubmit="handleForm(event)">
+          <div class="fgroup">
+            <label for="fname">Full Name</label>
+            <input type="text" id="fname" placeholder="Your name" required>
+          </div>
+          <div class="fgroup">
+            <label for="fcompany">Company / Property</label>
+            <input type="text" id="fcompany" placeholder="Your organization">
+          </div>
+          <div class="fgroup">
+            <label for="femail">Email Address</label>
+            <input type="email" id="femail" placeholder="your@email.com" required>
+          </div>
+          <div class="fgroup">
+            <label for="fphone">Phone / WhatsApp</label>
+            <input type="tel" id="fphone" placeholder="+971 …">
+          </div>
+          <div class="fgroup full">
+            <label for="ftype">Inquiry Type</label>
+            <select id="ftype">
+              <option value="">— Please select —</option>
+              <option>Full-Time Position</option>
+              <option>Freelance / Consulting Booking</option>
+              <option>Private Event Catering</option>
+              <option>Menu Development</option>
+              <option>Culinary Training</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="fgroup full">
+            <label for="fmessage">Your Message</label>
+            <textarea id="fmessage" placeholder="Tell Chef Khalil about your project, event, or opportunity…"></textarea>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Send Message →</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+<footer>
+  <div class="container">
+    <div class="footer-logo">Chef <em>Mohamed Khalil</em></div>
+    <div class="footer-rule"></div>
+    <div class="footer-info">
+      Senior Chef De Cuisine · 19 Years of Luxury Hospitality Excellence · Dubai, UAE<br>
+      📞 +971 58 514 6800 &nbsp;·&nbsp; ✉ MKhalil.Culinary@gmail.com
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     LIGHTBOX
+============================================================ -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+  <div class="lb-content">
+    <img class="lb-img" id="lbImg" src="" alt="" style="display:none">
+    <iframe class="lb-iframe" id="lbIframe" src="" style="display:none" title="Certificate"></iframe>
+  </div>
+  <div class="lb-counter" id="lbCounter"></div>
+  <div class="lb-caption" id="lbCaption"></div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+
+/* ---- DATA ---- */
+const DISHES = [
+  { file:'dishes/Yellow tuna carpaccio  with beluga caviar.jpeg',           name:'Yellow Tuna Carpaccio with Beluga Caviar' },
+  { file:'dishes/Wagyu tenderloin with foie grand and mushroom pie.jpeg',   name:'Wagyu Tenderloin with Foie Gras & Mushroom Pie' },
+  { file:'dishes/Lobster ravioli.jpeg',                                     name:'Lobster Ravioli' },
+  { file:'dishes/Halibut with charcoal crust and salmon roe.jpeg',          name:'Halibut with Charcoal Crust & Salmon Roe' },
+  { file:'dishes/Warm potato beluga caviar and tomato tartar.jpeg',         name:'Warm Potato, Beluga Caviar & Tomato Tartare' },
+  { file:'dishes/Salmon gravlax with wakame.jpeg',                          name:'Salmon Gravlax with Wakame' },
+  { file:'dishes/Lamb rack with horseradish puree and tabbouleh.jpeg',      name:'Lamb Rack with Horseradish Purée & Tabbouleh' },
+  { file:'dishes/Seabass with orange and brasing fennel.png',               name:'Seabass with Orange & Braised Fennel' },
+  { file:'dishes/Smoked cheese Ravioli.jpeg',                               name:'Smoked Cheese Ravioli' },
+  { file:'dishes/Paella Seafood.jpeg',                                      name:'Paella de Mariscos' },
+  { file:'dishes/Octopus salad.jpeg',                                       name:'Octopus Salad' },
+  { file:'dishes/Panna Cotta with berries.jpeg',                            name:'Panna Cotta with Seasonal Berries' },
+  { file:'dishes/Buratta with figs.jpeg',                                   name:'Burrata with Figs' },
+  { file:'dishes/Moussaka.jpeg',                                            name:'Classic Moussaka' },
+  { file:'dishes/Mezzeh.jpeg',                                              name:'Mezze Platter' },
+  { file:'dishes/Tomato carpicco.jpeg',                                     name:'Tomato Carpaccio' },
+  { file:'dishes/Papaya salad.jpeg',                                        name:'Papaya Salad' },
+  { file:'dishes/Cauliflower Steak.jpeg',                                   name:'Cauliflower Steak' },
+  { file:'dishes/Fish Papillote.jpeg',                                      name:'Fish en Papillote' },
+  { file:'dishes/Apple pizza.jpeg',                                         name:'Apple Pizza' },
+  { file:'dishes/Amush Bouche.jpeg',                                        name:'Amuse-Bouche' },
+  { file:'dishes/Family time.jpeg',                                         name:'Family Feast' },
+  { file:'dishes/Chocolate Mousse Dome.jpeg',              name:'Chocolate Mousse Dome' },
+  { file:'dishes/Mexican Food Setup.jpeg',         name:'Mexican Food Setup' },
+  { file:'dishes/Dish Featured for Chef M. Khalil.png',         name:'Dish Featured for Chef M. Khalil' },
+];
+
+const PHOTOS = [
+  { file:'photos/1.jpeg',  tall:true,  wide:false },
+  { file:'photos/2.jpeg',  tall:false, wide:false },
+  { file:'photos/3.jpeg',  tall:false, wide:false },
+  { file:'photos/4.jpeg',  tall:false, wide:false },
+  { file:'photos/5.jpeg',  tall:false, wide:false },
+  { file:'photos/6.jpeg',  tall:false, wide:false },
+  { file:'photos/7.png',   tall:false, wide:true  },
+  { file:'photos/8.jpeg',  tall:false, wide:false },
+  { file:'photos/9.jpeg',  tall:true,  wide:false },
+  { file:'photos/11.jpeg', tall:false, wide:false },
+  { file:'photos/12.jpeg', tall:false, wide:false },
+  { file:'photos/13.png',  tall:false, wide:true  },
+  { file:'photos/14.jpeg', tall:false, wide:false },
+  { file:'photos/16.jpeg', tall:false, wide:false },
+  { file:'photos/17.jpeg', tall:false, wide:false },
+  { file:'photos/19.png', tall:false, wide:false },
+  { file:'photos/20.png',  tall:false, wide:false },
+];
+
+const CERTS = [
+  { file:'certificates/2009 Professional Culinary Arts Exhitpits.png', name:'Professional Culinary Arts Exhitpits 2009' },
+  { file:'certificates/2010 World Association of Chef Societies Membership.png', name:'World Association of Chef Societies Membership 2010' },
+  { file:'certificates/2011 Award by Egyptian Cheft Association.png', name:'Award by Egyptian Cheft Association 2011' },
+  { file:'certificates/2015 Bronze Medal by The Emirates Cuilinary Guild 1.jpeg', name:'Bronze 1 Medal by The Emirates Cuilinary Guild 2015' },
+  { file:'certificates/2015 Bronze Medal by The Emirates Cuilinary Guild 2.jpeg', name:'Bronze 2 Medal by The Emirates Cuilinary Guild 2015' },
+  { file:'certificates/2015 Thank you note by GM.png',    name:'Thank you note by GM 2015' },
+  { file:'certificates/2016 Bronze Medal by The Emirates Cuilinary Guild.jpeg',    name:'Bronze Medal by The Emirates Cuilinary Guild 2016' },
+  { file:"certificates/2016 Co-receipient of Favorite Stakehouse by What's On Awards.png",    name:"Co-receipient of Favorite Stakehouse by What's On Awards 2016" },
+  { file:'certificates/2016 Forbes Training Certificate.png', name:'Forbes Training Certificate 2016' },
+  { file:'certificates/2016 Guinness World Recrod Participation.png', name:'Guinness World Recrod Participation 2016' },
+  { file:'certificates/2017 Award by Taste New Zealand.png', name:'Award by Taste New Zealand 2017' },
+  { file:'certificates/2017 Bronze Medal by The Emirates Cuilinary Guild.png', name:'Bronze Medal by The Emirates Cuilinary Guild 2017' },
+  { file:'certificates/2017 Finalist Certificate by Taste New Zealand.png', name:'Finalist Certificate by Taste New Zealand 2017' },
+  { file:'certificates/2018 Best Job Coach Award by Al Baleed Resort - Anantara.jpeg',    name:'Best Job Coach Award by Al Baleed Resort - Anantara 2018' },
+  { file:'certificates/2021 Food Safety Certificate.png',    name:'Food Safety Certificate 2021' },
+  { file:'certificates/2021 Recognition by Anantara World Island.png',    name:'Recognition by Anantara World Island 2021' },
+  { file:'certificates/2022 Recognition by Dubai Police.png',    name:'Recognition by Dubai Police 2022' },
+  { file:'certificates/2025 Recognition by Anantara World Island.png',    name:'Recognition by Anantara World Island 2025' },
+
+];
+
+/* ---- RENDER DISH GALLERY ---- */
+const dishGrid = document.getElementById('dishGrid');
+DISHES.forEach((d, i) => {
+  const el = document.createElement('div');
+  el.className = 'gallery-item fade-in';
+  el.style.transitionDelay = (i % 4) * 0.07 + 's';
+  el.innerHTML = `
+    <img src="${d.file}" alt="${d.name}" loading="lazy">
+    <div class="gallery-overlay"><div class="gallery-dish-name">${d.name}</div></div>
+    <div class="gallery-plus">+</div>`;
+  el.addEventListener('click', () => openLB(i, 'dish'));
+  dishGrid.appendChild(el);
+});
+
+/* ---- RENDER PHOTO GRID ---- */
+const photoGrid = document.getElementById('photoGrid');
+PHOTOS.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'photo-item fade-in' + (p.tall ? ' tall' : '') + (p.wide ? ' wide' : '');
+  el.style.transitionDelay = (i % 4) * 0.06 + 's';
+  el.innerHTML = `
+    <img src="${p.file}" alt="Chef Mohamed Khalil" loading="lazy">
+    <div class="photo-overlay"><div class="photo-expand">⊕</div></div>`;
+  el.addEventListener('click', () => openLB(i, 'photo'));
+  photoGrid.appendChild(el);
+});
+
+/* ---- RENDER CERTS ---- */
+const certGrid = document.getElementById('certGrid');
+CERTS.forEach((c, i) => {
+  const el = document.createElement('div');
+  el.className = 'cert-item fade-in';
+  el.style.transitionDelay = (i % 4) * 0.08 + 's';
+  el.innerHTML = `
+    <div class="cert-thumb">
+      <img src="${c.file}" alt="${c.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      <div class="cert-thumb-hover"><div class="cert-expand-btn">🔍</div></div>
+    </div>
+    <div class="cert-footer">
+      <div class="cert-name">${c.name}</div>
+      <span class="cert-badge">Certificate</span>
+    </div>`;
+  el.addEventListener('click', () => openLB(i, 'cert'));
+  certGrid.appendChild(el);
+});
+
+/* ---- LIGHTBOX ---- */
+let lbGallery = [], lbIdx = 0;
+
+function openLB(idx, type) {
+  if (type === 'dish')  lbGallery = DISHES.map(d => ({ src: d.file, cap: d.name,          kind: 'img' }));
+  if (type === 'photo') lbGallery = PHOTOS.map(p => ({ src: p.file, cap: 'Chef Mohamed Khalil', kind: 'img' }));
+  if (type === 'cert')  lbGallery = CERTS.map(c  => ({ src: c.file, cap: c.name,           kind: 'img' }));
+  lbIdx = idx;
+  showLB();
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function showLB() {
+  const item = lbGallery[lbIdx];
+  const img = document.getElementById('lbImg');
+  const iframe = document.getElementById('lbIframe');
+  if (item.kind === 'img') {
+    img.src = item.src; img.style.display = 'block';
+    iframe.style.display = 'none'; iframe.src = '';
+  } else {
+    iframe.src = item.src; iframe.style.display = 'block';
+    img.style.display = 'none';
+  }
+  document.getElementById('lbCaption').textContent = item.cap;
+  document.getElementById('lbCounter').textContent = `${lbIdx + 1}  /  ${lbGallery.length}`;
+}
+
+function closeLB() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lbIframe').src = '';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('lbClose').onclick = closeLB;
+document.getElementById('lbPrev').onclick = () => { lbIdx = (lbIdx - 1 + lbGallery.length) % lbGallery.length; showLB(); };
+document.getElementById('lbNext').onclick = () => { lbIdx = (lbIdx + 1) % lbGallery.length; showLB(); };
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target === document.getElementById('lightbox')) closeLB(); });
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key === 'Escape') closeLB();
+  if (e.key === 'ArrowLeft')  { lbIdx = (lbIdx - 1 + lbGallery.length) % lbGallery.length; showLB(); }
+  if (e.key === 'ArrowRight') { lbIdx = (lbIdx + 1) % lbGallery.length; showLB(); }
+});
+
+/* ---- SCROLL ANIMATIONS ---- */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      e.target.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+/* ---- NAVBAR ---- */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', scrollY > 70), { passive: true });
+
+/* ---- PARALLAX HERO ---- */
+const heroBg = document.getElementById('heroBg');
+window.addEventListener('scroll', () => {
+  if (scrollY < innerHeight)
+    heroBg.style.transform = `scale(1.08) translateY(${scrollY * 0.28}px)`;
+}, { passive: true });
+
+/* ---- MOBILE NAV ---- */
+const hamburger = document.getElementById('hamburger');
+const navLinks  = document.getElementById('navLinks');
+hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+/* ---- CONTACT FORM ---- */
+function handleForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Message Sent ✓';
+  btn.style.background = '#3d6b50';
+  btn.style.pointerEvents = 'none';
+  setTimeout(() => {
+    btn.textContent = 'Send Message →';
+    btn.style.background = '';
+    btn.style.pointerEvents = '';
+    e.target.reset();
+  }, 3500);
+}
+
+</script>
+</body>
+</html>
