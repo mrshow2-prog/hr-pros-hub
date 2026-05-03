@@ -64,6 +64,8 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/Chef-M-Khalil" element={<StaticProfileFrame src="/Chef-M-Khalil/index.html" title="Chef Mohamed Khalil" />} />
           <Route path="/chef-m-khalil" element={<StaticProfileFrame src="/Chef-M-Khalil/index.html" title="Chef Mohamed Khalil" />} />
+          <Route path="/Bishoy-Mesiha" element={<StaticProfileFrame src="/Bishoy-Mesiha/index.html" title="Bishoy Mesiha" />} />
+          <Route path="/bishoy-mesiha" element={<StaticProfileFrame src="/Bishoy-Mesiha/index.html" title="Bishoy Mesiha" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
