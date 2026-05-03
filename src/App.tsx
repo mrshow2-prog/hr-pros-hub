@@ -14,12 +14,21 @@ import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
-// Static profile page lives at /public/Chef-M-Khalil/index.html — bypass SPA router.
-const StaticProfileRedirect = ({ to }: { to: string }) => {
+// Static profile page lives at /public/Chef-M-Khalil/index.html.
+// Embed it in a full-viewport iframe so the URL stays clean (no /index.html).
+const StaticProfileFrame = ({ src, title }: { src: string; title: string }) => {
   useEffect(() => {
-    window.location.replace(to);
-  }, [to]);
-  return null;
+    const prev = document.body.style.margin;
+    document.body.style.margin = "0";
+    return () => { document.body.style.margin = prev; };
+  }, []);
+  return (
+    <iframe
+      src={src}
+      title={title}
+      style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", border: 0 }}
+    />
+  );
 };
 
 const queryClient = new QueryClient();
