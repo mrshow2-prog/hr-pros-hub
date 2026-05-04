@@ -1,50 +1,56 @@
-## Status: Already implemented
+# Restore section anchors on `/Bishoy-Mesiha`
 
-Both post-result CTAs requested are already present in the codebase, gated behind the results-visible state, and use the page's existing `UpsellStrip` component pattern (the same primitive used for every other tool upsell on this page).
+## What you noticed (and why it currently doesn't work)
 
-### 1. HR Diagnostic CTA — `src/components/tools/HRDiagnostic.tsx`
+The base44 site is a single-page app. There are no real subpages — the 8 orbit items (HR Strategy, OD & Change, HR Consultancy, Employee Relations, Total Rewards, HR Digital Transform., HR Compliance, Learning & Dev.) all live on `/`. Clicking one calls `history.pushState` to a hash like `/#hr-strategy` and swaps a panel in/out without a page reload. That's why URLs look like `/#hr-strategy` instead of `/hr-strategy`.
 
-Rendered inside the `if (showResults)` branch (line 168), immediately after the recommendation/result container, at lines 239–246:
+Our current mirror at `/Bishoy-Mesiha` only contains the empty SPA shell plus our injected branding — the orbit, the panels, and the JS that wires hash → panel were never captured. So `/Bishoy-Mesiha#hr-strategy` does nothing today.
 
-```tsx
-<UpsellStrip
-  title="Your score is a starting point. Not a verdict."
-  body="A 30-minute call with Bishoy costs nothing and leaves you with a clearer picture of what to fix first — and what it would cost to fix it properly."
-  ctaLabel="Book a free 30-minute call →"
-  ctaHref={BOOKING_URL}              // → https://calendly.com/peoplestudio
-  secondaryLabel="See what a full HR advisory engagement looks like →"
-  secondaryHref="/business"
-/>
-```
+## What I'll build
 
-Only renders when `showResults === true`. Does not appear on page load or during the questionnaire.
+A working orbit + panel system on `/Bishoy-Mesiha` that mirrors the base44 UX, with hash-based section navigation:
 
-### 2. Emiratisation Calculator CTA — `src/components/tools/EmiratesCalculator.tsx`
+- `/Bishoy-Mesiha#hr-strategy`
+- `/Bishoy-Mesiha#od-change`
+- `/Bishoy-Mesiha#hr-consultancy`
+- `/Bishoy-Mesiha#employee-relations`
+- `/Bishoy-Mesiha#total-rewards`
+- `/Bishoy-Mesiha#hr-digital-transform`
+- `/Bishoy-Mesiha#hr-compliance`
+- `/Bishoy-Mesiha#learning-development`
 
-Rendered inside the `{result && ( … )}` block, immediately after the existing "Want a full compliance plan?" upsell:
+Behavior:
+- Click an orbit node → URL updates to `#<slug>`, the corresponding panel scrolls/fades in, the rest stays in place.
+- Land directly on a `#<slug>` URL → the matching panel is opened automatically on load.
+- Browser back/forward navigates between sections via `popstate` (matches base44).
+- Topbar + footer branding (people·STUDIO, link to `/career`) stays as it is now.
 
-```tsx
-<UpsellStrip
-  title="Now you know the number. Here's how to fix it."
-  body="The Emiratisation Readiness Pack starts at AED 3,500 and gives you a 90-day compliance plan within 2 days."
-  ctaLabel="Book a call to get started →"
-  ctaHref={BOOKING_URL}              // → https://calendly.com/peoplestudio
-/>
-```
+## Visual approach
 
-Only renders after `Calculate my obligation` is clicked and `result` is set.
+Two viable directions — pick one in the question below:
 
-### Why the previous attempts may have looked "missing"
+1. **Faithful recreation** of the dark 360° orbit visual (black background, glowing rings, circular nodes around the portrait, neon ring colors per item). Built fresh in our codebase, no base44 JS.
+2. **People.Studio-branded version**: same orbit concept and same hash routing, but restyled to match the Chef Khalil page (paper/clay/sienna palette, serif headings, DM Sans body) so the two profile pages feel like siblings.
 
-The CTAs use `UpsellStrip` (the established design-token component) instead of raw `<div className="rounded-lg border …">` blocks with `bg-primary` / `text-muted-foreground`. Those Tailwind tokens are not part of this project's palette — the Tools page uses `sienna`, `clay`, `paper`, `ink`, etc. Inserting the literal snippet from the brief would render as an off-brand white-on-grey card that looks broken next to the rest of the page.
+## Where the section copy comes from
 
-### Recommended action
+base44 renders panel content from JS, so I can't scrape it. For each of the 8 sections I'll need a short content block:
+- Heading
+- 1–2 sentence description
+- 4–6 bullet points / services
+- (optional) a CTA (book call / email)
 
-**No code changes.** Both CTAs are live, correctly gated, point to `https://calendly.com/peoplestudio`, and match the page's visual language.
+Three options for sourcing this — pick one in the question below.
 
-If you'd prefer the literal raw-div styling from the brief instead of the branded `UpsellStrip`, say the word and I'll swap them — but I'd recommend against it for visual consistency.
+## Technical details
 
-### Files to verify in preview
+- Convert `public/Bishoy-Mesiha/index.html` from a static iframe-loaded snapshot into a real React route (`/Bishoy-Mesiha` and `/bishoy-mesiha`) under a new `src/pages/BishoyMesiha.tsx`, so we get hash routing, SEO, and code reuse for free.
+- Drop `StaticProfileFrame` for Bishoy in `src/App.tsx`; keep it for Chef Khalil.
+- Section data lives in `src/data/bishoy.ts` as a typed array `{ slug, label, icon, color, heading, description, bullets, cta }`.
+- Hash ↔ panel sync via `useLocation()` + `window.history.replaceState` (no full reloads).
+- Topbar and footer reuse the same components/markup as the Chef page for consistency.
+- Old static files (`public/Bishoy-Mesiha/index.html`, `assets/index.css`) get removed; the portrait `images/bishoy.jpg` stays and is imported into the new page.
 
-- `/tools` → HR Diagnostic tab → complete the questionnaire → CTA appears below the recommendation card.
-- `/tools` → Emiratisation Calculator tab → enter inputs → click Calculate → CTA appears below the breakdown.
+## Out of scope
+
+- The original 3D drag-to-rotate orbit interaction, particle effects, and chatbot. We'll do a clean 2D circular layout with hover/active states — much faster to render and good enough for a portfolio profile.
