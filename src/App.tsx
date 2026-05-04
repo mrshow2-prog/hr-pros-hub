@@ -13,7 +13,6 @@ import Tools from "./pages/Tools";
 import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
-import BishoyMesiha from "./pages/BishoyMesiha";
 
 // Static profile page lives at /public/Chef-M-Khalil/index.html.
 // Embed it in a full-viewport iframe so the URL stays clean (no /index.html).
@@ -65,8 +64,8 @@ const App = () => (
           <Route path="/legal" element={<Legal />} />
           <Route path="/Chef-M-Khalil" element={<StaticProfileFrame src="/Chef-M-Khalil/index.html" title="Chef Mohamed Khalil" />} />
           <Route path="/chef-m-khalil" element={<StaticProfileFrame src="/Chef-M-Khalil/index.html" title="Chef Mohamed Khalil" />} />
-          <Route path="/Bishoy-Mesiha" element={<BishoyMesiha />} />
-          <Route path="/bishoy-mesiha" element={<BishoyMesiha />} />
+          <Route path="/Bishoy-Mesiha" element={<StaticProfileFrame src="/Bishoy-Mesiha/index.html" title="Bishoy Mesiha" />} />
+          <Route path="/bishoy-mesiha" element={<StaticProfileFrame src="/Bishoy-Mesiha/index.html" title="Bishoy Mesiha" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
