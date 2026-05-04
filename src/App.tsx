@@ -13,6 +13,7 @@ import Tools from "./pages/Tools";
 import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import BishoyMesiha from "./pages/BishoyMesiha";
 
 // Static profile page lives at /public/Chef-M-Khalil/index.html.
 // Embed it in a full-viewport iframe so the URL stays clean (no /index.html).
