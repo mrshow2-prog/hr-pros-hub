@@ -242,22 +242,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Footer — sticky bottom on desktop/tablet, in-flow on mobile */}
-      <footer className="relative z-30 bg-paper px-6 py-4 font-dm text-[0.66rem] font-medium uppercase tracking-wider2 text-ink/50 md:absolute md:inset-x-0 md:bottom-0 md:bg-transparent md:px-10">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-          <span className="text-ink/45 md:text-paper/55">© {new Date().getFullYear()} People.Studio · Dubai, UAE</span>
-          <nav aria-label="Legal" className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <Link to="/legal#privacy" className="text-ink/55 transition-colors hover:text-ink md:text-paper/55 md:hover:text-paper">Privacy</Link>
-            <span aria-hidden="true" className="inline-block h-1 w-1 rounded-full bg-ink/20 md:bg-paper/25" />
-            <Link to="/legal#terms" className="text-ink/55 transition-colors hover:text-ink md:text-paper/55 md:hover:text-paper">Terms</Link>
-            <span aria-hidden="true" className="inline-block h-1 w-1 rounded-full bg-ink/20 md:bg-paper/25" />
-            <Link to="/legal#disclaimer" className="text-ink/55 transition-colors hover:text-ink md:text-paper/55 md:hover:text-paper">Disclaimer</Link>
-          </nav>
-        </div>
-        <p className="mt-2 font-dm text-[0.7rem] font-normal normal-case tracking-normal text-ink/40 md:text-paper/40">
-          Licensed under Tajmeel Events Organizing and Managing Co. L.L.C · Trade License No. 1335626 · Dubai DED · Not registered for UAE VAT
-        </p>
-      </footer>
     </div>
   );
 };
