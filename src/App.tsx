@@ -13,6 +13,10 @@ import Tools from "./pages/Tools";
 import Career from "./pages/Career";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import ProfileRouter from "./pages/ProfileRouter";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProfileEditor from "./pages/admin/AdminProfileEditor";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +49,11 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/career" element={<Career />} />
           <Route path="/legal" element={<Legal />} />
-          {/* Static profile pages live under public/<slug>/index.html and are served directly by the host. */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/:slug" element={<AdminProfileEditor />} />
+          {/* Dynamic profile pages — keep this LAST custom route (above catch-all) */}
+          <Route path="/:slug" element={<ProfileRouter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
