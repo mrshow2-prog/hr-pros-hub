@@ -39,7 +39,7 @@ export const MARQUEE_SERVICES = [
 export const HERO_STATS = [
   { value: "AED 3M+", label: "Documented savings delivered" },
   { value: "16 yrs", label: "Executive HR experience" },
-  { value: "11", label: "MENAT markets served" },
+  { value: "40+", label: "founder hours spent on HR every month" },
 ];
 
 export const AUDIENCE_SEGMENTS = [
