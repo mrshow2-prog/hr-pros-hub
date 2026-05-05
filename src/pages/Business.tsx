@@ -5,6 +5,7 @@ import BusinessAudience from "@/components/business/BusinessAudience";
 import BusinessDiagnostic from "@/components/business/BusinessDiagnostic";
 import BusinessFreeToolsPromo from "@/components/business/BusinessFreeToolsPromo";
 import BusinessServices from "@/components/business/BusinessServices";
+import BusinessRealCost from "@/components/business/BusinessRealCost";
 import BusinessRetainers from "@/components/business/BusinessRetainers";
 import BusinessAbout from "@/components/business/BusinessAbout";
 import BusinessContact from "@/components/business/BusinessContact";
@@ -28,6 +29,7 @@ export default function Business() {
       <BusinessDiagnostic />
       <BusinessFreeToolsPromo />
       <BusinessServices />
+      <BusinessRealCost />
       <BusinessRetainers />
       <BusinessAbout />
       <BookCallBanner dark />
