@@ -11,7 +11,7 @@ const staticFolderRedirect = (): Plugin => ({
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
       const url = req.url || "/";
-      if (req.method !== "GET" || url === "/" || url.includes(".")) {
+      if ((req.method !== "GET" && req.method !== "HEAD") || url === "/" || url.includes(".")) {
         return next();
       }
       const [pathname, query = ""] = url.split("?");
