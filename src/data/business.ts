@@ -97,7 +97,7 @@ export const SERVICES = [
     name: "Emiratisation Readiness Pack",
     price: "AED 3,500",
     priceNote: "flat fee",
-    desc: "Know exactly where you stand — and what to do next.",
+    desc: "Your 2026 Emiratisation exposure could be AED 200k+ per gap. Most founders don't know their exact number. Some assume they're exempt when they're not. This tells you exactly where you stand in 48 hours, and gives you a 90-day plan to close the gap before the next collection date.",
     deliverables: ["Quota calculation for your business", "Gap analysis", "Nafis subsidy walkthrough", "90-day compliance plan", "2-day delivery"],
   },
   {
@@ -121,7 +121,7 @@ export const SERVICES = [
     name: "HR Foundation Pack",
     price: "AED 7,500",
     priceNote: "flat fee",
-    desc: "Everything a growing business needs to operate compliantly from day one.",
+    desc: "Without documented policies, every people decision is a negotiation. Managers make inconsistent calls. Employees push boundaries that don't officially exist. Productivity leaks through gaps no one can point to — until something breaks. And when it does, there's nothing to stand behind. This builds the legal infrastructure your people decisions depend on — before the first difficult conversation.",
     deliverables: ["3 UAE-compliant contract templates", "10 core HR policies", "Employee handbook", "Onboarding & offboarding frameworks", "5-day delivery"],
   },
   {
@@ -129,7 +129,7 @@ export const SERVICES = [
     name: "HR Health Audit",
     price: "AED 4,500",
     priceNote: "flat fee",
-    desc: "A full diagnostic of your current HR function across six dimensions.",
+    desc: "You don't know what your HR is costing you — until it costs you everything. A single undefended labour claim, a WPS violation, or a disputed termination can run AED 50,000–150,000. This audit maps every gap, prices your actual exposure, and tells you what to fix first.",
     deliverables: ["6-dimension health scorecard", "Risk register with AED exposure", "Prioritised action plan", "Executive briefing (30 min)"],
   },
   {
@@ -137,7 +137,7 @@ export const SERVICES = [
     name: "Organisation Design",
     price: "AED 12,000–22,000",
     priceNote: "based on scope",
-    desc: "Structural clarity for growth-stage and scaling businesses.",
+    desc: "The wrong structure costs you more than a restructure ever would. Duplicated effort, unclear accountability, and misaligned roles quietly burn hundreds of thousands in wasted payroll every year. This gives you the structure, grading, and role clarity that lets the business actually scale.",
     deliverables: ["Structural options & recommendation", "Target operating model", "Job architecture & grading", "Role profiles"],
   },
   {
@@ -145,7 +145,7 @@ export const SERVICES = [
     name: "C&B Framework",
     price: "AED 9,500–16,000",
     priceNote: "based on scope",
-    desc: "Pay people fairly, competitively, and consistently.",
+    desc: "You're probably overpaying your average performers and underpaying your best ones. Without a structured pay framework, salary decisions are guesswork — and guesswork means your highest performers are quietly shopping the market right now. This fixes the pay structure that determines who stays and who leaves.",
     deliverables: ["GCC market salary benchmarking", "Salary band design", "Pay equity analysis", "Bonus & incentive framework"],
   },
   {
@@ -153,7 +153,7 @@ export const SERVICES = [
     name: "Fractional HR Director / BOT",
     price: "AED 18,000–25,000",
     priceNote: "per month",
-    desc: "Senior HR leadership without the full-time hire. Embedded 2–3 days/week.",
+    desc: "A qualified HR Director in the UAE costs AED 35k–50k/month — plus visa, benefits, and notice period risk. The Fractional HR Director gives you the same seniority, embedded in your leadership team, at a fraction of the cost. The BOT model means you exit the engagement with a fully built in-house HR function.",
     deliverables: ["Full HR ownership", "Build-Operate-Transfer", "Team building", "Board-level reporting"],
   },
 ];
