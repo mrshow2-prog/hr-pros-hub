@@ -11,9 +11,6 @@ export default function BusinessRetainers() {
           <h2 className="font-serif font-bold mb-4 text-ink" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.02em" }}>
             Ongoing HR. No full-time hire.
           </h2>
-          <p className="font-dm text-moss mb-4" style={{ fontWeight: 300, maxWidth: "40ch" }}>
-            Expert HR leadership at a fraction of the cost of an in-house HR manager.
-          </p>
           <p className="font-dm text-ink/70" style={{ fontWeight: 300, maxWidth: "70ch" }}>
             A qualified HR Director in the UAE costs AED 35,000–50,000/month in-house. Our retainers start at AED 4,500. Same judgement. No visa. No notice period. No headcount.
           </p>
