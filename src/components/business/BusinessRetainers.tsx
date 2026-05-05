@@ -11,8 +11,11 @@ export default function BusinessRetainers() {
           <h2 className="font-serif font-bold mb-4 text-ink" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.02em" }}>
             Ongoing HR. No full-time hire.
           </h2>
-          <p className="font-dm text-moss" style={{ fontWeight: 300, maxWidth: "40ch" }}>
+          <p className="font-dm text-moss mb-4" style={{ fontWeight: 300, maxWidth: "40ch" }}>
             Expert HR leadership at a fraction of the cost of an in-house HR manager.
+          </p>
+          <p className="font-dm text-ink/70" style={{ fontWeight: 300, maxWidth: "70ch" }}>
+            A qualified HR Director in the UAE costs AED 35,000–50,000/month in-house. Our retainers start at AED 4,500. Same judgement. No visa. No notice period. No headcount.
           </p>
         </div>
 
@@ -58,6 +61,14 @@ export default function BusinessRetainers() {
                   </li>
                 ))}
               </ul>
+              {t.featured && (
+                <div
+                  className="font-dm text-xs leading-relaxed mb-6 p-4 rounded-sm text-cream/85"
+                  style={{ fontWeight: 300, border: "1px solid hsl(var(--cream) / 0.25)", background: "hsl(var(--cream) / 0.08)" }}
+                >
+                  At AED 7,500/month, this retainer costs less than one wrongful termination, one labour claim, or one month of Emiratisation contributions. Most clients recover the full annual fee in the first issue we resolve.
+                </div>
+              )}
               <a
                 href="#contact"
                 className={`font-dm font-bold text-xs uppercase px-5 py-3 text-center transition-colors duration-200 rounded-sm ${
