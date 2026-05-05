@@ -81,13 +81,13 @@ function AudienceCard({
   );
 }
 
-const services = [
-  ["Foundation", "CV design & rewrite", ["Full rewrite from scratch", "UAE/GCC market calibration", "ATS-optimised and recruiter-ready", "Up to 2 revision rounds"]],
-  ["Visibility", "LinkedIn profile optimisation", ["Full profile audit and rewrite", "Headline and summary repositioning", "GCC recruiter keyword strategy", "Content and engagement guidance"]],
-  ["High impact", "Interview coaching", ["Role-specific interview simulation", "Competency question preparation", "Salary and offer negotiation", "Written feedback after session"]],
-  ["Strategic", "Personal brand strategy", ["Brand audit and positioning", "Professional narrative development", "LinkedIn content strategy", "Executive bio and speaker profile"]],
-  ["Transition support", "Career pivot consulting", ["Transferable value mapping", "Target role and sector analysis", "CV and LinkedIn repositioning", "90-day job search action plan"]],
-  ["Unique to us", "Salary negotiation coaching", ["Market rate benchmarking", "Negotiation script and strategy", "Offer evaluation framework", "Counter-offer coaching"]],
+const services: [string, string, string[], string][] = [
+  ["Foundation", "CV design & rewrite", ["Full rewrite from scratch", "UAE/GCC market calibration", "ATS-optimised and recruiter-ready", "Up to 2 revision rounds"], "Compresses 4 months of job searching into 6 weeks. On AED 20,000/month, that's a 13× return in year 1."],
+  ["Visibility", "LinkedIn profile optimisation", ["Full profile audit and rewrite", "Headline and summary repositioning", "GCC recruiter keyword strategy", "Content and engagement guidance"], "A fully optimised profile gets 5–11× more recruiter messages. One inbound role paying 10% more = AED 24,000/yr."],
+  ["High impact", "Interview coaching", ["Role-specific interview simulation", "Competency question preparation", "Salary and offer negotiation", "Written feedback after session"], "Avoiding two failed interview cycles saves 2–3 months of delayed income — typically AED 40,000+ at mid-level."],
+  ["Strategic", "Personal brand strategy", ["Brand audit and positioning", "Professional narrative development", "LinkedIn content strategy", "Executive bio and speaker profile"], "At senior level, the next move isn't found on a job board. It's built. Brand investment here returns in the quality of the opportunity, not just the salary."],
+  ["Transition support", "Career pivot consulting", ["Transferable value mapping", "Target role and sector analysis", "CV and LinkedIn repositioning", "90-day job search action plan"], "A successful sector pivot typically delivers 20–35% salary uplift. On AED 20,000/month, that's AED 4,000–7,000 more — every month."],
+  ["Unique to us", "Salary negotiation coaching", ["Market rate benchmarking", "Negotiation script and strategy", "Offer evaluation framework", "Counter-offer coaching"], "Professionals who negotiate earn 18.83% more on average. On AED 25,000/month, that's AED 45,000/year — every year."],
 ];
 
 
@@ -420,7 +420,7 @@ export default function Career() {
           </div>
         </div>
         <div className="relative z-10 mt-14 grid gap-6 text-right md:absolute md:bottom-20 md:right-10 md:mt-0">
-          {[["16+", "Years on the hiring side"], ["11", "MENAT markets"], ["Bilingual", "Arabic & English"]].map(([num, label]) => <div key={label}><div className="font-serif text-3xl font-bold text-career-sky">{num}</div><div className="text-paper/40 text-xs">{label}</div></div>)}
+          {[["16+", "Years on the hiring side", ""], ["11", "MENAT markets", ""], ["Bilingual", "Arabic & English", ""], ["18.83%", "average salary gain when professionals negotiate", "Harvard Business School 2024–25"]].map(([num, label, note]) => <div key={label}><div className="font-serif text-3xl font-bold text-career-sky">{num}</div><div className="text-paper/40 text-xs">{label}</div>{note && <div className="mt-1 text-[10px] text-paper/30">{note}</div>}</div>)}
         </div>
       </section>
 
