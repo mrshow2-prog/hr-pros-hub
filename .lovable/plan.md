@@ -1,26 +1,55 @@
-## Changes to Business page
+## Goal
 
-### 1. Update third hero stat
-In `src/data/business.ts`, replace the third entry in `HERO_STATS`:
-- From: `{ value: "11", label: "MENAT markets served" }` (currently the third stat)
-- To: `{ value: "40+", label: "founder hours spent on HR every month" }`
+Stop iframing the static profile pages. Serve them directly as top-level HTML so URLs are clean, navigation works correctly, SEO is intact, and the pattern scales to hundreds/thousands of profiles.
 
-Note: the third stat in the data is currently "MENAT markets served", not the Emiratisation fine. I'll replace the third stat as requested.
+## Current state
 
-### 2. Add "The Real Cost" strip
-Create `src/components/business/BusinessRealCost.tsx` — a new section component:
-- Eyebrow label: "THE REAL COST" (terracotta, uppercase, small)
-- Headline: "One of these covers all the others." (serif, large)
-- 4 cards in a grid: `grid-cols-2 lg:grid-cols-4`
-- Each card uses dark surface styling (ink background, cream/paper text) consistent with `BookCallBanner` and other dark sections
-- Cards:
-  1. "AED 130k+" / "Average cost of one bad hire"
-  2. "AED 80k+" / "Average MoHRE labour claim cost"
-  3. "AED 200k+" / "Two-year Emiratisation gap exposure"
-  4. "AED 90k" / "One full year of Growth Retainer"
-- Muted footer line: "One engagement protects you from all three. Most clients recover the full annual fee in the first avoided incident."
+- `public/Chef-M-Khalil/index.html` and `public/Bishoy-Mesiha/index.html` are full standalone HTML pages with their own assets.
+- `src/App.tsx` defines four React routes (`/Chef-M-Khalil`, `/chef-m-khalil`, `/Bishoy-Mesiha`, `/bishoy-mesiha`) that render those files inside a full-viewport `<iframe>`.
+- Internal links inside the static HTML already use root-relative paths (`/career`, `#contact`, etc.), so they don't depend on the iframe.
 
-Insert into `src/pages/Business.tsx` between `<BusinessServices />` and `<BusinessRetainers />`.
+## Changes
 
-### Tokens used
-Existing semantic tokens only: `bg-ink`, `text-cream`, `text-terracotta`, `font-serif`, `font-dm`, `text-ink/60` for muted line. No new colors.
+### 1. Rename profile folders to lowercase slugs
+
+So the URL path matches the file path and Lovable's static hosting serves the file directly.
+
+- `public/Chef-M-Khalil/` → `public/chef-m-khalil/`
+- `public/Bishoy-Mesiha/` → `public/bishoy-mesiha/`
+
+All asset references inside each `index.html` are relative (`Chef-Mohamed-Khalil-CV.pdf`, `dishes/...`, `assets/...`) so they keep working after the rename. No edits to the HTML are needed.
+
+### 2. Remove the four iframe routes from `src/App.tsx`
+
+Delete the `StaticProfileFrame` component and the four `<Route>` entries for the profiles. Once the folders exist at the matching path, `https://site/chef-m-khalil/` is served directly by the host as static HTML — no React involvement.
+
+### 3. Establish the convention for future profiles
+
+Going forward, each new profile is just a folder dropped into `public/`:
+
+```text
+public/
+  chef-m-khalil/
+    index.html
+    assets...
+  bishoy-mesiha/
+    index.html
+    assets...
+  jane-doe/
+    index.html
+    assets...
+```
+
+No code change required to add a new profile. This is what makes it scale to thousands.
+
+## Notes / tradeoffs to confirm after deploy
+
+- **Trailing slash**: `/<slug>/` will reliably serve `index.html`. `/<slug>` (no slash) usually also works on Lovable hosting via auto-redirect, but worth a quick check after deploy. If it 404s, link to the trailing-slash form everywhere.
+- **Old capitalized URLs** (`/Chef-M-Khalil`) will stop working. If any external link or shared URL uses the capitalized form, we'd need to either keep duplicate folders or add a small redirect page. Let me know if that matters.
+- **Shared header/logo across static pages**: each profile page currently maintains its own header HTML. At scale, you'll want a small build-time template (a 30-line Node script or a simple SSG) so updates to the shared header propagate. Out of scope for this change — we can address it once you have more than ~5 profiles.
+
+## Technical summary
+
+- `mv` two folders.
+- Delete ~15 lines from `src/App.tsx` (the `StaticProfileFrame` component + four routes + the unused `useEffect` import if no other route uses it).
+- No new dependencies, no build config changes — Lovable hosting's static-file serving handles the rest.
