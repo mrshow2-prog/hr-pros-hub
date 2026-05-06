@@ -61,7 +61,8 @@ export default function BishoyMesihaPage({ profile }: Props) {
     sameAs: [CONTACT.linkedin],
   };
 
-  const photoUrl = (profile.content as any)?.hero?.photo_url || bishoyPhoto;
+  const photoUrl = HERO.photo_url || (c as any)?.photo_url || bishoyPhoto;
+  const data = { HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT, EDUCATION, SPECIALTIES };
 
   return (
     <div className="bm-root">
@@ -75,18 +76,24 @@ export default function BishoyMesihaPage({ profile }: Props) {
       <div className="noise-overlay" />
       <ProfileByPeopleStudioHeader />
       {active ? (
-        <SpecialtyView sp={active} photoUrl={photoUrl} onBack={goHome} />
+        <SpecialtyView sp={active} photoUrl={photoUrl} onBack={goHome} data={data} />
       ) : (
-        <Landing onSelect={openSpecialty} photoUrl={photoUrl} />
+        <Landing onSelect={openSpecialty} photoUrl={photoUrl} data={data} />
       )}
       <ProfileByPeopleStudioFooter />
     </div>
   );
 }
 
+type PageData = {
+  HERO: any; MARQUEE: string[]; ACHIEVEMENTS: any[]; TESTIMONIALS: any[];
+  PHILOSOPHY: string; CONTACT: any; EDUCATION: any[]; SPECIALTIES: Specialty[];
+};
+
 /* -------------------- LANDING -------------------- */
 
-function Landing({ onSelect, photoUrl }: { onSelect: (id: string) => void; photoUrl: string }) {
+function Landing({ onSelect, photoUrl, data }: { onSelect: (id: string) => void; photoUrl: string; data: PageData }) {
+  const { HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT } = data;
   return (
     <>
       <section className="hero">
