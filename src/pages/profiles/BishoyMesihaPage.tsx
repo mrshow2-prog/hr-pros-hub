@@ -6,6 +6,7 @@ import {
   EDUCATION, SPECIALTIES, type Specialty,
 } from "./bishoy-mesiha/data";
 import "./bishoy-mesiha/theme.css";
+import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
 
 interface Props { profile: ProfileContent }
 
@@ -48,7 +49,7 @@ export default function BishoyMesihaPage({ profile }: Props) {
     sameAs: [CONTACT.linkedin],
   };
 
-  const photoUrl = (profile.content as any)?.hero?.photo_url || "";
+  const photoUrl = (profile.content as any)?.hero?.photo_url || bishoyPhoto;
 
   return (
     <div className="bm-root">
