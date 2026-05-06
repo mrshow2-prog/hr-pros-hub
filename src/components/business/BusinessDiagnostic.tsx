@@ -1,38 +1,41 @@
 import { useState } from "react";
 import { DIAGNOSTIC_QUESTIONS } from "@/data/business";
+import { T, pick, useLang } from "@/i18n/T";
 
+type B = { en: string; ar: string };
 interface Result {
-  label: string;
+  label: B;
   colorClass: string;
   borderColor: string;
-  summary: string;
+  summary: B;
 }
 
 function getResult(score: number, max: number): Result {
   const pct = score / max;
   if (pct >= 0.8)
     return {
-      label: "Solid Foundation",
+      label: { en: "Solid Foundation", ar: "أساس متين" },
       colorClass: "text-emerald-500",
       borderColor: "rgb(16 185 129)",
-      summary: "Your HR basics are largely in place. A targeted audit can close remaining gaps before they become costly.",
+      summary: { en: "Your HR basics are largely in place. A targeted audit can close remaining gaps before they become costly.", ar: "أساسيات مواردك البشرية موجودة إلى حدّ بعيد. تدقيق مستهدف يمكنه إغلاق الثغرات المتبقية قبل أن تصبح مكلفة." },
     };
   if (pct >= 0.5)
     return {
-      label: "Needs Attention",
+      label: { en: "Needs Attention", ar: "يحتاج اهتمامًا" },
       colorClass: "text-terracotta",
       borderColor: "hsl(var(--terracotta))",
-      summary: "Material risks exist — particularly around compliance and documentation. These need addressing before you scale.",
+      summary: { en: "Material risks exist — particularly around compliance and documentation. These need addressing before you scale.", ar: "هناك مخاطر جوهرية — خاصة في الامتثال والتوثيق. يجب معالجتها قبل التوسّع." },
     };
   return {
-    label: "Significant Exposure",
+    label: { en: "Significant Exposure", ar: "تعرّض كبير" },
     colorClass: "text-terracotta-deep",
     borderColor: "hsl(var(--terracotta-deep))",
-    summary: "Your business has critical HR gaps. One inspection, complaint, or exit dispute could result in significant financial and reputational damage.",
+    summary: { en: "Your business has critical HR gaps. One inspection, complaint, or exit dispute could result in significant financial and reputational damage.", ar: "في عملك ثغرات حرجة في الموارد البشرية. تفتيش واحد، أو شكوى، أو نزاع إنهاء خدمة قد يتسبّب بأضرار مالية وسمعة كبيرة." },
   };
 }
 
 export default function BusinessDiagnostic() {
+  const lang = useLang();
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "yes" | "no">>({});
   const [submitted, setSubmitted] = useState(false);
@@ -63,22 +66,18 @@ export default function BusinessDiagnostic() {
       <section id="diagnostic" className="px-6 md:px-20 py-24 bg-ink">
         <div className="max-w-2xl mx-auto">
           <span className="font-dm font-bold text-xs uppercase block mb-5 text-terracotta" style={{ letterSpacing: "0.18em" }}>
-            Free HR Diagnostic
+            <T en="Free HR Diagnostic" ar="تشخيص مجاني للموارد البشرية" />
           </span>
           <h2 className="font-serif font-bold mb-5 text-cream" style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", letterSpacing: "-0.02em" }}>
-            Is your HR holding
+            <T en="Is your HR holding" ar="هل مواردك البشرية تعيقك" />
             <br />
-            you back — or exposing you?
+            <T en="you back — or exposing you?" ar="— أم تعرّضك للخطر؟" />
           </h2>
           <p className="font-dm mb-8 text-cream/50" style={{ fontWeight: 300 }}>
-            6 questions. No email. Instant score with a risk breakdown.
+            <T en="6 questions. No email. Instant score with a risk breakdown." ar="6 أسئلة. بلا بريد إلكتروني. درجة فورية مع تحليل للمخاطر." />
           </p>
-          <button
-            onClick={() => setStarted(true)}
-            className="font-dm font-bold text-sm uppercase px-10 py-4 rounded-sm transition-colors duration-200 bg-terracotta hover:bg-terracotta-deep text-cream"
-            style={{ letterSpacing: "0.08em" }}
-          >
-            Start the Diagnostic →
+          <button onClick={() => setStarted(true)} className="font-dm font-bold text-sm uppercase px-10 py-4 rounded-sm transition-colors duration-200 bg-terracotta hover:bg-terracotta-deep text-cream" style={{ letterSpacing: "0.08em" }}>
+            <T en="Start the Diagnostic →" ar="ابدأ التشخيص ←" />
           </button>
         </div>
       </section>
@@ -90,22 +89,19 @@ export default function BusinessDiagnostic() {
       <section id="diagnostic" className="px-6 md:px-20 py-24 bg-ink">
         <div className="max-w-2xl mx-auto">
           <span className="font-dm font-bold text-xs uppercase block mb-8 text-terracotta" style={{ letterSpacing: "0.18em" }}>
-            Your Results
+            <T en="Your Results" ar="نتائجك" />
           </span>
 
-          <div
-            className="p-8 mb-8"
-            style={{ background: "hsl(var(--cream) / 0.04)", border: `1px solid ${result.borderColor}` }}
-          >
+          <div className="p-8 mb-8" style={{ background: "hsl(var(--cream) / 0.04)", border: `1px solid ${result.borderColor}` }}>
             <div className="flex items-center gap-8 mb-6 flex-wrap">
               <div className={`font-serif font-bold ${result.colorClass}`} style={{ fontSize: "4rem", lineHeight: 1 }}>
                 {scorePct}
                 <span className="text-2xl text-cream/30">%</span>
               </div>
               <div>
-                <div className={`font-serif font-semibold text-xl mb-1 ${result.colorClass}`}>{result.label}</div>
+                <div className={`font-serif font-semibold text-xl mb-1 ${result.colorClass}`}>{pick(result.label, lang)}</div>
                 <p className="font-dm text-sm leading-relaxed text-cream/65" style={{ fontWeight: 300, maxWidth: "30ch" }}>
-                  {result.summary}
+                  {pick(result.summary, lang)}
                 </p>
               </div>
             </div>
@@ -113,7 +109,7 @@ export default function BusinessDiagnostic() {
             {risks.length > 0 && (
               <div>
                 <p className="font-dm font-bold text-xs uppercase mb-4 text-terracotta-soft" style={{ letterSpacing: "0.12em" }}>
-                  Identified Risks & Recommendations
+                  <T en="Identified Risks & Recommendations" ar="المخاطر المُحدّدة والتوصيات" />
                 </p>
                 <ul className="space-y-3">
                   {risks.map((r, i) => (
@@ -121,10 +117,10 @@ export default function BusinessDiagnostic() {
                       <span className="text-terracotta flex-shrink-0">⚠</span>
                       <div>
                         <p className="font-dm text-sm text-cream/65" style={{ fontWeight: 300 }}>
-                          {r.risk}
+                          {pick(r.risk, lang)}
                         </p>
                         <a href="#services" className="font-dm text-xs font-bold text-terracotta">
-                          → Recommended: {r.service}
+                          <T en="→ Recommended:" ar="← الموصى به:" /> {pick(r.service, lang)}
                         </a>
                       </div>
                     </li>
@@ -135,19 +131,11 @@ export default function BusinessDiagnostic() {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <a
-              href="#contact"
-              className="font-dm font-bold text-sm uppercase px-8 py-4 rounded-sm bg-terracotta hover:bg-terracotta-deep text-cream transition-colors"
-              style={{ letterSpacing: "0.06em" }}
-            >
-              Book Free Consultation →
+            <a href="#contact" className="font-dm font-bold text-sm uppercase px-8 py-4 rounded-sm bg-terracotta hover:bg-terracotta-deep text-cream transition-colors" style={{ letterSpacing: "0.06em" }}>
+              <T en="Book Free Consultation →" ar="احجز استشارة مجانية ←" />
             </a>
-            <a
-              href="/tools#diagnostic"
-              className="font-dm font-bold text-sm uppercase px-8 py-4 rounded-sm text-cream/55 hover:text-cream transition-colors"
-              style={{ border: "1px solid hsl(var(--cream) / 0.15)", letterSpacing: "0.06em" }}
-            >
-              Take the Full Diagnostic →
+            <a href="/tools#diagnostic" className="font-dm font-bold text-sm uppercase px-8 py-4 rounded-sm text-cream/55 hover:text-cream transition-colors" style={{ border: "1px solid hsl(var(--cream) / 0.15)", letterSpacing: "0.06em" }}>
+              <T en="Take the Full Diagnostic →" ar="خذ التشخيص الكامل ←" />
             </a>
           </div>
         </div>
@@ -159,56 +147,38 @@ export default function BusinessDiagnostic() {
     <section id="diagnostic" className="px-6 md:px-20 py-24 bg-ink">
       <div className="max-w-2xl mx-auto">
         <span className="font-dm font-bold text-xs uppercase block mb-8 text-terracotta" style={{ letterSpacing: "0.18em" }}>
-          Free HR Diagnostic
+          <T en="Free HR Diagnostic" ar="تشخيص مجاني للموارد البشرية" />
         </span>
 
         <div className="mb-10">
           <div className="flex justify-between mb-2">
             <span className="font-dm text-xs text-cream/40">
-              Question {currentQ + 1} of {DIAGNOSTIC_QUESTIONS.length}
+              {lang === "ar" ? `سؤال ${currentQ + 1} من ${DIAGNOSTIC_QUESTIONS.length}` : `Question ${currentQ + 1} of ${DIAGNOSTIC_QUESTIONS.length}`}
             </span>
             <span className="font-dm text-xs text-cream/40">
-              {Math.round((currentQ / DIAGNOSTIC_QUESTIONS.length) * 100)}% complete
+              {lang === "ar" ? `${Math.round((currentQ / DIAGNOSTIC_QUESTIONS.length) * 100)}٪ مكتمل` : `${Math.round((currentQ / DIAGNOSTIC_QUESTIONS.length) * 100)}% complete`}
             </span>
           </div>
           <div className="h-0.5 w-full bg-cream/10">
-            <div
-              className="h-0.5 transition-all duration-500 bg-terracotta"
-              style={{ width: `${(currentQ / DIAGNOSTIC_QUESTIONS.length) * 100}%` }}
-            />
+            <div className="h-0.5 transition-all duration-500 bg-terracotta" style={{ width: `${(currentQ / DIAGNOSTIC_QUESTIONS.length) * 100}%` }} />
           </div>
         </div>
 
-        <div
-          className="p-8 mb-6 animate-fade-up"
-          key={q.id}
-          style={{ background: "hsl(var(--cream) / 0.04)", border: "1px solid hsl(var(--cream) / 0.08)" }}
-        >
-          <p className="font-serif font-semibold text-xl leading-snug mb-8 text-cream">{q.text}</p>
+        <div className="p-8 mb-6 animate-fade-up" key={q.id} style={{ background: "hsl(var(--cream) / 0.04)", border: "1px solid hsl(var(--cream) / 0.08)" }}>
+          <p className="font-serif font-semibold text-xl leading-snug mb-8 text-cream">{pick(q.text, lang)}</p>
           <div className="flex gap-4">
-            <button
-              onClick={() => handleAnswer("yes")}
-              className="flex-1 font-dm font-bold text-sm uppercase py-4 rounded-sm bg-terracotta hover:bg-terracotta-deep text-cream transition-colors"
-              style={{ letterSpacing: "0.08em" }}
-            >
-              ✓ Yes
+            <button onClick={() => handleAnswer("yes")} className="flex-1 font-dm font-bold text-sm uppercase py-4 rounded-sm bg-terracotta hover:bg-terracotta-deep text-cream transition-colors" style={{ letterSpacing: "0.08em" }}>
+              {lang === "ar" ? "✓ نعم" : "✓ Yes"}
             </button>
-            <button
-              onClick={() => handleAnswer("no")}
-              className="flex-1 font-dm font-bold text-sm uppercase py-4 rounded-sm text-cream/55 hover:text-cream hover:border-terracotta transition-colors"
-              style={{ border: "1px solid hsl(var(--cream) / 0.15)", letterSpacing: "0.08em" }}
-            >
-              ✗ No
+            <button onClick={() => handleAnswer("no")} className="flex-1 font-dm font-bold text-sm uppercase py-4 rounded-sm text-cream/55 hover:text-cream hover:border-terracotta transition-colors" style={{ border: "1px solid hsl(var(--cream) / 0.15)", letterSpacing: "0.08em" }}>
+              {lang === "ar" ? "✗ لا" : "✗ No"}
             </button>
           </div>
         </div>
 
         {currentQ > 0 && (
-          <button
-            onClick={() => setCurrentQ((c) => c - 1)}
-            className="font-dm text-sm text-cream/35 hover:text-cream transition-colors"
-          >
-            ← Back
+          <button onClick={() => setCurrentQ((c) => c - 1)} className="font-dm text-sm text-cream/35 hover:text-cream transition-colors">
+            <T en="← Back" ar="→ رجوع" />
           </button>
         )}
       </div>

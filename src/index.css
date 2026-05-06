@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+
 :root {
   color-scheme: light only;
 }
@@ -164,3 +166,31 @@
     will-change: transform;
   }
 }
+
+/* ─────────────── Arabic / RTL ─────────────── */
+html[dir="rtl"] body,
+html[dir="rtl"] .font-dm,
+html[dir="rtl"] .font-syne {
+  font-family: 'Noto Kufi Arabic', 'DM Sans', system-ui, sans-serif;
+}
+html[dir="rtl"] .font-serif {
+  font-family: 'Noto Naskh Arabic', 'Cormorant Garamond', Georgia, serif;
+}
+/* Slightly tighter line-height for Arabic body copy */
+html[dir="rtl"] p,
+html[dir="rtl"] li {
+  line-height: 1.85;
+}
+/* Numerals stay LTR for clarity (prices, phone numbers) */
+html[dir="rtl"] .num,
+html[dir="rtl"] .ltr-num {
+  direction: ltr;
+  unicode-bidi: embed;
+  display: inline-block;
+}
+/* Arrow glyphs flip in RTL (→ becomes ←) */
+html[dir="rtl"] .rtl-flip {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+

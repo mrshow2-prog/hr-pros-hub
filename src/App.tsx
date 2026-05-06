@@ -17,6 +17,7 @@ import ProfileRouter from "./pages/ProfileRouter";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProfileEditor from "./pages/admin/AdminProfileEditor";
+import LanguageSync from "./i18n/LanguageSync";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <LanguageSync />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/business" element={<Business />} />
@@ -49,10 +51,16 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/career" element={<Career />} />
           <Route path="/legal" element={<Legal />} />
+          {/* Arabic mirrors — same components, language flipped via <LanguageSync> */}
+          <Route path="/ar" element={<Index />} />
+          <Route path="/ar/business" element={<Business />} />
+          <Route path="/ar/tools" element={<Tools />} />
+          <Route path="/ar/career" element={<Career />} />
+          <Route path="/ar/legal" element={<Legal />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/:slug" element={<AdminProfileEditor />} />
-          {/* Dynamic profile pages — keep this LAST custom route (above catch-all) */}
+          {/* Dynamic profile pages — always English, no /ar prefix */}
           <Route path="/:slug" element={<ProfileRouter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
