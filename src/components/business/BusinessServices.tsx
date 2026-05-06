@@ -33,8 +33,13 @@ export default function BusinessServices() {
               </span>
               <h3 className="font-serif font-semibold text-lg mb-3 leading-snug text-cream">{s.name}</h3>
               <div className="mb-4">
+                {s.price.startsWith("From ") && (
+                  <span className="font-dm text-xs mr-1.5 text-cream/35" style={{ fontWeight: 300 }}>
+                    From
+                  </span>
+                )}
                 <span className="font-serif font-bold text-2xl text-terracotta-soft" style={{ letterSpacing: "-0.02em" }}>
-                  {s.price}
+                  {s.price.startsWith("From ") ? s.price.slice(5) : s.price}
                 </span>
                 <span className="font-dm text-xs ml-2 text-cream/35" style={{ fontWeight: 300 }}>
                   {s.priceNote}
