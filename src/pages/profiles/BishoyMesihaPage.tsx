@@ -258,6 +258,7 @@ function SpecialtyView({ sp, photoUrl, onBack }: { sp: Specialty; photoUrl: stri
           <a href={CONTACT.linkedin} target="_blank" rel="noopener">in</a>
         </div>
       </div>
+      <div className="sp-hero">
         <div className="sp-hero-bg" style={{ background: `linear-gradient(135deg,${sp.color} 0%,var(--ink) 70%)` }} />
         <div className="sp-hero-pattern" />
         <div className="sp-hero-content">
