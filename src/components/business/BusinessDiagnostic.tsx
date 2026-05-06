@@ -142,18 +142,13 @@ export default function BusinessDiagnostic() {
             >
               Book Free Consultation →
             </a>
-            <button
-              onClick={() => {
-                setAnswers({});
-                setSubmitted(false);
-                setCurrentQ(0);
-                setStarted(false);
-              }}
+            <a
+              href="/tools#diagnostic"
               className="font-dm font-bold text-sm uppercase px-8 py-4 rounded-sm text-cream/55 hover:text-cream transition-colors"
               style={{ border: "1px solid hsl(var(--cream) / 0.15)", letterSpacing: "0.06em" }}
             >
-              Retake
-            </button>
+              Take the Full Diagnostic →
+            </a>
           </div>
         </div>
       </section>
