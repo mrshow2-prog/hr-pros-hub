@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import SEO from "@/components/seo/SEO";
 import type { ProfileContent } from "@/hooks/useProfileContent";
 import {
-  HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT,
-  EDUCATION, SPECIALTIES, type Specialty,
+  HERO as DEFAULT_HERO, MARQUEE as DEFAULT_MARQUEE, ACHIEVEMENTS as DEFAULT_ACHIEVEMENTS,
+  TESTIMONIALS as DEFAULT_TESTIMONIALS, PHILOSOPHY as DEFAULT_PHILOSOPHY,
+  CONTACT as DEFAULT_CONTACT, EDUCATION as DEFAULT_EDUCATION,
+  SPECIALTIES as DEFAULT_SPECIALTIES, type Specialty,
 } from "./bishoy-mesiha/data";
 import "./bishoy-mesiha/theme.css";
 import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
@@ -12,6 +14,15 @@ import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/comp
 interface Props { profile: ProfileContent }
 
 export default function BishoyMesihaPage({ profile }: Props) {
+  const c: any = profile.content || {};
+  const HERO = { ...DEFAULT_HERO, ...(c.hero || {}) };
+  const MARQUEE: string[] = Array.isArray(c.marquee) && c.marquee.length ? c.marquee : DEFAULT_MARQUEE;
+  const ACHIEVEMENTS = Array.isArray(c.achievements) && c.achievements.length ? c.achievements : DEFAULT_ACHIEVEMENTS;
+  const TESTIMONIALS = Array.isArray(c.testimonials) && c.testimonials.length ? c.testimonials : DEFAULT_TESTIMONIALS;
+  const PHILOSOPHY: string = typeof c.philosophy === "string" && c.philosophy ? c.philosophy : DEFAULT_PHILOSOPHY;
+  const CONTACT = { ...DEFAULT_CONTACT, ...(c.contact || {}) };
+  const EDUCATION = Array.isArray(c.education) && c.education.length ? c.education : DEFAULT_EDUCATION;
+  const SPECIALTIES: Specialty[] = Array.isArray(c.specialties) && c.specialties.length ? c.specialties : DEFAULT_SPECIALTIES;
   const [activeId, setActiveId] = useState<string | null>(() =>
     typeof window !== "undefined" ? window.location.hash.replace("#", "") || null : null
   );
@@ -50,7 +61,8 @@ export default function BishoyMesihaPage({ profile }: Props) {
     sameAs: [CONTACT.linkedin],
   };
 
-  const photoUrl = (profile.content as any)?.hero?.photo_url || bishoyPhoto;
+  const photoUrl = HERO.photo_url || (c as any)?.photo_url || bishoyPhoto;
+  const data = { HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT, EDUCATION, SPECIALTIES };
 
   return (
     <div className="bm-root">
@@ -64,18 +76,24 @@ export default function BishoyMesihaPage({ profile }: Props) {
       <div className="noise-overlay" />
       <ProfileByPeopleStudioHeader />
       {active ? (
-        <SpecialtyView sp={active} photoUrl={photoUrl} onBack={goHome} />
+        <SpecialtyView sp={active} photoUrl={photoUrl} onBack={goHome} data={data} />
       ) : (
-        <Landing onSelect={openSpecialty} photoUrl={photoUrl} />
+        <Landing onSelect={openSpecialty} photoUrl={photoUrl} data={data} />
       )}
       <ProfileByPeopleStudioFooter />
     </div>
   );
 }
 
+type PageData = {
+  HERO: any; MARQUEE: string[]; ACHIEVEMENTS: any[]; TESTIMONIALS: any[];
+  PHILOSOPHY: string; CONTACT: any; EDUCATION: any[]; SPECIALTIES: Specialty[];
+};
+
 /* -------------------- LANDING -------------------- */
 
-function Landing({ onSelect, photoUrl }: { onSelect: (id: string) => void; photoUrl: string }) {
+function Landing({ onSelect, photoUrl, data }: { onSelect: (id: string) => void; photoUrl: string; data: PageData }) {
+  const { HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT } = data;
   return (
     <>
       <section className="hero">
@@ -109,7 +127,7 @@ function Landing({ onSelect, photoUrl }: { onSelect: (id: string) => void; photo
         </div>
       </div>
 
-      <Orbit onSelect={onSelect} photoUrl={photoUrl} />
+      <Orbit onSelect={onSelect} photoUrl={photoUrl} data={data} />
 
       <section className="achievements-strip">
         <div className="achievements-grid">
@@ -171,7 +189,8 @@ function Landing({ onSelect, photoUrl }: { onSelect: (id: string) => void; photo
 
 /* -------------------- ORBIT -------------------- */
 
-function Orbit({ onSelect, photoUrl }: { onSelect: (id: string) => void; photoUrl: string }) {
+function Orbit({ onSelect, photoUrl, data }: { onSelect: (id: string) => void; photoUrl: string; data: PageData }) {
+  const { HERO, SPECIALTIES } = data;
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(0);
 
@@ -237,7 +256,8 @@ function Orbit({ onSelect, photoUrl }: { onSelect: (id: string) => void; photoUr
 
 /* -------------------- SPECIALTY VIEW -------------------- */
 
-function SpecialtyView({ sp, photoUrl, onBack }: { sp: Specialty; photoUrl: string; onBack: () => void }) {
+function SpecialtyView({ sp, photoUrl, onBack, data }: { sp: Specialty; photoUrl: string; onBack: () => void; data: PageData }) {
+  const { HERO, CONTACT, EDUCATION } = data;
   const [copied, setCopied] = useState(false);
   const url = typeof window !== "undefined" ? `${window.location.origin}${window.location.pathname}#${sp.id}` : "";
   const copy = () => {
