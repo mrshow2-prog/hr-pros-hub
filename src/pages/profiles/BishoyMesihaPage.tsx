@@ -189,7 +189,8 @@ function Landing({ onSelect, photoUrl, data }: { onSelect: (id: string) => void;
 
 /* -------------------- ORBIT -------------------- */
 
-function Orbit({ onSelect, photoUrl }: { onSelect: (id: string) => void; photoUrl: string }) {
+function Orbit({ onSelect, photoUrl, data }: { onSelect: (id: string) => void; photoUrl: string; data: PageData }) {
+  const { HERO, SPECIALTIES } = data;
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(0);
 
