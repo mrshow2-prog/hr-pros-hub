@@ -490,7 +490,7 @@ export default function Career() {
               </div>
             ))}
           </div>
-          <a href="https://calendly.com/peoplestudio" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Book a free 20-minute call →</a>
+          <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Book a free 20-minute call →</a>
           <p className="mt-4 text-xs text-paper/40">Free call. No obligation. We'll tell you honestly whether and how we can help.</p>
         </div>
       </section>

@@ -19,7 +19,7 @@ export default function BusinessRealCost() {
           className="font-serif font-normal leading-[1.05] mb-12 text-ink"
           style={{ fontSize: "clamp(2rem, 4.5vw, 3.5rem)" }}
         >
-          One of these covers <em className="text-terracotta" style={{ fontStyle: "italic" }}>all the others.</em>
+          One avoided mistake <em className="text-terracotta" style={{ fontStyle: "italic" }}>pays for years of getting it right.</em>
         </h2>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

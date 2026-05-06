@@ -6,7 +6,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 // is configured via the RESEND_FROM_EMAIL secret.
 const FROM_NAME = "Bishoy @ People.Studio";
 const DEFAULT_FROM_EMAIL = "onboarding@resend.dev";
-const BOOKING_LINK = "https://calendly.com/peoplestudio";
+const BOOKING_LINK = "https://wa.me/971581784948";
 
 interface RequestBody {
   toEmail: string;
