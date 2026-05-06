@@ -205,10 +205,11 @@ export const RETAINER_TIERS = [
   },
   {
     name: "Fractional",
-    price: "AED 18,000–25,000",
+    price: "From AED 18,000",
     per: "per month",
-    size: "Any size",
+    size: "100+ employees",
     featured: false,
+    bestValue: true,
     features: ["Embedded 2–3 days/week on-site", "Full HR Director responsibilities", "Build-Operate-Transfer model", "Board-level HR strategy", "Unlimited projects", "Team building support"],
   },
 ];

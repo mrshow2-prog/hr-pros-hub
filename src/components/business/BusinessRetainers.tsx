@@ -17,16 +17,29 @@ export default function BusinessRetainers() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {RETAINER_TIERS.map((t, i) => (
+          {RETAINER_TIERS.map((t: any, i) => (
             <div
               key={i}
               className={`p-8 flex flex-col relative ${t.featured ? "bg-terracotta" : "bg-white"}`}
-              style={{ outline: t.featured ? "none" : "1px solid hsl(var(--ink) / 0.08)" }}
+              style={{
+                outline: t.featured
+                  ? "none"
+                  : t.bestValue
+                  ? "2px solid hsl(var(--ink))"
+                  : "1px solid hsl(var(--ink) / 0.08)",
+              }}
             >
               {t.featured && (
                 <div className="absolute -top-3 left-8">
                   <span className="font-dm font-bold text-xs uppercase px-3 py-1 bg-ink text-cream" style={{ letterSpacing: "0.1em" }}>
                     Most Popular
+                  </span>
+                </div>
+              )}
+              {t.bestValue && (
+                <div className="absolute -top-3 left-8">
+                  <span className="font-dm font-bold text-xs uppercase px-3 py-1 bg-terracotta text-cream" style={{ letterSpacing: "0.1em" }}>
+                    Best Value
                   </span>
                 </div>
               )}
@@ -64,6 +77,14 @@ export default function BusinessRetainers() {
                   style={{ fontWeight: 300, border: "1px solid hsl(var(--cream) / 0.25)", background: "hsl(var(--cream) / 0.08)" }}
                 >
                   At AED 7,500/month, this retainer costs less than one wrongful termination, one labour claim, or one month of Emiratisation contributions. Most clients recover the full annual fee in the first issue we resolve.
+                </div>
+              )}
+              {t.bestValue && (
+                <div
+                  className="font-dm text-xs leading-relaxed mb-6 p-4 rounded-sm text-ink/75"
+                  style={{ fontWeight: 300, border: "1px solid hsl(var(--ink) / 0.15)", background: "hsl(var(--terracotta) / 0.06)" }}
+                >
+                  <span className="font-bold text-ink">Best value for 100+ employees.</span> A senior HR leader embedded in your business — covering everything in the services above (compliance, org design, C&B, systems, automation, payroll oversight) and the day-to-day judgement calls a growing team can't operate without. One engagement, one accountable owner, no full-time hire.
                 </div>
               )}
               <a
