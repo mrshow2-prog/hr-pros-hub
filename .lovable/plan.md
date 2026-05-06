@@ -1,59 +1,88 @@
-## Problem
+# Add Arabic Localization to the Entire Site
 
-Bishoy's live page (`BishoyMesihaPage.tsx`) renders from a **hard-coded TypeScript file** (`src/pages/profiles/bishoy-mesiha/data.ts`) — hero, marquee, achievements, testimonials, philosophy, contact, education, and all 8 specialties.
+## Scope
 
-The admin editor reads/writes `profiles_content.content` (JSONB in the database), which for Bishoy currently only holds a tiny stub (`name`, `headline`, `bio`, `photo_url`, `contact_*`, `linkedin_url`, `cv_url`, `achievements`).
+**In scope (translated to Arabic):**
+- Landing page (`/`)
+- Business page (`/business`) and all its section components
+- Career page (`/career`) and its components
+- Tools page (`/tools`) and tool components
+- Legal page (`/legal`)
+- 404 (`/not-found`)
+- Shared chrome: nav, footer, WhatsApp button, contact strings, SEO titles/descriptions
+- Email templates (subject/body wording shown to UAE users)
 
-So:
-- Editor shows the DB stub — looks "completely different" from the live page.
-- Edits save fine but change nothing visible, because the page ignores `profile.content`.
+**Out of scope (English only, as you requested):**
+- All profile pages: `/khalil`, `/bishoy`, the sample profile
+- Profile data files (`src/data/bishoy.ts`, `src/data/profile.ts`)
+- The admin dashboard (internal only)
 
-Khalil's page already reads from `profile.content` correctly — that's the pattern to match.
+## Architecture
 
-## Plan
+### 1. Stack
+- `i18next` + `react-i18next` + `i18next-browser-languagedetector`
+- One JSON file per language: `src/i18n/locales/en.json`, `src/i18n/locales/ar.json`
+- Keys grouped by namespace per page/component (e.g. `business.hero.title`, `career.audience.card1.title`)
 
-### 1. Seed the database with Bishoy's full content
+### 2. URL strategy (/ar prefix)
+- Add a parallel set of routes under `/ar/*` in `App.tsx` that render the same pages
+- A `LanguageSync` component reads the URL prefix on every route change → calls `i18n.changeLanguage('ar' | 'en')` and sets `<html lang dir>`
+- All internal `<Link>` components use a `useLocalizedPath()` helper that prepends `/ar` when active
+- Profile routes (`/:slug`) stay unprefixed — they always render in English even if the user came from `/ar/...`
 
-One-time migration that takes the exact data from `src/pages/profiles/bishoy-mesiha/data.ts` and writes it into `profiles_content.content` for `slug = 'bishoy-mesiha'`, under a clean shape:
+### 3. RTL
+- `dir="rtl"` set on `<html>` when Arabic is active
+- Add `[dir="rtl"]` overrides in `src/index.css` for the few places that use directional utilities (text-right/left, ml/mr, rotated marquees, decorative arrows like `→` become `←`)
+- Tailwind logical utilities (`ms-*`, `me-*`, `ps-*`, `pe-*`) used where flips are needed inside refactored components
+- Arabic typography: load `Noto Naskh Arabic` (serif) + `Noto Kufi Arabic` (sans) via Google Fonts, mapped via a `[dir="rtl"]` font-family override so existing `font-serif` / `font-dm` classes stay untouched
 
-```text
-content = {
-  hero:         { eyebrow, nameFirst, nameLast, name, tagline, hook, photo_url, stats[] },
-  marquee:      [ ... ],
-  achievements: [ { number, desc } ],
-  testimonials: [ { avatar, author, role, text } ],
-  philosophy:   "...",
-  contact:      { email, phone, linkedin, location },
-  education:    [ { degree, school, year } ],
-  specialties:  [ { id, label, icon, color, angle, tagline, summary,
-                    metrics[], skills[], experience[], projects[], testimonials[] } ],
-  cv_url:       "...",
-}
-```
+### 4. Language switcher
+- Small `EN / ع` toggle in the top-right of every nav (Index header, BusinessNav, the career header, profile/tools headers)
+- Toggling navigates between `/x` and `/ar/x` preserving the path + hash
 
-This preserves every field the page renders today.
+### 5. Translation generation workflow
+- All copy lives in `en.json` as the source of truth
+- I use the Lovable AI gateway script to translate `en.json` → `ar.json` (Gemini 2.5 Pro, professional MENA Arabic, preserves brand terms like "People.Studio", "MOHRE", "Nafis", "Emiratisation", "GPSSA", "BOT", "Fractional", "Calendly", "WhatsApp", "LinkedIn", "CV")
+- A glossary at the top of the prompt locks tone (formal-modern, business-Arabic, no machine literalisms)
+- **Maintenance going forward:** every time we add or change English copy, I re-run the same translation script on the new/changed keys and append to `ar.json`. I'll do this automatically as part of any future edit you ask for.
 
-### 2. Refactor `BishoyMesihaPage.tsx` to read from `profile.content`
+## Files I'll create
 
-- Replace the static imports from `./bishoy-mesiha/data` with reads from `profile.content`.
-- Keep the same `Specialty` / `Stat` / etc. TypeScript interfaces (move them to a `types.ts` next to the page).
-- Keep `data.ts` as a **fallback default** — if a field is missing in the DB (e.g. brand-new profile), the page falls back to the static defaults so it never breaks.
-- No visual / behavioural changes to the page itself.
+- `src/i18n/index.ts` — i18next bootstrap
+- `src/i18n/locales/en.json` — extracted English source
+- `src/i18n/locales/ar.json` — AI-translated Arabic
+- `src/i18n/LanguageSync.tsx` — URL ↔ language binding
+- `src/i18n/useLocalizedPath.ts` — path helper
+- `src/components/ui/LanguageToggle.tsx` — EN / ع switcher
 
-### 3. Result
+## Files I'll modify
 
-- Opening `/admin/bishoy-mesiha` → **Quick fields** tab shows the real name / headline / photo / contact already populated from the seeded JSON.
-- **Content (JSON)** tab shows the full structured content (hero, specialties, testimonials, etc.) — editable and savable.
-- **Preview** tab and the live `/bishoy-mesiha` page reflect saved edits immediately.
+- `src/main.tsx` — import i18n
+- `src/App.tsx` — add `/ar/*` route tree, mount `LanguageSync`
+- `src/index.css` — add `[dir="rtl"]` typographic + spacing adjustments, Arabic font import
+- `src/pages/Index.tsx`, `Business.tsx`, `Career.tsx`, `Tools.tsx`, `Legal.tsx`, `NotFound.tsx` — replace literal strings with `t()`
+- All `src/components/business/*`, `src/components/career/*`, `src/components/tools/*` — same
+- `src/components/ui/SiteFooter.tsx`, `BookCallBanner.tsx`, `WhatsAppButton.tsx` — same
+- `src/components/seo/SEO.tsx` — pass localized title/description, set `<html lang>`
+- `src/data/business.ts`, `src/data/tools.ts` — convert hardcoded strings to translation keys (keep structure, swap values for keys consumed via `t()`)
+- `supabase/functions/send-tool-email/index.ts` — bilingual email body (Arabic + English when triggered from Arabic site)
 
-### Out of scope (next iteration)
+## Files left untouched (per your instruction)
 
-- A friendlier section-by-section form editor for specialties (currently still JSON-edited).
-- Admin UI to upload/replace the hero photo (already works via Quick fields → photo upload).
+- `src/pages/Profile.tsx`, `ProfileRouter.tsx`
+- `src/pages/profiles/**`
+- `src/data/profile.ts`, `src/data/bishoy.ts`
+- `src/pages/admin/**`
 
-### Files touched
+## Validation
 
-- `supabase/migrations/<timestamp>_seed_bishoy_content.sql` (new) — one `UPDATE profiles_content SET content = '<json>' WHERE slug='bishoy-mesiha'`.
-- `src/pages/profiles/bishoy-mesiha/types.ts` (new) — extracted interfaces.
-- `src/pages/profiles/bishoy-mesiha/data.ts` (kept) — re-exported as default fallbacks.
-- `src/pages/profiles/BishoyMesihaPage.tsx` (edited) — reads from `profile.content` with fallback to `data.ts`.
+After build, I'll:
+1. Open `/` and `/ar` to confirm both render
+2. Open `/ar/business` and visually check RTL flips, switcher toggling, key Arabic phrases
+3. Spot-check `/ar/career`, `/ar/tools`, `/ar/legal`
+4. Confirm `/khalil` still renders English regardless of whether you came from `/ar`
+5. Confirm console has no missing-key warnings
+
+## Notes on size
+
+This is a large refactor (~14k LOC across 117 files, but only ~30 files contain user-facing copy). I'll work in passes: infrastructure → home + nav → business → career → tools → footer/legal/404 → translation generation → RTL polish. Each pass is committed independently so the site stays functional throughout.
