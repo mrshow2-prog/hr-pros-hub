@@ -1,124 +1,89 @@
 
-# Plan — Rebuild `/chef-m-khalil` faithfully on the new dynamic architecture
+# Plan — Rebuild `/bishoy-mesiha` faithfully (360° HR Leader)
 
-Goal: Recreate the uploaded `index-2.html` as a pixel-faithful React page served from `/chef-m-khalil`, backed by `profiles_content`, with an admin editor that lets you change all text and manage the dish/photo/certificate galleries (add, remove, reorder, upload). Layout, fonts, colors, hero parallax, lightbox and animations stay code-driven.
+Same approach as Chef Khalil: code-driven structure + JSONB content. No image assets this round — we'll wire `A1.jpg` references to a placeholder portrait and you can swap later via admin/upload.
 
-Bishoy's profile is **out of scope** for this round — we'll do it the same way once you upload his HTML.
-
----
-
-## What you'll do (one action only)
-
-Reply to this plan with a ZIP of the three image folders from the original site:
-- `photos/` (~17 files)
-- `dishes/` (~25 files)
-- `certificates/` (~18 files)
-
-Keep the **exact same filenames** as referenced in the HTML — I'll match them when seeding.
-
-Everything else is automatic.
+After this lands, I'll move on to the unified tabbed admin editor.
 
 ---
 
 ## What I'll build
 
-### 1. Storage import (one-time)
-- Unpack the ZIP, upload all images to the existing `profile-images` bucket under:
-  - `chef-m-khalil/photos/...`
-  - `chef-m-khalil/dishes/...`
-  - `chef-m-khalil/certificates/...`
-- Generate the public URL list and embed it into the seed.
-
-### 2. Database seed (data only — no schema change)
-The existing `profiles_content.content` JSONB column is already flexible enough. I'll overwrite the `chef-m-khalil` row with a structured payload covering every section:
+### 1. Data shape (overwrite `profiles_content` row for `bishoy-mesiha`)
+The HTML has 8 specialty "lenses" plus a rich landing page. Schema:
 
 ```text
 content = {
-  hero:        { eyebrow, name_first, name_last, tagline, ctas[], stats[] },
-  about:       { headline, paragraphs[], portrait_url, signature_quote, mini_stats[] },
-  specialties: [ { title, description, icon } x5 ],
-  experience:  [ { years, role, company, location, bullets[] } ... ],   // timeline
-  dishes:      [ { url, name } ... ],                                   // gallery
-  photos:      [ { url, tall, wide } ... ],                             // masonry
-  awards:      [ { year, title, body } ... ],
-  certificates:[ { url, name } ... ],
-  skills:      [ { group, items: [{ label, level }] } ... ],            // bars
-  education:   [ { year, title, institution, detail } ... ],
-  contact:     { email, phone, whatsapp, linkedin, location, form_recipient }
+  hero: {
+    eyebrow, name_first, name_last, tagline, hook (multiline),
+    photo_url, stats[4]: { value, label }
+  },
+  marquee_items: string[],            // award strip
+  orbit_center: { name, title, photo_url },
+  achievements: [{ number, desc }],   // 10 cards
+  testimonials: [{ text, author, role, avatar_letter }],
+  philosophy: { quote, attribution },
+  contact: { email, phone, linkedin, location },
+  footer_cta: { heading, body },
+  specialties: [                       // 8 entries
+    {
+      id, label, icon, color, angle,
+      tagline, summary,
+      metrics:    [{ val, label }],
+      skills:     string[],
+      experience: [{ company, role, period, heading, bullets[] }],
+      projects:   [{ title, desc, result }],
+      testimonials: [{ text, author }]
+    }
+  ]
 }
 ```
 
-All copy from your HTML is pre-loaded.
+All text from your HTML pre-loaded (employee-relations, total-rewards, talent-acquisition, hr-operations, learning-development, hr-tech-ai, culture-engagement, strategic-business-partner — extracted from the file).
 
-### 3. The page — `src/pages/profiles/ChefMKhalilPage.tsx` (full rewrite)
-A faithful port of the HTML, broken into small section components under `src/pages/profiles/chef-m-khalil/`:
-- `Nav.tsx` — sticky scroll-aware nav with mobile hamburger
-- `Hero.tsx` — full-bleed background image, parallax on scroll, eyebrow + display name + italic tagline + CTAs + stats row
-- `About.tsx` — two-column with portrait
-- `Specialties.tsx` — 5-card grid
-- `ExperienceTimeline.tsx` — vertical timeline
-- `DishGallery.tsx` — 4-col grid + lightbox trigger
-- `ChefPhotos.tsx` — masonry honoring `tall`/`wide` flags
-- `Awards.tsx`
-- `Certificates.tsx` — thumb grid + lightbox trigger
-- `Skills.tsx` — animated bars (width fills on intersection)
-- `Education.tsx`
-- `Contact.tsx` — form posts to existing `send-contact-enquiry` edge function (already in repo)
-- `Lightbox.tsx` — shared lightbox with arrow-key + click-outside, used by all three galleries
-- `Footer.tsx`
-- `useFadeIn.ts` — IntersectionObserver hook replacing the inline script
-- `theme.css` — scoped CSS (CSS variables `--gold`, `--cream`, etc.) imported only by this page so the warm palette doesn't leak into the rest of the site
+### 2. Routing
+- `ProfileRouter` already maps `bishoy-mesiha` → `BishoyMesihaPage`. Keep it.
+- New nested view: `/bishoy-mesiha/:specialtyId` (in-page state, no extra route entry needed — we'll use a query param or hash so Lovable's router stays untouched). Default = landing.
 
-The page reads from `useProfileContent('chef-m-khalil')` and renders sections only if their data is present. Fonts (Playfair Display, Lato, Cormorant Garamond) get added to `index.html` `<head>`.
+### 3. Page — full rewrite of `src/pages/profiles/BishoyMesihaPage.tsx`
+Broken into section components under `src/pages/profiles/bishoy-mesiha/`:
+- `theme.css` — scoped CSS variables (`--ink`, `--cream`, `--gold`, `--rust`, `--slate`, `--mist`), keyframes, all classes from the original `<style>` block. Imported only here.
+- `Cursor.tsx` — custom dot + follower (disabled on touch / `prefers-reduced-motion`).
+- `Hero.tsx` — eyebrow, photo ring, name with italic last name, tagline, hook, 4 stats, scroll hint, animated bg orbs.
+- `Marquee.tsx` — looping award strip.
+- `Orbit.tsx` — 3 rings + 8 nodes positioned by `angle`, click → opens specialty page.
+- `Achievements.tsx` — 10-card grid.
+- `Testimonials.tsx` — 5 cards + LinkedIn CTA card.
+- `Philosophy.tsx` — full-bleed quote.
+- `FooterCTA.tsx` — email / phone / linkedin links.
+- `SpecialtyPage.tsx` — back button, hero (title/summary/metrics), skills tags, experience list, projects grid, testimonials, share bar (copy URL).
+- `useFadeIn.ts` — reused intersection-observer.
 
-SEO: existing `<SEO>` component already handles title/description/og — kept as-is.
+Fonts (`Playfair Display`, `DM Sans`, `Space Mono`) added once to `index.html` `<head>` (Khalil's fonts kept).
 
-### 4. Admin editor — `AdminProfileEditor.tsx` (rewrite)
-The current generic editor is replaced with a tabbed editor when `slug === 'chef-m-khalil'`. Tabs:
+### 4. Things explicitly **dropped** vs original HTML
+- `localStorage` admin overlay → replaced by your real `/admin/bishoy-mesiha` (deferred until tabbed editor exists; the simple form will keep working but won't expose the rich shape, same warning as Khalil).
+- `cursor: none` global → kept on desktop only, off on touch / reduced-motion.
+- `A1.jpg` references → `content.hero.photo_url` (a placeholder, swap later).
 
-1. **SEO & visibility** — title, description, OG image, published toggle
-2. **Hero** — eyebrow, first/last name, tagline, CTA buttons, stats (repeater)
-3. **About** — paragraphs (textarea per paragraph, add/remove), portrait upload
-4. **Specialties** — 5 cards (title, description)
-5. **Experience** — timeline entries (add/remove/reorder, role, company, years, bullets)
-6. **Dishes** — repeater of `{ image upload, name }` with drag-to-reorder + delete
-7. **Photos** — repeater of `{ image upload, tall, wide }` with reorder + delete
-8. **Awards** — repeater
-9. **Certificates** — repeater of `{ image upload, name }`
-10. **Skills** — group + items with 0–100 slider
-11. **Education** — repeater
-12. **Contact** — email, phone, WhatsApp, LinkedIn, location
+### 5. SEO
+- Landing: existing `<SEO>` with Person JSON-LD (name, jobTitle, location, sameAs).
+- Specialty subview: dynamic title `${specialty.label} — Bishoy Mesiha` and description from `specialty.summary`.
 
-Reusable bits:
-- `<RepeaterField>` — generic add/remove/reorder list
-- `<ImageUploadField>` — single-image upload to `profile-images/chef-m-khalil/<section>/<timestamp>.ext`, returns public URL
-- All edits stay client-side until **Save** → one `update` of the `content` JSONB
+### 6. Files
+- **Create**: `src/pages/profiles/bishoy-mesiha/{theme.css, Cursor.tsx, Hero.tsx, Marquee.tsx, Orbit.tsx, Achievements.tsx, Testimonials.tsx, Philosophy.tsx, FooterCTA.tsx, SpecialtyPage.tsx, useFadeIn.ts}`
+- **Rewrite**: `src/pages/profiles/BishoyMesihaPage.tsx`
+- **Edit**: `index.html` (add DM Sans + Space Mono if missing)
+- **DB**: one `UPDATE` to `profiles_content` for slug `bishoy-mesiha`
 
-Bishoy and any future profile keeps using the simple form until we port them.
-
-### 5. Routing & cleanup
-- `ProfileRouter.tsx` — already dispatches by slug, no change.
-- `App.tsx` — no change.
-- The currently-rendered simplified `ChefMKhalilPage` and the matching seed get fully replaced.
+No schema migration. No new dependencies.
 
 ---
 
-## Technical notes (skip if you don't care)
+## After this
 
-- **No schema migration.** `content jsonb` already accepts the richer shape. RLS already allows admin write + public read of published rows.
-- **Image URLs.** Stored as fully-qualified public URLs in JSON, so the page just renders `<img src={...}>` — no client-side URL building.
-- **Lightbox** is one component reused by all three galleries via a shared context (`useLightbox`).
-- **Parallax** uses `requestAnimationFrame` + `transform: translateY()` and is disabled on `prefers-reduced-motion`.
-- **Bundle impact.** The page-scoped CSS keeps the rest of the site untouched. No new npm dependencies — Tailwind + plain CSS variables only.
-- **Contact form** wires into the existing `send-contact-enquiry` edge function with the editable recipient email.
-- **Fallbacks.** If a section's data is empty in the DB, that section is skipped — so the page is never broken by an in-progress edit.
+- `/bishoy-mesiha` renders the full 360° landing.
+- Click any orbit node → slides into that specialty's full CV view.
+- Same "don't save via /admin" warning until I build the unified tabbed editor next round.
 
----
-
-## After implementation
-
-1. Visit `/chef-m-khalil` — full faithful design with all imported images.
-2. Visit `/admin/chef-m-khalil` — use the tabbed editor to tweak any section, reorder the gallery, etc.
-3. When ready, send Bishoy's HTML and we'll repeat for `/bishoy-mesiha`.
-
-Reply with the ZIP and approve, and I'll execute end-to-end.
+Reply **approve** and I'll execute end-to-end.
