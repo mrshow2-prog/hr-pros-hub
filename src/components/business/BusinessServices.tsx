@@ -62,6 +62,37 @@ export default function BusinessServices() {
             </div>
           ))}
         </div>
+
+        <div className="mt-20 pt-14 border-t border-cream/10">
+          <div className="grid md:grid-cols-12 gap-10">
+            <div className="md:col-span-4">
+              <span className="font-dm font-bold text-xs uppercase block mb-4 text-terracotta" style={{ letterSpacing: "0.18em" }}>
+                Also available
+              </span>
+              <h3 className="font-serif font-semibold text-cream leading-tight" style={{ fontSize: "clamp(1.5rem, 2.4vw, 2rem)", letterSpacing: "-0.02em" }}>
+                We also support your business with:
+              </h3>
+            </div>
+            <div className="md:col-span-8 grid sm:grid-cols-2 gap-px" style={{ background: "hsl(var(--cream) / 0.06)" }}>
+              {[
+                { name: "Saudization (Nitaqat) Readiness", desc: "Strategic tier mapping, MHRSD compliance, Hadaf (HRDF) subsidy maximization, and Qiwa/GOSI data alignment for KSA expansion." },
+                { name: "Talent Mapping", desc: "Competitor intelligence and future-leader pipelining." },
+                { name: "Performance Management", desc: "Transitioning teams to high-output cultures." },
+                { name: "Engagement & Atmosphere", desc: "Discrete strategies for workspace transformation and custom in-office team building." },
+                { name: "Employee Relations", desc: "Expert guidance on sensitive labor disputes and terminations." },
+                { name: "KSA & Regional Expansion", desc: "Scaling your people operations across the GCC." },
+              ].map((item, i) => (
+                <div key={i} className="p-6 bg-ink flex gap-4">
+                  <span className="text-terracotta font-dm flex-shrink-0">→</span>
+                  <div>
+                    <h4 className="font-serif font-semibold text-cream text-base mb-1.5">{item.name}</h4>
+                    <p className="font-dm text-sm leading-relaxed text-cream/55" style={{ fontWeight: 300 }}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
