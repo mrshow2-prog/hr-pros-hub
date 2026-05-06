@@ -262,11 +262,6 @@ function SpecialtyView({ sp, photoUrl, onBack }: { sp: Specialty; photoUrl: stri
         <div className="sp-hero-bg" style={{ background: `linear-gradient(135deg,${sp.color} 0%,var(--ink) 70%)` }} />
         <div className="sp-hero-pattern" />
         <div className="sp-hero-content">
-          <button className="sp-back-btn" onClick={onBack}>← Back to Full Profile</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-            {photoUrl && <img src={photoUrl} alt="" style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", border: `2px solid ${sp.color}`, flexShrink: 0 }} />}
-            <span style={{ fontSize: 34 }}>{sp.icon}</span>
-          </div>
           <h1 className="sp-title" dangerouslySetInnerHTML={{ __html: `${sp.label.replace("\n", "<br>")} <span>— ${sp.tagline}</span>` }} />
           <p className="sp-summary">{sp.summary}</p>
         </div>
