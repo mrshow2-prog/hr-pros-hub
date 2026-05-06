@@ -98,8 +98,8 @@
 .bm-root .contact-link:hover{color:var(--rust);}
 
 /* SPECIALTY MINI HERO (sticky) */
-.bm-root .sp-mini-hero{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:20px;padding:18px 32px;background:rgba(10,10,15,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.22);}
-.bm-root .sp-hero{margin-top:88px;}
+.bm-root .sp-mini-hero{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:20px;padding:18px 32px;background:rgba(10,10,15,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,.22);}
+.bm-root .sp-hero{margin-top:0;}
 .bm-root .sp-mini-back{background:none;border:1px solid rgba(201,168,76,.4);color:var(--gold);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
 .bm-root .sp-mini-back:hover{background:var(--gold);color:var(--ink);}
 .bm-root .sp-mini-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0;}
