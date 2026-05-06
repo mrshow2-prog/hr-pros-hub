@@ -127,7 +127,7 @@ function Landing({ onSelect, photoUrl, data }: { onSelect: (id: string) => void;
         </div>
       </div>
 
-      <Orbit onSelect={onSelect} photoUrl={photoUrl} />
+      <Orbit onSelect={onSelect} photoUrl={photoUrl} data={data} />
 
       <section className="achievements-strip">
         <div className="achievements-grid">
