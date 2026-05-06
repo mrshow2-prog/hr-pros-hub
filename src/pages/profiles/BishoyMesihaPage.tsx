@@ -6,6 +6,7 @@ import {
   EDUCATION, SPECIALTIES, type Specialty,
 } from "./bishoy-mesiha/data";
 import "./bishoy-mesiha/theme.css";
+import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
 
 interface Props { profile: ProfileContent }
 
@@ -48,7 +49,7 @@ export default function BishoyMesihaPage({ profile }: Props) {
     sameAs: [CONTACT.linkedin],
   };
 
-  const photoUrl = (profile.content as any)?.hero?.photo_url || "";
+  const photoUrl = (profile.content as any)?.hero?.photo_url || bishoyPhoto;
 
   return (
     <div className="bm-root">
@@ -244,6 +245,19 @@ function SpecialtyView({ sp, photoUrl, onBack }: { sp: Specialty; photoUrl: stri
   };
   return (
     <>
+      <div className="sp-mini-hero">
+        <button className="sp-mini-back" onClick={onBack} aria-label="Back to full profile">←</button>
+        {photoUrl && <img src={photoUrl} alt={`${HERO.nameFirst} ${HERO.nameLast}`} className="sp-mini-photo" />}
+        <div className="sp-mini-id">
+          <div className="sp-mini-name">{HERO.nameFirst} {HERO.nameLast}</div>
+          <div className="sp-mini-tag">{HERO.tagline}</div>
+        </div>
+        <div className="sp-mini-contact">
+          <a href={`mailto:${CONTACT.email}`} title={CONTACT.email}>✉ {CONTACT.email}</a>
+          <a href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>📞 {CONTACT.phone}</a>
+          <a href={CONTACT.linkedin} target="_blank" rel="noopener">in</a>
+        </div>
+      </div>
       <div className="sp-hero">
         <div className="sp-hero-bg" style={{ background: `linear-gradient(135deg,${sp.color} 0%,var(--ink) 70%)` }} />
         <div className="sp-hero-pattern" />
