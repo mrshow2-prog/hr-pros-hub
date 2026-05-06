@@ -97,6 +97,23 @@
 .bm-root .contact-link{display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--gold);padding-bottom:2px;transition:color .2s;}
 .bm-root .contact-link:hover{color:var(--rust);}
 
+/* SPECIALTY MINI HERO (sticky) */
+.bm-root .sp-mini-hero{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 24px;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,168,76,.18);}
+.bm-root .sp-mini-back{background:none;border:1px solid rgba(201,168,76,.4);color:var(--gold);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.bm-root .sp-mini-back:hover{background:var(--gold);color:var(--ink);}
+.bm-root .sp-mini-photo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold);flex-shrink:0;}
+.bm-root .sp-mini-id{flex:1;min-width:0;}
+.bm-root .sp-mini-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--cream);line-height:1.1;}
+.bm-root .sp-mini-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--mist);text-transform:uppercase;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bm-root .sp-mini-contact{display:flex;gap:14px;align-items:center;flex-shrink:0;}
+.bm-root .sp-mini-contact a{font-family:'Space Mono',monospace;font-size:10px;color:var(--mist);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;transition:all .2s;}
+.bm-root .sp-mini-contact a:hover{color:var(--gold);border-color:var(--gold);}
+@media(max-width:768px){
+  .bm-root .sp-mini-contact a{font-size:0;}
+  .bm-root .sp-mini-contact a::first-letter{font-size:14px;}
+  .bm-root .sp-mini-tag{display:none;}
+}
+
 /* SPECIALTY PAGE */
 .bm-root .sp-hero{padding:0;position:relative;overflow:hidden;min-height:58vh;display:flex;align-items:flex-end;}
 .bm-root .sp-hero-bg{position:absolute;inset:0;opacity:.6;}
