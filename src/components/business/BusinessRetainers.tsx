@@ -79,6 +79,14 @@ export default function BusinessRetainers() {
                   At AED 7,500/month, this retainer costs less than one wrongful termination, one labour claim, or one month of Emiratisation contributions. Most clients recover the full annual fee in the first issue we resolve.
                 </div>
               )}
+              {t.bestValue && (
+                <div
+                  className="font-dm text-xs leading-relaxed mb-6 p-4 rounded-sm text-ink/75"
+                  style={{ fontWeight: 300, border: "1px solid hsl(var(--ink) / 0.15)", background: "hsl(var(--terracotta) / 0.06)" }}
+                >
+                  <span className="font-bold text-ink">Best value for 100+ employees.</span> A senior HR leader embedded in your business — covering everything in the services above (compliance, org design, C&B, systems, automation, payroll oversight) and the day-to-day judgement calls a growing team can't operate without. One engagement, one accountable owner, no full-time hire.
+                </div>
+              )}
               <a
                 href="#contact"
                 className={`font-dm font-bold text-xs uppercase px-5 py-3 text-center transition-colors duration-200 rounded-sm ${
