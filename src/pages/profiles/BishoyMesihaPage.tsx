@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import SEO from "@/components/seo/SEO";
 import type { ProfileContent } from "@/hooks/useProfileContent";
 import {
-  HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT,
-  EDUCATION, SPECIALTIES, type Specialty,
+  HERO as DEFAULT_HERO, MARQUEE as DEFAULT_MARQUEE, ACHIEVEMENTS as DEFAULT_ACHIEVEMENTS,
+  TESTIMONIALS as DEFAULT_TESTIMONIALS, PHILOSOPHY as DEFAULT_PHILOSOPHY,
+  CONTACT as DEFAULT_CONTACT, EDUCATION as DEFAULT_EDUCATION,
+  SPECIALTIES as DEFAULT_SPECIALTIES, type Specialty,
 } from "./bishoy-mesiha/data";
 import "./bishoy-mesiha/theme.css";
 import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
@@ -12,6 +14,15 @@ import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/comp
 interface Props { profile: ProfileContent }
 
 export default function BishoyMesihaPage({ profile }: Props) {
+  const c: any = profile.content || {};
+  const HERO = { ...DEFAULT_HERO, ...(c.hero || {}) };
+  const MARQUEE: string[] = Array.isArray(c.marquee) && c.marquee.length ? c.marquee : DEFAULT_MARQUEE;
+  const ACHIEVEMENTS = Array.isArray(c.achievements) && c.achievements.length ? c.achievements : DEFAULT_ACHIEVEMENTS;
+  const TESTIMONIALS = Array.isArray(c.testimonials) && c.testimonials.length ? c.testimonials : DEFAULT_TESTIMONIALS;
+  const PHILOSOPHY: string = typeof c.philosophy === "string" && c.philosophy ? c.philosophy : DEFAULT_PHILOSOPHY;
+  const CONTACT = { ...DEFAULT_CONTACT, ...(c.contact || {}) };
+  const EDUCATION = Array.isArray(c.education) && c.education.length ? c.education : DEFAULT_EDUCATION;
+  const SPECIALTIES: Specialty[] = Array.isArray(c.specialties) && c.specialties.length ? c.specialties : DEFAULT_SPECIALTIES;
   const [activeId, setActiveId] = useState<string | null>(() =>
     typeof window !== "undefined" ? window.location.hash.replace("#", "") || null : null
   );
