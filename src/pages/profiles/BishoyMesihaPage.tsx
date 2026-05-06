@@ -7,6 +7,7 @@ import {
 } from "./bishoy-mesiha/data";
 import "./bishoy-mesiha/theme.css";
 import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
+import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/components/profiles/ProfileByPeopleStudio";
 
 interface Props { profile: ProfileContent }
 
@@ -61,11 +62,13 @@ export default function BishoyMesihaPage({ profile }: Props) {
         jsonLd={[personSchema]}
       />
       <div className="noise-overlay" />
+      <ProfileByPeopleStudioHeader />
       {active ? (
         <SpecialtyView sp={active} photoUrl={photoUrl} onBack={goHome} />
       ) : (
         <Landing onSelect={openSpecialty} photoUrl={photoUrl} />
       )}
+      <ProfileByPeopleStudioFooter />
     </div>
   );
 }

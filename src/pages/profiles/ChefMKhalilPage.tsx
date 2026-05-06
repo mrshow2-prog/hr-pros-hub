@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import SEO from "@/components/seo/SEO";
 import type { ProfileContent } from "@/hooks/useProfileContent";
 import "./chef-m-khalil/theme.css";
+import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/components/profiles/ProfileByPeopleStudio";
 
 interface Props { profile: ProfileContent; }
 
@@ -94,6 +95,7 @@ export default function ChefMKhalilPage({ profile }: Props) {
 
   return (
     <div ref={rootRef} className="chef-mk-page">
+      <ProfileByPeopleStudioHeader />
       <SEO
         title={profile.seo_title}
         description={profile.seo_description}
@@ -514,6 +516,7 @@ export default function ChefMKhalilPage({ profile }: Props) {
           <div className="lb-caption">{lb.items[lb.idx].cap}</div>
         </div>
       )}
+      <ProfileByPeopleStudioFooter />
     </div>
   );
 }
