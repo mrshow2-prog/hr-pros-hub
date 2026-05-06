@@ -17,16 +17,29 @@ export default function BusinessRetainers() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {RETAINER_TIERS.map((t, i) => (
+          {RETAINER_TIERS.map((t: any, i) => (
             <div
               key={i}
               className={`p-8 flex flex-col relative ${t.featured ? "bg-terracotta" : "bg-white"}`}
-              style={{ outline: t.featured ? "none" : "1px solid hsl(var(--ink) / 0.08)" }}
+              style={{
+                outline: t.featured
+                  ? "none"
+                  : t.bestValue
+                  ? "2px solid hsl(var(--ink))"
+                  : "1px solid hsl(var(--ink) / 0.08)",
+              }}
             >
               {t.featured && (
                 <div className="absolute -top-3 left-8">
                   <span className="font-dm font-bold text-xs uppercase px-3 py-1 bg-ink text-cream" style={{ letterSpacing: "0.1em" }}>
                     Most Popular
+                  </span>
+                </div>
+              )}
+              {t.bestValue && (
+                <div className="absolute -top-3 left-8">
+                  <span className="font-dm font-bold text-xs uppercase px-3 py-1 bg-terracotta text-cream" style={{ letterSpacing: "0.1em" }}>
+                    Best Value
                   </span>
                 </div>
               )}
