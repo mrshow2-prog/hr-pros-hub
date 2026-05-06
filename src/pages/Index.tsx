@@ -3,6 +3,8 @@ import { CAREER_PILLS, SERVICE_PILLS } from "@/data/business";
 import PsLogo from "@/components/ui/PsLogo";
 import SEO from "@/components/seo/SEO";
 import { COMPANY_EMAIL } from "@/lib/contact";
+import businessBg from "@/assets/index-business-bg.jpg";
+import careerBg from "@/assets/index-career-bg.jpg";
 
 const Index = () => {
   return (
@@ -44,10 +46,33 @@ const Index = () => {
           md:pt-[5.5rem] md:pb-[3.5rem]
         "
       >
-        {/* Background panels (desktop/tablet only — solid columns behind the grid cells) */}
+        {/* Background panels (desktop/tablet only — solid columns + subtle drifting imagery) */}
         <div className="pointer-events-none absolute inset-0 z-0 hidden md:grid md:grid-cols-2" aria-hidden="true">
-          <div className="bg-paper" />
-          <div className="bg-olive" />
+          <div className="relative overflow-hidden bg-paper">
+            <img
+              src={businessBg}
+              alt=""
+              loading="lazy"
+              width={1280}
+              height={1600}
+              className="absolute inset-0 h-full w-full object-cover opacity-[0.18] mix-blend-multiply animate-index-drift"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/70 to-paper/30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-paper/60 via-transparent to-paper/80" />
+          </div>
+          <div className="relative overflow-hidden bg-olive">
+            <img
+              src={careerBg}
+              alt=""
+              loading="lazy"
+              width={1280}
+              height={1600}
+              className="absolute inset-0 h-full w-full object-cover opacity-[0.22] mix-blend-soft-light animate-index-drift"
+              style={{ animationDelay: "-13s" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-olive via-olive/70 to-olive/30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-olive/60 via-transparent to-olive/80" />
+          </div>
         </div>
 
         {/* ─────────────── HR ADVISORY (left column) ─────────────── */}
