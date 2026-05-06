@@ -256,7 +256,8 @@ function Orbit({ onSelect, photoUrl, data }: { onSelect: (id: string) => void; p
 
 /* -------------------- SPECIALTY VIEW -------------------- */
 
-function SpecialtyView({ sp, photoUrl, onBack }: { sp: Specialty; photoUrl: string; onBack: () => void }) {
+function SpecialtyView({ sp, photoUrl, onBack, data }: { sp: Specialty; photoUrl: string; onBack: () => void; data: PageData }) {
+  const { HERO, CONTACT, EDUCATION } = data;
   const [copied, setCopied] = useState(false);
   const url = typeof window !== "undefined" ? `${window.location.origin}${window.location.pathname}#${sp.id}` : "";
   const copy = () => {
