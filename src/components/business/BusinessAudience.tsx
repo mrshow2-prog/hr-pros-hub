@@ -12,14 +12,18 @@ export default function BusinessAudience() {
             className="font-serif font-bold text-ink"
             style={{ fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.02em", maxWidth: "16ch" }}
           >
-            Built for businesses that can't afford to get HR wrong.
+            Who this is for
           </h2>
+          <p className="font-serif text-ink/80 mt-6 text-lg md:text-xl leading-relaxed">
+            You've probably been here before.<br />
+            I have too.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {AUDIENCE_SEGMENTS.map((s, i) => (
             <div
               key={i}
-              className="p-8 transition-colors duration-300 bg-white"
+              className="p-8 transition-colors duration-300 bg-white flex flex-col"
               style={{ borderTop: "2px solid transparent" }}
               onMouseEnter={(e) => (e.currentTarget.style.borderTopColor = "hsl(var(--terracotta))")}
               onMouseLeave={(e) => (e.currentTarget.style.borderTopColor = "transparent")}
@@ -29,9 +33,14 @@ export default function BusinessAudience() {
                 {s.tag}
               </span>
               <h3 className="font-serif font-semibold text-lg mb-3 leading-snug text-ink">{s.headline}</h3>
-              <p className="font-dm text-sm leading-relaxed text-moss" style={{ fontWeight: 300 }}>
+              <p className="font-dm text-sm leading-relaxed text-moss flex-1" style={{ fontWeight: 300 }}>
                 {s.body}
               </p>
+              {s.footer && (
+                <div className="mt-6 pt-4 border-t border-ink/10 font-dm text-[11px] uppercase tracking-[0.15em] text-ink/60">
+                  {s.footer}
+                </div>
+              )}
             </div>
           ))}
         </div>
