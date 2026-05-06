@@ -1,120 +1,124 @@
-## Goal
 
-Convert `/chef-m-khalil` and `/bishoy-mesiha` from static HTML folders into clean React routes (`/chef-m-khalil`, `/bishoy-mesiha`, no trailing slash, no `/index.html`), with content stored in the database and edited through an in-app `/admin` UI.
+# Plan — Rebuild `/chef-m-khalil` faithfully on the new dynamic architecture
 
-Each profile keeps its **own React component file** so designs stay fully unique per person. The shared piece is the **editor**, not the layout.
+Goal: Recreate the uploaded `index-2.html` as a pixel-faithful React page served from `/chef-m-khalil`, backed by `profiles_content`, with an admin editor that lets you change all text and manage the dish/photo/certificate galleries (add, remove, reorder, upload). Layout, fonts, colors, hero parallax, lightbox and animations stay code-driven.
+
+Bishoy's profile is **out of scope** for this round — we'll do it the same way once you upload his HTML.
 
 ---
 
-## URL model
+## What you'll do (one action only)
+
+Reply to this plan with a ZIP of the three image folders from the original site:
+- `photos/` (~17 files)
+- `dishes/` (~25 files)
+- `certificates/` (~18 files)
+
+Keep the **exact same filenames** as referenced in the HTML — I'll match them when seeding.
+
+Everything else is automatic.
+
+---
+
+## What I'll build
+
+### 1. Storage import (one-time)
+- Unpack the ZIP, upload all images to the existing `profile-images` bucket under:
+  - `chef-m-khalil/photos/...`
+  - `chef-m-khalil/dishes/...`
+  - `chef-m-khalil/certificates/...`
+- Generate the public URL list and embed it into the seed.
+
+### 2. Database seed (data only — no schema change)
+The existing `profiles_content.content` JSONB column is already flexible enough. I'll overwrite the `chef-m-khalil` row with a structured payload covering every section:
 
 ```text
-/<slug>         → public profile page (React route)
-/admin          → login + list of profiles the signed-in user can edit
-/admin/<slug>   → edit form for one profile
+content = {
+  hero:        { eyebrow, name_first, name_last, tagline, ctas[], stats[] },
+  about:       { headline, paragraphs[], portrait_url, signature_quote, mini_stats[] },
+  specialties: [ { title, description, icon } x5 ],
+  experience:  [ { years, role, company, location, bullets[] } ... ],   // timeline
+  dishes:      [ { url, name } ... ],                                   // gallery
+  photos:      [ { url, tall, wide } ... ],                             // masonry
+  awards:      [ { year, title, body } ... ],
+  certificates:[ { url, name } ... ],
+  skills:      [ { group, items: [{ label, level }] } ... ],            // bars
+  education:   [ { year, title, institution, detail } ... ],
+  contact:     { email, phone, whatsapp, linkedin, location, form_recipient }
+}
 ```
 
-Old static folders `public/chef-m-khalil/` and `public/bishoy-mesiha/` are removed (images move to `src/assets/` or stay in `public/<slug>/` for asset-only use). The Vite middleware redirect added earlier is removed.
+All copy from your HTML is pre-loaded.
+
+### 3. The page — `src/pages/profiles/ChefMKhalilPage.tsx` (full rewrite)
+A faithful port of the HTML, broken into small section components under `src/pages/profiles/chef-m-khalil/`:
+- `Nav.tsx` — sticky scroll-aware nav with mobile hamburger
+- `Hero.tsx` — full-bleed background image, parallax on scroll, eyebrow + display name + italic tagline + CTAs + stats row
+- `About.tsx` — two-column with portrait
+- `Specialties.tsx` — 5-card grid
+- `ExperienceTimeline.tsx` — vertical timeline
+- `DishGallery.tsx` — 4-col grid + lightbox trigger
+- `ChefPhotos.tsx` — masonry honoring `tall`/`wide` flags
+- `Awards.tsx`
+- `Certificates.tsx` — thumb grid + lightbox trigger
+- `Skills.tsx` — animated bars (width fills on intersection)
+- `Education.tsx`
+- `Contact.tsx` — form posts to existing `send-contact-enquiry` edge function (already in repo)
+- `Lightbox.tsx` — shared lightbox with arrow-key + click-outside, used by all three galleries
+- `Footer.tsx`
+- `useFadeIn.ts` — IntersectionObserver hook replacing the inline script
+- `theme.css` — scoped CSS (CSS variables `--gold`, `--cream`, etc.) imported only by this page so the warm palette doesn't leak into the rest of the site
+
+The page reads from `useProfileContent('chef-m-khalil')` and renders sections only if their data is present. Fonts (Playfair Display, Lato, Cormorant Garamond) get added to `index.html` `<head>`.
+
+SEO: existing `<SEO>` component already handles title/description/og — kept as-is.
+
+### 4. Admin editor — `AdminProfileEditor.tsx` (rewrite)
+The current generic editor is replaced with a tabbed editor when `slug === 'chef-m-khalil'`. Tabs:
+
+1. **SEO & visibility** — title, description, OG image, published toggle
+2. **Hero** — eyebrow, first/last name, tagline, CTA buttons, stats (repeater)
+3. **About** — paragraphs (textarea per paragraph, add/remove), portrait upload
+4. **Specialties** — 5 cards (title, description)
+5. **Experience** — timeline entries (add/remove/reorder, role, company, years, bullets)
+6. **Dishes** — repeater of `{ image upload, name }` with drag-to-reorder + delete
+7. **Photos** — repeater of `{ image upload, tall, wide }` with reorder + delete
+8. **Awards** — repeater
+9. **Certificates** — repeater of `{ image upload, name }`
+10. **Skills** — group + items with 0–100 slider
+11. **Education** — repeater
+12. **Contact** — email, phone, WhatsApp, LinkedIn, location
+
+Reusable bits:
+- `<RepeaterField>` — generic add/remove/reorder list
+- `<ImageUploadField>` — single-image upload to `profile-images/chef-m-khalil/<section>/<timestamp>.ext`, returns public URL
+- All edits stay client-side until **Save** → one `update` of the `content` JSONB
+
+Bishoy and any future profile keeps using the simple form until we port them.
+
+### 5. Routing & cleanup
+- `ProfileRouter.tsx` — already dispatches by slug, no change.
+- `App.tsx` — no change.
+- The currently-rendered simplified `ChefMKhalilPage` and the matching seed get fully replaced.
 
 ---
 
-## Data model (Lovable Cloud)
+## Technical notes (skip if you don't care)
 
-**`profiles_content`** — one row per profile
-- `slug` (text, unique) — e.g. `bishoy-mesiha`
-- `owner_user_id` (uuid, nullable) — the user allowed to edit this profile
-- `seo_title`, `seo_description` (text)
-- `og_image_url` (text)
-- `content` (jsonb) — structured fields the template reads (name, headline, bio paragraphs, achievements[], contact, photo_url, etc.). Each profile component decides which keys it uses.
-- `published` (bool)
-
-**`user_roles`** — standard pattern (enum `app_role` with `admin`, `user`)
-- Admins can edit any profile
-- Profile owners can edit only their own row (matched by `owner_user_id`)
-
-**RLS**
-- Public `SELECT` on `profiles_content` where `published = true`
-- `UPDATE` allowed if `has_role(auth.uid(),'admin')` OR `auth.uid() = owner_user_id`
-- `INSERT` / `DELETE` admin-only
-
-Initial seed: two rows (`chef-m-khalil`, `bishoy-mesiha`) populated by porting the existing HTML content into the `content` jsonb.
+- **No schema migration.** `content jsonb` already accepts the richer shape. RLS already allows admin write + public read of published rows.
+- **Image URLs.** Stored as fully-qualified public URLs in JSON, so the page just renders `<img src={...}>` — no client-side URL building.
+- **Lightbox** is one component reused by all three galleries via a shared context (`useLightbox`).
+- **Parallax** uses `requestAnimationFrame` + `transform: translateY()` and is disabled on `prefers-reduced-motion`.
+- **Bundle impact.** The page-scoped CSS keeps the rest of the site untouched. No new npm dependencies — Tailwind + plain CSS variables only.
+- **Contact form** wires into the existing `send-contact-enquiry` edge function with the editable recipient email.
+- **Fallbacks.** If a section's data is empty in the DB, that section is skipped — so the page is never broken by an in-progress edit.
 
 ---
 
-## Routing & components
+## After implementation
 
-`src/App.tsx` additions (above the `*` route):
-```text
-/admin              → AdminLogin / AdminDashboard
-/admin/:slug        → AdminProfileEditor
-/:slug              → ProfileRouter (looks up slug → renders the right component)
-```
+1. Visit `/chef-m-khalil` — full faithful design with all imported images.
+2. Visit `/admin/chef-m-khalil` — use the tabbed editor to tweak any section, reorder the gallery, etc.
+3. When ready, send Bishoy's HTML and we'll repeat for `/bishoy-mesiha`.
 
-`ProfileRouter` is a thin dispatcher:
-- `chef-m-khalil` → `<ChefMKhalilPage data={...} />`
-- `bishoy-mesiha` → `<BishoyMesihaPage data={...} />`
-- unknown slug → `NotFound`
-
-Each profile page is its own file under `src/pages/profiles/` with its own JSX, styling, and SEO via the existing `<SEO>` component. Layouts are NOT shared — only the data shape is.
-
-Adding a future profile = create one component file + add one row in DB + add one line in `ProfileRouter`.
-
----
-
-## Editor (Tier 1: structured fields)
-
-`/admin` flow:
-1. `/admin` — email/password + Google sign-in (via Lovable Cloud auth, defaults).
-2. After sign-in: list of profiles the user is allowed to edit.
-3. `/admin/:slug` — form with fields matching that profile's `content` schema:
-   - Text inputs (name, headline, contact)
-   - Textareas (bio, paragraphs)
-   - Repeatable lists (achievements, sections) with add/remove/reorder
-   - Image URL field + upload to Lovable Cloud storage bucket `profile-images`
-   - SEO title / description / OG image
-   - Published toggle
-4. Save → `UPDATE profiles_content` → public page reflects changes immediately (React Query invalidation).
-
-No rich-text editor in Tier 1 — plain text only. Bold/links/headings come in a future Tier 2 if needed.
-
-Validation with `zod` on both the form and (lightly) on the server side via column constraints.
-
----
-
-## SEO
-
-- Each profile page renders `<SEO>` with `seo_title`, `seo_description`, `og_image_url` from the DB row.
-- Per-profile JSON-LD (Person schema) generated from the same data.
-- Canonical URL = `https://people-studio.lovable.app/<slug>`.
-- Caveat already discussed: meta is JS-injected, not in initial HTML. Modern crawlers (Google, Bing, LinkedIn, Twitter, Facebook) handle this; some niche scrapers won't.
-
----
-
-## Migration steps
-
-1. **DB**: create `profiles_content`, `user_roles`, `app_role` enum, `has_role()` function, RLS policies.
-2. **Auth**: enable email/password + Google (Lovable Cloud managed). Add `/admin` login page. Seed the first admin user.
-3. **Port content**: read existing `public/chef-m-khalil/index.html` and `public/bishoy-mesiha/index.html`, extract text/images into the two seed rows.
-4. **Build profile components**: `ChefMKhalilPage.tsx`, `BishoyMesihaPage.tsx` — JSX mirroring the original designs, reading from `data` prop.
-5. **Add routes**: `/:slug`, `/admin`, `/admin/:slug` in `App.tsx`.
-6. **Build editor**: `AdminDashboard`, `AdminProfileEditor` with field forms + image upload.
-7. **Cleanup**: delete `public/chef-m-khalil/` and `public/bishoy-mesiha/` HTML files (keep image subfolders if still referenced); revert the trailing-slash middleware in `vite.config.ts`.
-8. **Verify**: `/chef-m-khalil` and `/bishoy-mesiha` render in published build with no slash and no 404; `/admin` login works; edit → save → public page updates.
-
----
-
-## Out of scope (can come later)
-
-- Rich-text editor (Tier 2)
-- Visual drag-and-drop block editor (Tier 3)
-- Per-profile custom domains
-- Versioning / draft vs published diff
-- Owner self-signup (admin invites owners for now)
-
----
-
-## Decisions needed before build
-
-1. **Who is the first admin?** Your email (so I can grant the `admin` role on seed).
-2. **Owner accounts now or later?** Option A: only you (admin) edit everything for now. Option B: also create owner accounts for Khalil & Bishoy on day one.
-3. **Image hosting:** OK to create a public Lovable Cloud storage bucket `profile-images` for uploads? (Recommended.)
+Reply with the ZIP and approve, and I'll execute end-to-end.
