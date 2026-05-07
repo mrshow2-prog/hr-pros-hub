@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowUpRight, Download, Send, Sparkles, Star, X } from "lucide-react";
 import { PHOTO_URL } from "@/data/profile";
+import { T, pick, useLang } from "@/i18n/T";
+
+type Bi = { en: string; ar: string };
 
 type Tier = "essential" | "signature" | "executive";
 
