@@ -27,17 +27,18 @@ const Index = () => {
           className="pointer-events-auto flex items-center gap-5 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 md:gap-6"
         >
           <Link
-            to="/business#about"
+            to={localize("/business#about")}
             className="hidden transition-colors hover:text-ink md:text-paper/45 md:hover:text-paper sm:inline"
           >
-            About
+            <T en="About" ar="من نحن" />
           </Link>
           <a
             href={`mailto:${COMPANY_EMAIL}`}
             className="transition-colors hover:text-ink md:text-paper/65 md:hover:text-paper"
           >
-            Contact
+            <T en="Contact" ar="تواصل" />
           </a>
+          <LanguageToggle tone="ink" className="md:[--tw-text-opacity:0.55] md:text-paper/55 md:hover:text-paper" />
         </nav>
       </header>
 
