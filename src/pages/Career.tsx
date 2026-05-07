@@ -449,8 +449,8 @@ export default function Career() {
 
       <section id="testimonials" className="bg-career-deep px-6 py-20 md:px-10">
         <div className="mx-auto max-w-6xl">
-          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">What clients say</p>
-          <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Results speak for themselves.</h2>
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky"><T en="What clients say" ar="ما يقوله العملاء" /></p>
+          <h2 className="mb-12 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl"><T en="Results speak for themselves." ar="النتائج تتحدث عن نفسها." /></h2>
           <div className="grid gap-6 md:grid-cols-2">
             {TESTIMONIALS.map((t) => (
               <article key={t.name} className="flex h-full flex-col border border-career-border bg-career-surface p-7">
