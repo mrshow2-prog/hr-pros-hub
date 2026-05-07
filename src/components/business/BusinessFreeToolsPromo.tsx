@@ -30,9 +30,11 @@ export default function BusinessFreeToolsPromo() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FREE_TOOLS.map((t, i) => (
+          {FREE_TOOLS.map((t, i) => {
+            const tabSlug = ["diagnostic", "calculator", "policy", "jd"][i] ?? "diagnostic";
+            return (
             <Link
-              to={localize("/tools")}
+              to={`${localize("/tools")}#${tabSlug}`}
               key={i}
               className="p-6 block transition-colors duration-300 bg-white"
               style={{ borderTop: "2px solid transparent" }}
