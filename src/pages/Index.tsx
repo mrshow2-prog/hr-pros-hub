@@ -5,8 +5,13 @@ import SEO from "@/components/seo/SEO";
 import { COMPANY_EMAIL } from "@/lib/contact";
 import businessBg from "@/assets/index-business-bg.jpg";
 import careerBg from "@/assets/index-career-bg.jpg";
+import { T, pick, useLang } from "@/i18n/T";
+import { useLocalizedPath } from "@/i18n/useLocalizedPath";
+import LanguageToggle from "@/components/ui/LanguageToggle";
 
 const Index = () => {
+  const lang = useLang();
+  const { localize } = useLocalizedPath();
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-paper text-ink font-dm md:h-[100svh] md:min-h-[100svh] md:overflow-hidden">
       <SEO
