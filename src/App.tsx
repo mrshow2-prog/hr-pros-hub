@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import SiteAssistant from "@/components/ui/SiteAssistant";
 import Index from "./pages/Index";
 import Business from "./pages/Business";
 import Profile from "./pages/Profile";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
         <WhatsAppButton />
+        <SiteAssistant />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
