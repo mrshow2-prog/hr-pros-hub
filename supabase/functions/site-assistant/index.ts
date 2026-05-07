@@ -49,25 +49,41 @@ Deno.serve(async (req) => {
       ],
     };
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
-    const upstream = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction,
-        contents,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
-      }),
+    const body = JSON.stringify({
+      systemInstruction,
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
     });
 
-    if (!upstream.ok || !upstream.body) {
-      const txt = await upstream.text();
-      console.error("Gemini error", upstream.status, txt);
-      const status = upstream.status === 429 ? 429 : 500;
+    // Try models in order, falling back on 503/overloaded
+    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"];
+    let upstream: Response | null = null;
+    let lastStatus = 0;
+    let lastErr = "";
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      if (r.ok && r.body) {
+        upstream = r;
+        break;
+      }
+      lastStatus = r.status;
+      lastErr = await r.text().catch(() => "");
+      console.error(`Gemini ${model} error`, r.status, lastErr);
+      // Only fall back on transient errors
+      if (r.status !== 503 && r.status !== 500 && r.status !== 429) break;
+    }
+
+    if (!upstream || !upstream.body) {
+      const status = lastStatus === 429 ? 429 : 503;
       const message =
-        upstream.status === 429
+        lastStatus === 429
           ? "Rate limit hit. Please try again in a moment."
-          : "Assistant is temporarily unavailable.";
+          : "The AI service is temporarily overloaded. Please try again in a few seconds.";
       return new Response(JSON.stringify({ error: message }), {
         status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
