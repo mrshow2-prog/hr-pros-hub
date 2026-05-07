@@ -18,7 +18,17 @@ type Bi = { en: string; ar: string };
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-const marqueeItems = ["CV Design", "LinkedIn Optimisation", "Interview Coaching", "Personal Branding", "Salary Negotiation", "Career Pivot", "UAE Market Entry", "Outplacement Support", "Executive Presence"];
+const marqueeItems: Bi[] = [
+  { en: "CV Design", ar: "تصميم السيرة الذاتية" },
+  { en: "LinkedIn Optimisation", ar: "تحسين لينكدإن" },
+  { en: "Interview Coaching", ar: "تدريب المقابلات" },
+  { en: "Personal Branding", ar: "العلامة الشخصية" },
+  { en: "Salary Negotiation", ar: "التفاوض على الراتب" },
+  { en: "Career Pivot", ar: "التحوّل المهني" },
+  { en: "UAE Market Entry", ar: "دخول سوق الإمارات" },
+  { en: "Outplacement Support", ar: "دعم إعادة التوظيف" },
+  { en: "Executive Presence", ar: "الحضور التنفيذي" },
+];
 
 const TESTIMONIALS: { quote: string; name: string; role: string | null; service: string; source: string }[] = [
   {
@@ -77,7 +87,7 @@ function AudienceCard({
       <div className="pointer-events-none absolute inset-x-0 top-full z-10 origin-top translate-y-0 bg-career-deep px-7 pb-6 pt-3 opacity-0 shadow-[0_20px_40px_-12px_hsl(var(--career-deep)/0.6)] ring-1 ring-career-sky/40 transition-opacity duration-200 ease-out group-hover:pointer-events-auto group-hover:opacity-100">
         <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
         <span className="inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky">
-          This is for you
+          <T en="This is for you" ar="هذا مناسب لك" />
           <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </span>
       </div>
@@ -434,12 +444,17 @@ export default function Career() {
             <a href="#web-cv" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep"><T en="Create your personal brand website" ar="أنشئ موقع علامتك الشخصية" /></a>
           </div>
         </div>
-        <div className="relative z-10 mt-14 grid gap-6 text-right md:absolute md:bottom-20 md:right-10 md:mt-0">
-          {[["16+", "Years on the hiring side", ""], ["11", "MENAT markets", ""], ["Bilingual", "Arabic & English", ""], ["18.83%", "average salary gain when professionals negotiate", "Harvard Business School 2024–25"]].map(([num, label, note]) => <div key={label}><div className="font-serif text-3xl font-bold text-career-sky">{num}</div><div className="text-paper/40 text-xs">{label}</div>{note && <div className="mt-1 text-[10px] text-paper/30">{note}</div>}</div>)}
+        <div className={`relative z-10 mt-14 grid gap-6 md:absolute md:bottom-20 md:mt-0 ${lang === "ar" ? "text-left md:left-10" : "text-right md:right-10"}`}>
+          {([
+            { num: "16+", label: { en: "Years on the hiring side", ar: "سنوات في جانب التوظيف" }, note: "" },
+            { num: "11", label: { en: "MENAT markets", ar: "أسواق منطقة الشرق الأوسط" }, note: "" },
+            { num: { en: "Bilingual", ar: "ثنائي اللغة" }, label: { en: "Arabic & English", ar: "العربية والإنجليزية" }, note: "" },
+            { num: "18.83%", label: { en: "average salary gain when professionals negotiate", ar: "متوسط الزيادة في الراتب عند التفاوض" }, note: { en: "Harvard Business School 2024–25", ar: "كلية هارفارد للأعمال 2024–25" } },
+          ] as { num: string | Bi; label: Bi; note: string | Bi }[]).map((s, i) => <div key={i}><div className="font-serif text-3xl font-bold text-career-sky">{typeof s.num === "string" ? s.num : pick(s.num, lang)}</div><div className="text-paper/40 text-xs">{pick(s.label, lang)}</div>{s.note && <div className="mt-1 text-[10px] text-paper/30">{typeof s.note === "string" ? s.note : pick(s.note, lang)}</div>}</div>)}
         </div>
       </section>
 
-      <div className="overflow-hidden border-y border-career-blue/50 bg-career-blue py-4"><div className="flex w-max animate-marquee whitespace-nowrap">{[...marqueeItems, ...marqueeItems].map((item, i) => <span key={`${item}-${i}`} className="px-5 font-dm text-xs font-bold uppercase tracking-widest text-paper/90">{item} ·</span>)}</div></div>
+      <div className="overflow-hidden border-y border-career-blue/50 bg-career-blue py-4"><div className="flex w-max animate-marquee whitespace-nowrap">{[...marqueeItems, ...marqueeItems].map((item, i) => <span key={`${item.en}-${i}`} className="px-5 font-dm text-xs font-bold uppercase tracking-widest text-paper/90">{pick(item, lang)} ·</span>)}</div></div>
 
       <section id="about" className="bg-career-deep px-6 py-20 md:px-10"><div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2"><div><p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky"><T en="Why this exists" ar="لماذا وُجد هذا" /></p><h2 className="mb-8 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl"><T en="The best candidate rarely gets the job." ar="نادراً ما يحصل أفضل مرشح على الوظيفة." /></h2><div className="space-y-5 text-base font-light leading-8 text-paper/60"><p><T en={<>After 16 years seeing thousands of hiring decisions made across 11 markets, the pattern is clear: <strong className="font-medium text-paper">the candidate who best communicates their value wins</strong> — not always the most qualified one.</>} ar={<>بعد 16 عاماً من مشاهدة آلاف قرارات التوظيف عبر 11 سوقاً، النمط واضح: <strong className="font-medium text-paper">المرشح الذي يُوصِل قيمته بأفضل شكل يفوز</strong> — وليس دائماً الأكثر تأهيلاً.</>} /></p><p><T en="Most professionals are vastly underselling themselves. A CV that lists responsibilities instead of impact. A LinkedIn profile that reads like a job posting. An interview that covers what they did rather than what they made possible." ar="معظم المحترفين يقدّمون أنفسهم بأقل من قيمتهم بكثير. سيرة ذاتية تسرد المسؤوليات بدل الأثر. ملف لينكدإن يبدو كإعلان وظيفة. مقابلة تغطي ما فعلوه لا ما جعلوه ممكناً." /></p><p><T en="The Career Studio exists to fix that gap — for professionals whose career materials haven't caught up with their actual capability." ar="وُجد استوديو المسار المهني لسد تلك الفجوة — للمحترفين الذين لم تواكب موادهم المهنية قدراتهم الفعلية." /></p></div></div><div className="border border-career-border bg-career-sky/5 p-7"><p className="mb-6 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky/70"><T en="How it works" ar="كيف يعمل" /></p>{[{ en: "Free 30-min discovery call", ar: "مكالمة استكشاف مجانية 30 دقيقة" }, { en: "Bespoke engagement scoped", ar: "تحديد نطاق ارتباط مخصص" }, { en: "You show up differently", ar: "تظهر بشكل مختلف" }].map((title, i) => <div key={title.en} className="mb-6 flex gap-4 last:mb-0"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-career-sky/25 bg-career-sky/10 font-serif text-sm font-bold text-career-sky">{i + 1}</span><div><h3 className="mb-1 font-dm font-bold text-paper">{pick(title, lang)}</h3><p className="text-sm leading-6 text-paper/45">{i === 0 ? <T en="Tell me where you are and where you want to be. I'll tell you what's actually holding you back." ar="أخبرني أين أنت وأين تريد أن تكون. سأخبرك بما يعيقك فعلاً." /> : i === 1 ? <T en="We agree exactly what we're doing, in what timeframe, with what outcomes." ar="نتفق بدقة على ما سنفعله، وفي أي إطار زمني، وبأي نتائج." /> : <T en="Your materials, your narrative, your confidence — aligned and ready for the next opportunity." ar="موادك، وسرديتك، وثقتك — متوائمة وجاهزة للفرصة التالية." />}</p></div></div>)}<a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 w-full items-center justify-center bg-career-blue px-6 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep"><T en="Book a free discovery call" ar="احجز مكالمة استكشاف مجانية" /></a></div></div></section>
 
@@ -484,15 +499,15 @@ export default function Career() {
             <p><T en="Your starting salary is the anchor for every future raise, bonus, and pension contribution. A 15% negotiation today means 15% more compounding indefinitely. The investment: AED 2,000. The lifetime cost of not making it: AED 360,000+." ar="راتبك الابتدائي هو المرساة لكل زيادة ومكافأة ومساهمة تقاعدية مستقبلية. تفاوض بنسبة 15% اليوم يعني 15% أكثر تتراكم إلى ما لا نهاية. الاستثمار: 2,000 درهم. التكلفة مدى الحياة لعدم القيام به: 360,000+ درهم." /></p>
           </div>
           <div className="mb-10 grid gap-px overflow-hidden border border-career-border bg-career-border md:grid-cols-3">
-            {[
-              { stat: "18.83%", label: "average salary increase when professionals negotiate", source: "Harvard Business School, 2024–25" },
-              { stat: "55%", label: "of professionals accept the first offer without negotiating", source: "Pew Research Center" },
-              { stat: "67×", label: "ROI on a coaching session that secures 15% more on a AED 25,000/month offer over 3 years", source: "" },
-            ].map((b) => (
-              <div key={b.label} className="bg-career-deep p-7">
+            {([
+              { stat: "18.83%", label: { en: "average salary increase when professionals negotiate", ar: "متوسط الزيادة في الراتب عند التفاوض" }, source: { en: "Harvard Business School, 2024–25", ar: "كلية هارفارد للأعمال، 2024–25" } },
+              { stat: "55%", label: { en: "of professionals accept the first offer without negotiating", ar: "من المحترفين يقبلون أول عرض دون تفاوض" }, source: { en: "Pew Research Center", ar: "مركز بيو للأبحاث" } },
+              { stat: "67×", label: { en: "ROI on a coaching session that secures 15% more on a AED 25,000/month offer over 3 years", ar: "العائد على جلسة تدريب تضمن زيادة 15% على عرض 25,000 درهم/شهر خلال 3 سنوات" }, source: { en: "", ar: "" } },
+            ] as { stat: string; label: Bi; source: Bi }[]).map((b) => (
+              <div key={b.label.en} className="bg-career-deep p-7">
                 <div className="mb-3 font-serif text-4xl font-bold text-career-sky">{b.stat}</div>
-                <div className="mb-2 text-sm leading-6 text-paper/65">{b.label}</div>
-                {b.source && <div className="font-dm text-[10px] uppercase tracking-wider2 text-paper/30">{b.source}</div>}
+                <div className="mb-2 text-sm leading-6 text-paper/65">{pick(b.label, lang)}</div>
+                {pick(b.source, lang) && <div className="font-dm text-[10px] uppercase tracking-wider2 text-paper/30">{pick(b.source, lang)}</div>}
               </div>
             ))}
           </div>
