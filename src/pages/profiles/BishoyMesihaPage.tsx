@@ -61,7 +61,9 @@ export default function BishoyMesihaPage({ profile }: Props) {
     sameAs: [CONTACT.linkedin],
   };
 
-  const photoUrl = HERO.photo_url || (c as any)?.photo_url || bishoyPhoto;
+  const rawPhoto = HERO.photo_url || (c as any)?.photo_url || "";
+  // Ignore dev-only /src/* paths that don't exist in production builds.
+  const photoUrl = rawPhoto && !rawPhoto.startsWith("/src/") ? rawPhoto : bishoyPhoto;
   const data = { HERO, MARQUEE, ACHIEVEMENTS, TESTIMONIALS, PHILOSOPHY, CONTACT, EDUCATION, SPECIALTIES };
 
   return (
