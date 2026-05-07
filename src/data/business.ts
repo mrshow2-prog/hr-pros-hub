@@ -30,7 +30,7 @@ export const MARQUEE_SERVICES: B[] = [
   { en: "HR Health Audit", ar: "تدقيق صحة الموارد البشرية" },
   { en: "Organisation Design", ar: "تصميم المنظمة" },
   { en: "Compensation & Benefits", ar: "التعويضات والمزايا" },
-  { en: "Fractional HR Director", ar: "مدير موارد بشرية بدوام جزئي" },
+  { en: "Fractional HR Director", ar: "مدير موارد بشرية دوام جزئي" },
   { en: "Policy Writing", ar: "كتابة السياسات" },
   { en: "Employment Contracts", ar: "عقود العمل" },
   { en: "Onboarding Frameworks", ar: "أُطر التعريف الوظيفي" },
@@ -155,7 +155,7 @@ export const SERVICES = [
   {
     tag: { en: "Design", ar: "التصميم" },
     name: { en: "Organisation Architecture", ar: "بنية المنظمة" },
-    price: { en: "From AED 10,000", ar: "From 10,000 درهم" },
+    price: { en: "From AED 10,000", ar: "ابتداءً من 10,000 درهم" },
     priceNote: { en: "based on size & scope", ar: "حسب الحجم والنطاق" },
     desc: { en: "The wrong structure leads to duplicated effort and quietly burned payroll. We design the clarity your business needs to move from a founder-led to a process-led organization.", ar: "الهيكل الخاطئ يؤدي إلى ازدواج الجهد وحرق صامت لميزانية الرواتب. نصمّم الوضوح الذي يحتاجه عملك للانتقال من شركة بقيادة المؤسس إلى شركة تقودها العمليات." },
     deliverables: [
@@ -169,7 +169,7 @@ export const SERVICES = [
   {
     tag: { en: "Total Reward", ar: "إجمالي المكافآت" },
     name: { en: "C&B & Retention Framework", ar: "إطار التعويضات والمزايا والاستبقاء" },
-    price: { en: "From AED 9,000", ar: "From 9,000 درهم" },
+    price: { en: "From AED 9,000", ar: "ابتداءً من 9,000 درهم" },
     priceNote: { en: "based on size & scope", ar: "حسب الحجم والنطاق" },
     desc: { en: "Guesswork in salary leads to overpaying average performers and losing your best ones. We build a structured pay framework that balances market competitiveness with your bottom line.", ar: "التخمين في الرواتب يقود إلى دفع زائد لأصحاب الأداء المتوسّط وفقدان الأفضل بينهم. نبني إطار أجور منظّم يوازن بين تنافسية السوق وصافي أرباحك." },
     deliverables: [
@@ -183,7 +183,7 @@ export const SERVICES = [
   {
     tag: { en: "Systems", ar: "الأنظمة" },
     name: { en: "Odoo & HRIS Quick-Start", ar: "بداية سريعة لـ Odoo وأنظمة HRIS" },
-    price: { en: "From AED 5,000", ar: "From 5,000 درهم" },
+    price: { en: "From AED 5,000", ar: "ابتداءً من 5,000 درهم" },
     priceNote: { en: "consultation & configuration", ar: "استشارة وتهيئة" },
     desc: { en: "Stop managing your workforce on spreadsheets. We guide you to the ideal HRIS for your unique needs — whether that's a cost-effective Quick-Start using Odoo's free version or a fully tailored enterprise solution — to digitize your operations instantly.", ar: "توقّف عن إدارة موظفيك بجداول البيانات. نرشدك إلى نظام HRIS الأنسب لاحتياجاتك — سواء كانت بداية سريعة منخفضة التكلفة باستخدام النسخة المجانية من Odoo أو حلًا مؤسسيًا مفصّلاً بالكامل — لرقمنة عملياتك فورًا." },
     deliverables: [
@@ -197,7 +197,7 @@ export const SERVICES = [
   {
     tag: { en: "Automation", ar: "الأتمتة" },
     name: { en: "HR Workflow & Admin Automations", ar: "أتمتة سير عمل الموارد البشرية والإدارة" },
-    price: { en: "From AED 5,000", ar: "From 5,000 درهم" },
+    price: { en: "From AED 5,000", ar: "ابتداءً من 5,000 درهم" },
     priceNote: { en: "based on scope", ar: "حسب النطاق" },
     desc: { en: "Most HR teams lose 40% of their week to manual follow-ups. We build the digital glue that connects your systems and handles the repetitive tasks.", ar: "تفقد معظم فرق الموارد البشرية 40% من أسبوعها في المتابعات اليدوية. نبني الرابط الرقمي الذي يصل أنظمتك ويتولّى المهام المتكرّرة." },
     deliverables: [
@@ -211,7 +211,7 @@ export const SERVICES = [
   {
     tag: { en: "Outsourcing", ar: "التعهيد" },
     name: { en: "Payroll & WPS Managed Service", ar: "خدمة الرواتب ونظام حماية الأجور المُدارة" },
-    price: { en: "From AED 120", ar: "From 120 درهم" },
+    price: { en: "From AED 120", ar: "ابتداءً من 120 درهم" },
     priceNote: { en: "per employee/month (+AED 5,000 one-time setup)", ar: "لكل موظف/شهر (+5,000 درهم تأسيس لمرة واحدة)" },
     desc: { en: "Focus on your business while we handle the technical complexities of GCC payroll. We act as your Back Office, ensuring every employee is paid accurately and on time via WPS.", ar: "ركّز على عملك بينما نتولى تعقيدات الرواتب في الخليج. نعمل كمكتبك الخلفي ونضمن أن يُدفع لكل موظف بدقة وفي وقته عبر نظام حماية الأجور." },
     deliverables: [
@@ -224,8 +224,8 @@ export const SERVICES = [
   },
   {
     tag: { en: "Embedded", ar: "المدمج" },
-    name: { en: "Fractional HR Director & BOT", ar: "مدير موارد بشرية بدوام جزئي ونموذج BOT" },
-    price: { en: "From AED 18,000", ar: "From 18,000 درهم" },
+    name: { en: "Fractional HR Director & BOT", ar: "مدير موارد بشرية دوام جزئي ونموذج BOT" },
+    price: { en: "From AED 18,000", ar: "ابتداءً من 18,000 درهم" },
     priceNote: { en: "per month", ar: "شهريًا" },
     desc: { en: "A qualified HR Director in the UAE costs AED 35k–50k/month — plus visa, benefits, and notice period risk. The Fractional HR Director gives you the same seniority, embedded in your leadership team, at a fraction of the cost. The BOT model means you exit the engagement with a fully built in-house HR function.", ar: "مدير موارد بشرية مؤهّل في الإمارات يكلّف 35–50 ألف درهم شهريًا — إضافة إلى التأشيرة والمزايا ومخاطر فترة الإشعار. مدير الموارد البشرية بدوام جزئي يمنحك الخبرة نفسها، مدمجًا في فريق قيادتك، بجزء من التكلفة. ونموذج البناء-التشغيل-التحويل (BOT) يعني أن تخرج من التعاقد بقسم موارد بشرية داخلي مكتمل." },
     deliverables: [
@@ -288,8 +288,8 @@ export const RETAINER_TIERS = [
     ],
   },
   {
-    name: { en: "Fractional", ar: "بدوام جزئي" },
-    price: { en: "From AED 18,000", ar: "From 18,000 درهم" },
+    name: { en: "Fractional", ar: "دوام جزئي" },
+    price: { en: "From AED 18,000", ar: "ابتداءً من 18,000 درهم" },
     per: { en: "per month", ar: "شهريًا" },
     size: { en: "100+ employees", ar: "+100 موظف" },
     featured: false,
@@ -336,5 +336,5 @@ export const ABOUT_CREDENTIALS = [
   { n: { en: "16 Years", ar: "16 سنة" }, s: { en: "Executive HR Leadership", ar: "قيادة تنفيذية في الموارد البشرية" } },
   { n: { en: "11 Markets", ar: "11 سوقًا" }, s: { en: "MENAT Region", ar: "منطقة الشرق الأوسط وشمال أفريقيا وتركيا" } },
   { n: { en: "Bilingual", ar: "ثنائي اللغة" }, s: { en: "Arabic & English", ar: "العربية والإنجليزية" } },
-  { n: { en: "🏆 Campaign ME", ar: "🏆 Campaign ME" }, s: { en: "Best Talent Team 2025", ar: "أفضل فريق مواهب 2025" } },
+  { n: { en: "🏆 Campaign ME", ar: "🏆 Campaign ME" }, s: { en: "Best Talent Team 2025", ar: "أفضل فريق موارد بشرية 2025" } },
 ];

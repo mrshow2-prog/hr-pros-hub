@@ -35,7 +35,7 @@ export default function SiteFooter({ variant = "light", className = "" }: SiteFo
         {/* Top row: copyright + legal links */}
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <span>
-            © {new Date().getFullYear()} {tr("People.Studio · Bishoy Mesiha Advisory · Dubai, UAE", "بيبول.ستوديو · استشارات بيشوي مسيحه · دبي، الإمارات")}
+            © {new Date().getFullYear()} <span dir="ltr">People.Studio</span> {tr("· Bishoy Mesiha Advisory · Dubai, UAE", "· استشارات بيشوي مسيحه · دبي، الإمارات")}
           </span>
           <nav aria-label={tr("Legal", "قانوني")} className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {LEGAL_LINKS.map((link, i) => (
