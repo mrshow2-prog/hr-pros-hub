@@ -122,8 +122,8 @@ const Index = () => {
                 Practice
               </span>
               {SERVICE_PILLS.map((p) => (
-                <span key={p} className="rounded-sm border border-ink/20 px-2.5 py-1.5 text-xs tracking-wide text-ink">
-                  {p}
+                <span key={p.en} className="rounded-sm border border-ink/20 px-2.5 py-1.5 text-xs tracking-wide text-ink">
+                  {pick(p, lang)}
                 </span>
               ))}
             </div>
@@ -207,8 +207,8 @@ const Index = () => {
                 Studio
               </span>
               {CAREER_PILLS.map((p) => (
-                <span key={p} className="rounded-sm border border-paper/25 px-2.5 py-1.5 text-xs tracking-wide text-paper/90">
-                  {p}
+                <span key={p.en} className="rounded-sm border border-paper/25 px-2.5 py-1.5 text-xs tracking-wide text-paper/90">
+                  {pick(p, lang)}
                 </span>
               ))}
             </div>
