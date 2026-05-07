@@ -508,32 +508,32 @@ export default function Career() {
 
       <section id="maths" className="bg-career-deep px-6 py-20 md:px-10">
         <div className="mx-auto max-w-5xl">
-          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">The numbers</p>
-          <h2 className="mb-10 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">Do the maths on your situation.</h2>
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky"><T en="The numbers" ar="الأرقام" /></p>
+          <h2 className="mb-10 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl"><T en="Do the maths on your situation." ar="احسب الأرقام على وضعك." /></h2>
           <div className="grid gap-5 md:grid-cols-2 mb-8">
             <div>
-              <label className="mb-2 block font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky">Your current monthly salary (AED)</label>
+              <label className="mb-2 block font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky"><T en="Your current monthly salary (AED)" ar="راتبك الشهري الحالي (درهم)" /></label>
               <input type="number" inputMode="numeric" min={0} value={calcSalary} onChange={(e) => setCalcSalary(e.target.value)} placeholder="e.g. 20,000" className="w-full border border-career-border bg-career-surface px-4 py-3 text-sm text-paper outline-none focus:border-career-sky" />
             </div>
             <div>
-              <label className="mb-2 block font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky">Your target negotiation increase (%)</label>
+              <label className="mb-2 block font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky"><T en="Your target negotiation increase (%)" ar="نسبة الزيادة المستهدفة من التفاوض (%)" /></label>
               <input type="number" inputMode="numeric" min={0} value={calcPct} onChange={(e) => setCalcPct(e.target.value)} placeholder="e.g. 15" className="w-full border border-career-border bg-career-surface px-4 py-3 text-sm text-paper outline-none focus:border-career-sky" />
             </div>
           </div>
           <div className="grid gap-px overflow-hidden border border-career-border bg-career-border md:grid-cols-3 mb-6">
             {[
-              { label: "Monthly gain", value: `AED ${fmt(calcMonthly)}/month` },
-              { label: "Annual gain", value: `AED ${fmt(calcAnnual)}/year` },
-              { label: "3-year compounding value", value: `AED ${fmt(calcThreeYr)} over 3 years` },
+              { label: { en: "Monthly gain", ar: "المكسب الشهري" }, value: { en: `AED ${fmt(calcMonthly)}/month`, ar: `${fmt(calcMonthly)} درهم/شهر` } },
+              { label: { en: "Annual gain", ar: "المكسب السنوي" }, value: { en: `AED ${fmt(calcAnnual)}/year`, ar: `${fmt(calcAnnual)} درهم/سنة` } },
+              { label: { en: "3-year compounding value", ar: "القيمة المتراكمة لـ 3 سنوات" }, value: { en: `AED ${fmt(calcThreeYr)} over 3 years`, ar: `${fmt(calcThreeYr)} درهم خلال 3 سنوات` } },
             ].map((r) => (
-              <div key={r.label} className="bg-career-surface p-6">
-                <div className="mb-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{r.label}</div>
-                <div className="font-serif text-2xl font-bold text-paper">{r.value}</div>
+              <div key={r.label.en} className="bg-career-surface p-6">
+                <div className="mb-2 font-dm text-[10px] font-bold uppercase tracking-wider2 text-career-sky">{pick(r.label, lang)}</div>
+                <div className="font-serif text-2xl font-bold text-paper">{pick(r.value, lang)}</div>
               </div>
             ))}
           </div>
           <p className="text-sm leading-7 text-paper/60">
-            Coaching investment: <span className="text-paper">AED 2,000</span>. Your potential return above: <span className="text-paper">AED {fmt(calcThreeYr)}</span>. That's a <span className="font-bold text-career-sky">{calcRoi}×</span> return.
+            <T en={<>Coaching investment: <span className="text-paper">AED 2,000</span>. Your potential return above: <span className="text-paper">AED {fmt(calcThreeYr)}</span>. That's a <span className="font-bold text-career-sky">{calcRoi}×</span> return.</>} ar={<>استثمار التدريب: <span className="text-paper">2,000 درهم</span>. عائدك المحتمل أعلاه: <span className="text-paper">{fmt(calcThreeYr)} درهم</span>. هذا عائد <span className="font-bold text-career-sky">{calcRoi}×</span>.</>} />
           </p>
         </div>
       </section>
