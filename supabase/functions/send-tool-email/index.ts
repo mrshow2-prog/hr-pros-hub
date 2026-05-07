@@ -106,9 +106,36 @@ Deno.serve(async (req) => {
       });
     }
 
-    const subject = `Your ${documentName} ${documentKind} from People.Studio`;
-    const html = renderHtml(documentKind, documentName, outputText);
-    const text = renderText(documentKind, documentName, outputText);
+    // Internal lead notification: always send to mrshow2@gmail.com (Resend sandbox limit).
+    // Includes the user's email and the generated tool output for follow-up.
+    const INTERNAL_RECIPIENT = "mrshow2@gmail.com";
+    const subject = `[Lead] ${toEmail} — ${documentName} (${documentKind})`;
+
+    const leadHtml = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f6f4ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <div style="max-width:680px;margin:0 auto;padding:32px 28px;background:#ffffff;">
+    <p style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#a05a3c;margin:0 0 6px;font-weight:700;">New free-tool lead</p>
+    <h1 style="font-size:20px;margin:0 0 18px;color:#1a1a1a;font-weight:600;">${escapeHtml(documentName)} (${escapeHtml(documentKind)})</h1>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 22px;font-size:14px;color:#333;">
+      <tr><td style="padding:6px 0;color:#7a7268;width:120px;">Lead email</td><td style="padding:6px 0;"><a href="mailto:${escapeHtml(toEmail)}" style="color:#a05a3c;text-decoration:none;">${escapeHtml(toEmail)}</a></td></tr>
+      <tr><td style="padding:6px 0;color:#7a7268;">Document</td><td style="padding:6px 0;">${escapeHtml(documentName)}</td></tr>
+      <tr><td style="padding:6px 0;color:#7a7268;">Type</td><td style="padding:6px 0;">${escapeHtml(documentKind)}</td></tr>
+    </table>
+    <hr style="border:none;border-top:1px solid #e8dfd1;margin:0 0 18px;" />
+    <h2 style="font-size:14px;margin:0 0 12px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.1em;">Generated output</h2>
+    <pre style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:13px;color:#333;line-height:1.6;margin:0;">${escapeHtml(outputText)}</pre>
+  </div>
+</body></html>`;
+
+    const leadText = `NEW FREE-TOOL LEAD
+
+Lead email: ${toEmail}
+Document: ${documentName}
+Type: ${documentKind}
+
+--- Generated output ---
+
+${outputText}`;
 
     const response = await fetch(`${GATEWAY_URL}/emails`, {
       method: "POST",
@@ -119,12 +146,11 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [toEmail],
-        bcc: ["bmesiha@outlook.com"],
+        to: [INTERNAL_RECIPIENT],
         subject,
-        html,
-        text,
-        reply_to: "bmesiha@outlook.com",
+        html: leadHtml,
+        text: leadText,
+        reply_to: toEmail,
       }),
     });
 
