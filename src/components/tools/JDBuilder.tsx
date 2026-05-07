@@ -144,8 +144,8 @@ export default function JDBuilder() {
 
   return (
     <section className="max-w-3xl">
-      <h2 className="mb-2 font-serif text-2xl font-normal text-ink">Job description builder</h2>
-      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55">Generate a UAE-market-calibrated, labor-law-aware job description PDF — drafted by an AI trained on senior HR consulting practice for the UAE & GCC.</p>
+      <h2 className="mb-2 font-serif text-2xl font-normal text-ink"><T en="Job description builder" ar="منشئ الوصف الوظيفي" /></h2>
+      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55"><T en="Generate a UAE-market-calibrated, labor-law-aware job description PDF — drafted by an AI trained on senior HR consulting practice for the UAE & GCC." ar="أنشئ وصفاً وظيفياً بصيغة PDF مُعايراً لسوق الإمارات وملمّاً بقانون العمل — مُصاغاً بذكاء اصطناعي مُدرّب على ممارسات استشارات الموارد البشرية للإمارات والخليج." /></p>
 
       <div className="border border-ink/10 bg-clay/35 p-6">
         <div className="grid gap-5 md:grid-cols-2">
