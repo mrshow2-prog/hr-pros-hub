@@ -62,7 +62,7 @@ export default function Tools() {
           </div>
         </section>
 
-        <div className="border-b border-ink/10 px-5 md:px-10">
+        <div id="tools-tabs" className="border-b border-ink/10 px-5 md:px-10 scroll-mt-24">
           <div className="no-scrollbar mx-auto flex max-w-5xl overflow-x-auto">
             {tabs.map((tab) => (
               <button
