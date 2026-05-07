@@ -223,6 +223,7 @@ const analyseCvText = (text: string, file: File): AtsResult => {
 };
 
 export default function Career() {
+  const lang = useLang();
   const [contact, setContact] = useState({ name: "", email: "", phone: "", linkedin: "", goal: "" });
   const [contactCv, setContactCv] = useState<File | null>(null);
   const [contactStatus, setContactStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
