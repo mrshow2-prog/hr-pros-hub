@@ -22,6 +22,18 @@ type TabId = (typeof tabs)[number]["id"];
 export default function Tools() {
   const [activeTab, setActiveTab] = useState<TabId>("diagnostic");
   const lang = useLang();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    const id = hash.replace("#", "") as TabId;
+    if (tabs.some((t) => t.id === id)) {
+      setActiveTab(id);
+      // scroll to tabs after mount
+      requestAnimationFrame(() => {
+        document.getElementById("tools-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [hash]);
 
   return (
     <div className="min-h-screen bg-paper font-dm text-ink">
