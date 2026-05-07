@@ -11,8 +11,10 @@ import WebCvShowcase from "@/components/career/WebCvShowcase";
 import SEO, { PERSON_SCHEMA } from "@/components/seo/SEO";
 import { BOOKING_HREF, COMPANY_EMAIL } from "@/lib/contact";
 import { supabase } from "@/integrations/supabase/client";
-import { T } from "@/i18n/T";
+import { T, pick, useLang } from "@/i18n/T";
 import LanguageToggle from "@/components/ui/LanguageToggle";
+
+type Bi = { en: string; ar: string };
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
