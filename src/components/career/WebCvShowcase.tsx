@@ -466,7 +466,7 @@ export default function WebCvShowcase() {
         </div>
 
         {/* CENTER: BROWSER FRAME */}
-        <div className="flex justify-center">
+        <div className="flex justify-center" dir="ltr">
           <div className="w-full max-w-[520px] overflow-hidden rounded-xl bg-[#2C2C2A] shadow-[0_32px_80px_rgba(0,0,0,0.5)] ring-1 ring-paper/10">
             {/* Browser bar */}
             <div className="flex items-center gap-3 border-b border-paper/5 bg-[#3A3A38] px-4 py-2.5">
