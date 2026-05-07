@@ -160,8 +160,8 @@ export default function PolicyGenerator() {
 
   return (
     <section className="max-w-3xl">
-      <h2 className="mb-2 font-serif text-2xl font-normal text-ink">Policy generator</h2>
-      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55">Generate a UAE/GCC-grounded HR policy PDF — drafted with the relevant Labour Law articles cited inline.</p>
+      <h2 className="mb-2 font-serif text-2xl font-normal text-ink"><T en="Policy generator" ar="مُولّد السياسات" /></h2>
+      <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55"><T en="Generate a UAE/GCC-grounded HR policy PDF — drafted with the relevant Labour Law articles cited inline." ar="أنشئ سياسة موارد بشرية بصيغة PDF مبنية على إطار الإمارات والخليج — مُصاغة مع الإشارة إلى مواد قانون العمل ذات الصلة." /></p>
 
       <div className="border border-ink/10 bg-clay/35 p-6">
         <div className="grid gap-5 md:grid-cols-2">
