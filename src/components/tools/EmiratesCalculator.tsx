@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TARGETED_SECTORS } from "@/data/tools";
 import { FieldLabel, OutputBox, ToolInput, ToolSelect, UpsellStrip, SuggestionBox } from "./ToolPrimitives";
 import { BOOKING_URL } from "@/lib/contact";
+import { T } from "@/i18n/T";
 
 type Breakdown = { label: string; amount: number; sublabel?: string };
 
@@ -113,10 +114,9 @@ export default function EmiratesCalculator() {
 
   return (
     <section className="max-w-3xl">
-      <h2 className="mb-2 font-serif text-2xl font-normal text-ink">Emiratisation calculator</h2>
+      <h2 className="mb-2 font-serif text-2xl font-normal text-ink"><T en="Emiratisation calculator" ar="حاسبة التوطين" /></h2>
       <p className="mb-8 max-w-xl font-dm text-sm leading-7 text-ink/55">
-        Enter your headcount and sector. Get your 2025 obligation, contribution exposure in AED, and a plain-English
-        next step.
+        <T en="Enter your headcount and sector. Get your 2025 obligation, contribution exposure in AED, and a plain-English next step." ar="أدخل عدد موظفيك وقطاعك. احصل على التزام 2025 ومقدار المساهمة المعرَّض بالدرهم وخطوة تالية بلغة واضحة." />
       </p>
 
       <div className="border border-ink/10 bg-clay/35 p-6">
