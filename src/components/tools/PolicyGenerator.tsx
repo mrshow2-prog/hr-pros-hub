@@ -5,6 +5,7 @@ import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
 import { recordToolUsage, saveToolLead } from "@/lib/toolsTracking";
 import { FieldLabel, SuggestionBox, ToolInput, ToolSelect, ToolTextarea, UpsellStrip } from "./ToolPrimitives";
 import EmailGatedGenerate from "./EmailGatedGenerate";
+import { T } from "@/i18n/T";
 
 const TOOL_NAME = "Policy Generator";
 const sizes = ["1–20 employees", "20–60 employees", "60–150 employees", "150+ employees"];
