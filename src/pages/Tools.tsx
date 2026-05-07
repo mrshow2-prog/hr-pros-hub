@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ToolsNav from "@/components/tools/ToolsNav";
 import HRDiagnostic from "@/components/tools/HRDiagnostic";
 import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
