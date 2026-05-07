@@ -50,7 +50,8 @@ export default function BusinessFreeToolsPromo() {
                 <T en="Try Free →" ar="جرّب مجانًا ←" />
               </span>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-10 p-6 flex flex-col md:flex-row items-center justify-between gap-5 bg-ink">
