@@ -477,11 +477,11 @@ export default function Career() {
 
       <section id="roi" className="bg-career-surface px-6 py-20 md:px-10">
         <div className="mx-auto max-w-5xl">
-          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky">The return on investment</p>
-          <h2 className="mb-8 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl">You pay once. The return comes every month.</h2>
+          <p className="mb-4 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky"><T en="The return on investment" ar="العائد على الاستثمار" /></p>
+          <h2 className="mb-8 font-serif text-4xl font-bold leading-tight text-paper md:text-5xl"><T en="You pay once. The return comes every month." ar="تدفع مرة واحدة. والعائد يأتي كل شهر." /></h2>
           <div className="mb-10 grid gap-5 max-w-3xl text-base font-light leading-8 text-paper/60">
-            <p>Most professionals leave AED 45,000 on the table every year by not negotiating their starting salary. They accept the first number, say thank you, and spend the next three years wondering if they left money on the table. They did.</p>
-            <p>Your starting salary is the anchor for every future raise, bonus, and pension contribution. A 15% negotiation today means 15% more compounding indefinitely. The investment: AED 2,000. The lifetime cost of not making it: AED 360,000+.</p>
+            <p><T en="Most professionals leave AED 45,000 on the table every year by not negotiating their starting salary. They accept the first number, say thank you, and spend the next three years wondering if they left money on the table. They did." ar="معظم المحترفين يتركون 45,000 درهم على الطاولة كل عام بعدم التفاوض على راتبهم الابتدائي. يقبلون أول رقم، ويقولون شكراً، ويقضون السنوات الثلاث التالية يتساءلون إن كانوا تركوا مالاً. لقد فعلوا." /></p>
+            <p><T en="Your starting salary is the anchor for every future raise, bonus, and pension contribution. A 15% negotiation today means 15% more compounding indefinitely. The investment: AED 2,000. The lifetime cost of not making it: AED 360,000+." ar="راتبك الابتدائي هو المرساة لكل زيادة ومكافأة ومساهمة تقاعدية مستقبلية. تفاوض بنسبة 15% اليوم يعني 15% أكثر تتراكم إلى ما لا نهاية. الاستثمار: 2,000 درهم. التكلفة مدى الحياة لعدم القيام به: 360,000+ درهم." /></p>
           </div>
           <div className="mb-10 grid gap-px overflow-hidden border border-career-border bg-career-border md:grid-cols-3">
             {[
