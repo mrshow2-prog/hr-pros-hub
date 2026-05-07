@@ -13,8 +13,8 @@ export default function BusinessHero() {
     >
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <img src={heroKintsugi} alt="" width={1920} height={1080} className={`absolute inset-0 h-full w-full object-cover ${lang === "ar" ? "object-left -scale-x-100" : "object-right"}`} />
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(var(--paper))_0%,hsl(var(--paper)/0.85)_45%,hsl(var(--paper)/0.15)_75%,transparent_100%)]" />
-        <div className="absolute inset-y-0 left-0 w-full md:w-3/5 bg-gradient-to-r from-paper via-paper/85 to-transparent" />
+        <div className={`absolute inset-0 ${lang === "ar" ? "bg-[linear-gradient(225deg,hsl(var(--paper))_0%,hsl(var(--paper)/0.85)_45%,hsl(var(--paper)/0.15)_75%,transparent_100%)]" : "bg-[linear-gradient(135deg,hsl(var(--paper))_0%,hsl(var(--paper)/0.85)_45%,hsl(var(--paper)/0.15)_75%,transparent_100%)]"}`} />
+        <div className={`absolute inset-y-0 w-full md:w-3/5 ${lang === "ar" ? "right-0 bg-gradient-to-l from-paper via-paper/85 to-transparent" : "left-0 bg-gradient-to-r from-paper via-paper/85 to-transparent"}`} />
         <div className="absolute inset-0 [background-image:radial-gradient(hsl(var(--ink)/0.12)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_40%_50%_at_85%_15%,black_30%,transparent_75%)]" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper to-transparent" />
       </div>
