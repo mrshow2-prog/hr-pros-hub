@@ -11,6 +11,8 @@ import WebCvShowcase from "@/components/career/WebCvShowcase";
 import SEO, { PERSON_SCHEMA } from "@/components/seo/SEO";
 import { BOOKING_HREF, COMPANY_EMAIL } from "@/lib/contact";
 import { supabase } from "@/integrations/supabase/client";
+import { T } from "@/i18n/T";
+import LanguageToggle from "@/components/ui/LanguageToggle";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -356,8 +358,9 @@ export default function Career() {
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center bg-career-blue px-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Book a free call</a>
+          <div className="flex items-center gap-3">
+            <LanguageToggle tone="paper" />
+            <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center bg-career-blue px-4 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep"><T en="Book a free call" ar="احجز مكالمة مجانية" /></a>
           </div>
         </div>
       </nav>
@@ -420,12 +423,12 @@ export default function Career() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-career-bg via-career-bg/58 to-career-deep/20" />
         <div className="relative z-10 max-w-5xl">
-          <p className="mb-6 flex items-center gap-3 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky before:block before:h-px before:w-7 before:bg-career-sky">Career Studio</p>
-          <h1 className="mb-7 max-w-4xl font-serif text-5xl font-normal leading-[0.96] text-paper drop-shadow-2xl md:text-7xl lg:text-8xl">You're good at your job.<br /><span className="italic text-career-sky">The market doesn't know it yet</span><span className="text-career-sky">.</span></h1>
-          <p className="mb-9 max-w-xl text-base font-light leading-8 text-paper/70 md:text-lg">Career positioning, CV architecture, and interview preparation for professionals who want to move — and move well.</p>
+          <p className="mb-6 flex items-center gap-3 font-dm text-xs font-bold uppercase tracking-widest2 text-career-sky before:block before:h-px before:w-7 before:bg-career-sky"><T en="Career Studio" ar="استوديو المسار المهني" /></p>
+          <h1 className="mb-7 max-w-4xl font-serif text-5xl font-normal leading-[0.96] text-paper drop-shadow-2xl md:text-7xl lg:text-8xl"><T en={<>You're good at your job.<br /><span className="italic text-career-sky">The market doesn't know it yet</span><span className="text-career-sky">.</span></>} ar={<>أنت بارع في عملك.<br /><span className="italic text-career-sky">لكن السوق لا يعرف ذلك بعد</span><span className="text-career-sky">.</span></>} /></h1>
+          <p className="mb-9 max-w-xl text-base font-light leading-8 text-paper/70 md:text-lg"><T en="Career positioning, CV architecture, and interview preparation for professionals who want to move — and move well." ar="تموضع مهني، وهندسة سيرة ذاتية، وتحضير للمقابلات، للمحترفين الذين يريدون الانتقال — والانتقال بإتقان." /></p>
           <div className="flex flex-wrap gap-3">
-            <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center border border-career-sky/30 px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky transition-all hover:-translate-y-0.5 hover:bg-career-sky/10">Book a free discovery call</a>
-            <a href="#web-cv" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep">Create your personal brand website</a>
+            <a href={BOOKING_HREF} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center border border-career-sky/30 px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky transition-all hover:-translate-y-0.5 hover:bg-career-sky/10"><T en="Book a free discovery call" ar="احجز مكالمة استكشاف مجانية" /></a>
+            <a href="#web-cv" className="inline-flex min-h-12 items-center bg-career-blue px-7 font-dm text-xs font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-career-deep"><T en="Create your personal brand website" ar="أنشئ موقع علامتك الشخصية" /></a>
           </div>
         </div>
         <div className="relative z-10 mt-14 grid gap-6 text-right md:absolute md:bottom-20 md:right-10 md:mt-0">

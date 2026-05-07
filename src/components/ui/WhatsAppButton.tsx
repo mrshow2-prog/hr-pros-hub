@@ -1,21 +1,24 @@
+import { useTr } from "@/i18n/T";
+
 /**
  * Floating WhatsApp contact button.
  * Fixed bottom-right on every page, opens WA chat in a new tab.
  */
 export default function WhatsAppButton() {
+  const tr = useTr();
   return (
     <a
       href="https://wa.me/971581784948"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chat with us on WhatsApp"
+      aria-label={tr("Chat with us on WhatsApp", "تواصل معنا عبر واتساب")}
       className="group fixed bottom-5 right-5 z-[100] flex h-[54px] w-[54px] items-center justify-center rounded-full shadow-[0_6px_18px_rgba(0,0,0,0.18)] transition-transform duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 md:bottom-6 md:right-6"
       style={{ backgroundColor: "#25D366" }}
     >
       <span
         className="pointer-events-none absolute right-[64px] hidden whitespace-nowrap rounded-md bg-black/85 px-3 py-1.5 font-dm text-xs font-medium text-white opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 md:block md:group-hover:opacity-100"
       >
-        Chat with us
+        {tr("Chat with us", "تواصل معنا")}
       </span>
       <svg
         viewBox="0 0 32 32"

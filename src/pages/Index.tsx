@@ -5,8 +5,13 @@ import SEO from "@/components/seo/SEO";
 import { COMPANY_EMAIL } from "@/lib/contact";
 import businessBg from "@/assets/index-business-bg.jpg";
 import careerBg from "@/assets/index-career-bg.jpg";
+import { T, pick, useLang } from "@/i18n/T";
+import { useLocalizedPath } from "@/i18n/useLocalizedPath";
+import LanguageToggle from "@/components/ui/LanguageToggle";
 
 const Index = () => {
+  const lang = useLang();
+  const { localize } = useLocalizedPath();
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-paper text-ink font-dm md:h-[100svh] md:min-h-[100svh] md:overflow-hidden">
       <SEO
@@ -22,17 +27,18 @@ const Index = () => {
           className="pointer-events-auto flex items-center gap-5 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 md:gap-6"
         >
           <Link
-            to="/business#about"
+            to={localize("/business#about")}
             className="hidden transition-colors hover:text-ink md:text-paper/45 md:hover:text-paper sm:inline"
           >
-            About
+            <T en="About" ar="من نحن" />
           </Link>
           <a
             href={`mailto:${COMPANY_EMAIL}`}
             className="transition-colors hover:text-ink md:text-paper/65 md:hover:text-paper"
           >
-            Contact
+            <T en="Contact" ar="تواصل" />
           </a>
+          <LanguageToggle tone="ink" className="md:[--tw-text-opacity:0.55] md:text-paper/55 md:hover:text-paper" />
         </nav>
       </header>
 
@@ -83,7 +89,7 @@ const Index = () => {
           <div className="relative z-10 bg-paper px-6 pt-28 md:bg-transparent md:px-10 md:pt-0 lg:px-24 md:[grid-column:1] md:[grid-row:1]">
             <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 before:block before:h-px before:w-7 before:bg-sienna md:mx-0">
               <span className="text-sienna">01</span>
-              <span>HR Advisory</span>
+              <span><T en="HR Advisory" ar="استشارات الموارد البشرية" /></span>
             </div>
           </div>
 
@@ -93,9 +99,7 @@ const Index = () => {
               id="hr-head"
               className="mx-auto max-w-xl font-serif text-[clamp(2.4rem,4.6vw,4.8rem)] font-normal leading-[0.98] text-ink text-balance md:mx-0"
             >
-              Practical HR,
-              <br />
-              <span className="italic text-sienna">honestly</span> said
+              <T en={<>Practical HR,<br /><span className="italic text-sienna">honestly</span> said</>} ar={<>موارد بشرية عملية،<br /><span className="italic text-sienna">بصدق</span></>} />
               <span className="inline-block h-[0.14em] w-[0.14em] rounded-full bg-sienna align-baseline" aria-hidden="true" />
             </h1>
           </div>
@@ -103,7 +107,7 @@ const Index = () => {
           {/* Lede */}
           <div className="relative z-10 bg-paper px-6 pt-6 md:bg-transparent md:px-10 md:pt-5 lg:px-24 md:[grid-column:1] md:[grid-row:3]">
             <p className="mx-auto max-w-md text-[1rem] font-light leading-7 text-ink md:mx-0">
-              For founders, GMs and owner-operators across the UAE and GCC. A senior HR practitioner — not a firm. No juniors, no decks, no eighty-page handbooks.
+              <T en="For founders, GMs and owner-operators across the UAE and GCC. A senior HR practitioner — not a firm. No juniors, no decks, no eighty-page handbooks." ar="للمؤسسين والمدراء العامين وأصحاب الأعمال في الإمارات والخليج. ممارس موارد بشرية رفيع — لا شركة. لا متدرّبون، ولا عروض، ولا كتيّبات من ثمانين صفحة." />
             </p>
           </div>
 
@@ -114,11 +118,11 @@ const Index = () => {
               aria-label="Service areas"
             >
               <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-ink/55">
-                Practice
+                <T en="Practice" ar="الممارسة" />
               </span>
               {SERVICE_PILLS.map((p) => (
-                <span key={p} className="rounded-sm border border-ink/20 px-2.5 py-1.5 text-xs tracking-wide text-ink">
-                  {p}
+                <span key={p.en} className="rounded-sm border border-ink/20 px-2.5 py-1.5 text-xs tracking-wide text-ink">
+                  {pick(p, lang)}
                 </span>
               ))}
             </div>
@@ -128,16 +132,16 @@ const Index = () => {
           <div className="relative z-10 bg-paper px-6 pt-7 md:bg-transparent md:px-10 md:pt-6 lg:px-24 md:[grid-column:1] md:[grid-row:5]">
             <div className="mx-auto flex max-w-xl flex-wrap items-center gap-6 md:mx-0">
               <Link
-                to="/business"
+                to={localize("/business")}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md bg-sienna px-6 font-dm text-sm font-medium text-paper transition-colors hover:bg-umber focus:outline-none focus:ring-2 focus:ring-sienna focus:ring-offset-2 focus:ring-offset-paper"
               >
-                Enter HR Advisory <span aria-hidden="true">→</span>
+                <T en="Enter HR Advisory" ar="ادخل إلى استشارات الموارد البشرية" /> <span aria-hidden="true" className="rtl-flip">→</span>
               </Link>
               <Link
-                to="/tools"
+                to={localize("/tools")}
                 className="border-b border-transparent py-1 text-sm font-medium tracking-wide text-ink/60 transition-colors hover:border-ink hover:text-ink"
               >
-                Free HR Business Tools →
+                <T en="Free HR Business Tools →" ar="أدوات موارد بشرية مجانية ←" />
               </Link>
             </div>
           </div>
@@ -151,11 +155,11 @@ const Index = () => {
                   <span className="inline-block h-[0.12em] w-[0.12em] rounded-full bg-sienna align-baseline" />
                 </span>
                 <span className="mt-1 block text-[0.62rem] font-medium uppercase tracking-widest2">
-                  Years · executive HR · MENAT
+                  <T en="Years · executive HR · MENAT" ar="سنوات · موارد بشرية تنفيذية · الشرق الأوسط وشمال أفريقيا وتركيا" />
                 </span>
               </div>
               <p className="hidden max-w-56 text-right font-serif italic leading-5 md:block">
-                For SMEs of 1 to 150 staff — the sweet spot.
+                <T en="For SMEs of 1 to 150 staff — the sweet spot." ar="للشركات الصغيرة والمتوسطة من 1 إلى 150 موظفًا — المكان المثالي." />
               </p>
             </div>
           </div>
@@ -168,7 +172,7 @@ const Index = () => {
           <div className="relative z-10 bg-olive px-6 pt-16 text-paper md:bg-transparent md:px-10 md:pt-0 lg:px-24 md:[grid-column:2] md:[grid-row:1]">
             <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-paper/65 before:block before:h-px before:w-7 before:bg-blush md:mx-0">
               <span className="text-blush">02</span>
-              <span>Career Studio</span>
+              <span><T en="Career Studio" ar="استوديو المسار المهني" /></span>
             </div>
           </div>
 
@@ -178,9 +182,7 @@ const Index = () => {
               id="cs-head"
               className="mx-auto max-w-xl font-serif text-[clamp(2.4rem,4.6vw,4.8rem)] font-normal leading-[0.98] text-paper text-balance md:mx-0"
             >
-              Your career,
-              <br />
-              <span className="italic text-blush">considered</span>
+              <T en={<>Your career,<br /><span className="italic text-blush">considered</span></>} ar={<>مسارك المهني،<br /><span className="italic text-blush">بتأنٍّ</span></>} />
               <span className="inline-block h-[0.14em] w-[0.14em] rounded-full bg-blush align-baseline" aria-hidden="true" />
             </h2>
           </div>
@@ -188,7 +190,7 @@ const Index = () => {
           {/* Lede */}
           <div className="relative z-10 bg-olive px-6 pt-6 text-paper md:bg-transparent md:px-10 md:pt-5 lg:px-24 md:[grid-column:2] md:[grid-row:3]">
             <p className="mx-auto max-w-md text-[1rem] font-light leading-7 text-paper/90 md:mx-0">
-              For HR and people professionals across the UAE and GCC who are ready to take their next step seriously. CV, LinkedIn, and coaching — written by an HR director, not a copywriter.
+              <T en="For HR and people professionals across the UAE and GCC who are ready to take their next step seriously. CV, LinkedIn, and coaching — written by an HR director, not a copywriter." ar="لمختصّي الموارد البشرية والكوادر المهنية في الإمارات والخليج المستعدّين لخطوتهم التالية بجدّية. سيرة ذاتية، ولينكدإن، وكوتشينغ — يكتبها مدير موارد بشرية، لا كاتب إعلانات." />
             </p>
           </div>
 
@@ -199,11 +201,11 @@ const Index = () => {
               aria-label="Career services"
             >
               <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-paper/60">
-                Studio
+                <T en="Studio" ar="الاستوديو" />
               </span>
               {CAREER_PILLS.map((p) => (
-                <span key={p} className="rounded-sm border border-paper/25 px-2.5 py-1.5 text-xs tracking-wide text-paper/90">
-                  {p}
+                <span key={p.en} className="rounded-sm border border-paper/25 px-2.5 py-1.5 text-xs tracking-wide text-paper/90">
+                  {pick(p, lang)}
                 </span>
               ))}
             </div>
@@ -213,10 +215,10 @@ const Index = () => {
           <div className="relative z-10 bg-olive px-6 pt-7 text-paper md:bg-transparent md:px-10 md:pt-6 lg:px-24 md:[grid-column:2] md:[grid-row:5]">
             <div className="mx-auto flex max-w-xl flex-wrap items-center gap-6 md:mx-0">
               <Link
-                to="/career"
+                to={localize("/career")}
                 className="inline-flex min-h-12 items-center gap-2 rounded-md bg-blush px-6 font-dm text-sm font-medium text-ink transition-colors hover:bg-clay focus:outline-none focus:ring-2 focus:ring-blush focus:ring-offset-2 focus:ring-offset-olive"
               >
-                Enter Career Studio <span aria-hidden="true">→</span>
+                <T en="Enter Career Studio" ar="ادخل إلى استوديو المسار المهني" /> <span aria-hidden="true" className="rtl-flip">→</span>
               </Link>
             </div>
           </div>
@@ -230,11 +232,11 @@ const Index = () => {
                   <span className="inline-block h-[0.12em] w-[0.12em] rounded-full bg-blush align-baseline" />
                 </span>
                 <span className="mt-1 block text-[0.62rem] font-medium uppercase tracking-widest2">
-                  Markets · MENAT
+                  <T en="Markets · MENAT" ar="أسواق · الشرق الأوسط وشمال أفريقيا وتركيا" />
                 </span>
               </div>
               <p className="hidden max-w-64 text-right font-serif italic leading-5 md:block">
-                For people who know they're worth more — and want to say so, without slogans.
+                <T en="For people who know they're worth more — and want to say so, without slogans." ar="لمن يعرفون أنّهم يستحقّون أكثر — ويريدون قول ذلك دون شعارات." />
               </p>
             </div>
           </div>
@@ -259,7 +261,7 @@ const Index = () => {
             </defs>
             <text className="fill-ink/55 font-dm text-[0.62rem] font-semibold uppercase tracking-[0.12em]">
               <textPath href="#choose-circle" startOffset="50%" textAnchor="middle">
-                Choose one · or the other ·
+                {lang === "ar" ? "اختر هذا · أو ذاك ·" : "Choose one · or the other ·"}
               </textPath>
             </text>
           </svg>
