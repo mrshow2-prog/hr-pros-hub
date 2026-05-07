@@ -350,14 +350,14 @@ export default function Career() {
           </div>
           <div className="hidden items-center gap-6 md:flex">
             {[
-              { label: "Why", href: "#about" },
-              { label: "Web CV", href: "#web-cv" },
-              { label: "Who", href: "#who" },
-              { label: "Services", href: "#services" },
-              { label: "ATS Review", href: "#ats-review" },
+              { label: { en: "Why", ar: "لماذا" }, href: "#about" },
+              { label: { en: "Web CV", ar: "السيرة الإلكترونية" }, href: "#web-cv" },
+              { label: { en: "Who", ar: "لمن" }, href: "#who" },
+              { label: { en: "Services", ar: "الخدمات" }, href: "#services" },
+              { label: { en: "ATS Review", ar: "مراجعة ATS" }, href: "#ats-review" },
             ].map(({ label, href }) => (
-              <a key={label} href={href} className="font-dm text-xs font-bold uppercase tracking-wider2 text-paper/45 transition-colors hover:text-career-sky">
-                {label}
+              <a key={href} href={href} className="font-dm text-xs font-bold uppercase tracking-wider2 text-paper/45 transition-colors hover:text-career-sky">
+                {pick(label, lang)}
               </a>
             ))}
           </div>
