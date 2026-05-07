@@ -5,6 +5,7 @@ import { downloadPdf, type PdfSection } from "@/lib/brandedPdf";
 import { recordToolUsage, saveToolLead } from "@/lib/toolsTracking";
 import { FieldLabel, SuggestionBox, ToolInput, ToolSelect, ToolTextarea, UpsellStrip } from "./ToolPrimitives";
 import EmailGatedGenerate from "./EmailGatedGenerate";
+import { T } from "@/i18n/T";
 
 const TOOL_NAME = "JD Builder";
 const levels = ["Entry level (0–2 years)", "Mid level (3–5 years)", "Senior (6–10 years)", "Manager / Team lead", "Director / Head of", "C-suite / VP"];
