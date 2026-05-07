@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
     </table>
     <hr style="border:none;border-top:1px solid #e8dfd1;margin:0 0 18px;" />
     <h2 style="font-size:14px;margin:0 0 12px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.1em;">Generated output</h2>
-    ${renderHtml(documentKind, documentName, outputText).split("<body")[1]?.split(">").slice(1).join(">").replace(/<\/body>[\s\S]*$/, "") || `<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;color:#333;">${escapeHtml(outputText)}</pre>`}
+    <pre style="white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:13px;color:#333;line-height:1.6;margin:0;">${escapeHtml(outputText)}</pre>
   </div>
 </body></html>`;
 
