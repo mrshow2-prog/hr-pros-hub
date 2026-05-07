@@ -42,9 +42,6 @@ export default function BusinessAbout() {
             <p className="font-dm leading-relaxed mb-8 text-moss" style={{ fontWeight: 300, fontSize: "1rem" }}>
               <T en="When you work with me, you work with me. No juniors, no subcontractors, no eighty-page handbooks." ar="حين تعمل معي، تعمل معي شخصيًا. لا مساعدون مبتدئون، ولا متعاقدون من الباطن، ولا أدلة من ثمانين صفحة." />
             </p>
-            <a href="#contact" className="font-dm font-bold text-sm uppercase px-7 py-3.5 rounded-sm inline-block transition-colors duration-200 bg-terracotta hover:bg-terracotta-deep text-cream" style={{ letterSpacing: "0.06em" }}>
-              <T en="About the Founder →" ar="عن المؤسس ←" />
-            </a>
           </div>
 
           <div className="space-y-4">
