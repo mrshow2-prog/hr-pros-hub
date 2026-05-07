@@ -419,6 +419,7 @@ function AiAgentWidget() {
 const CV_DESIGN_WIDTH = 800;
 
 export default function WebCvShowcase() {
+  const lang = useLang();
   const [active, setActive] = useState<Tier>("executive");
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -447,20 +448,20 @@ export default function WebCvShowcase() {
         {/* LEFT COPY */}
         <div>
           <p className="mb-5 flex items-center gap-2.5 font-dm text-[11px] font-medium uppercase tracking-[0.24em] text-career-sky">
-            <span className="h-px w-6 bg-career-sky" /> Only at People.Studio
+            <span className="h-px w-6 bg-career-sky" /> <T en="Only at People.Studio" ar="حصريًا في People.Studio" />
           </p>
           <h2 className="mb-5 font-serif text-4xl font-medium leading-[1.05] tracking-tight text-paper md:text-5xl">
-            A CV people can <em className="italic text-career-sky">actually</em> experience.
+            <T en={<>A CV people can <em className="italic text-career-sky">actually</em> experience.</>} ar={<>سيرة ذاتية يمكن للناس <em className="italic text-career-sky">أن يعيشوها</em> فعلاً.</>} />
           </h2>
           <p className="mb-8 max-w-[300px] font-light leading-[1.65] text-paper/70">
-            For senior professionals, founders, and HR leaders who need more than a document: a polished personal brand page that recruiters, employers, and collaborators can open instantly.
+            <T en="For senior professionals, founders, and HR leaders who need more than a document: a polished personal brand page that recruiters, employers, and collaborators can open instantly." ar="للمحترفين الكبار والمؤسّسين وقادة الموارد البشرية الذين يحتاجون أكثر من مستند: صفحة علامة شخصية أنيقة يفتحها مسؤولو التوظيف وأصحاب العمل والشركاء فورًا." />
           </p>
           <a
             href="/profile"
             className="group inline-flex min-h-12 items-center gap-2.5 rounded-md bg-career-sky px-6 font-dm text-[13px] font-bold uppercase tracking-[0.08em] text-career-deep shadow-[0_12px_32px_-12px_hsl(var(--career-sky)/0.6)] transition-all hover:-translate-y-0.5 hover:bg-paper"
           >
-            See the live demo
-            <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <T en="See the live demo" ar="شاهد العرض المباشر" />
+            <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 rtl-flip" />
           </a>
         </div>
 
@@ -534,7 +535,7 @@ export default function WebCvShowcase() {
                 }`}
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-serif text-xl font-normal italic tracking-tight text-paper">{pkg.name}</span>
+                  <span className="font-serif text-xl font-normal italic tracking-tight text-paper">{pick(pkg.name, lang)}</span>
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -557,14 +558,14 @@ export default function WebCvShowcase() {
                     isActive ? "text-paper/85" : "text-paper/55 group-hover:text-paper/80"
                   }`}
                 >
-                  {pkg.desc}
+                  {pick(pkg.desc, lang)}
                 </p>
                 <div
                   className={`mt-2.5 inline-flex items-center gap-1.5 overflow-hidden font-dm text-[11px] font-medium uppercase tracking-[0.08em] text-career-sky transition-all duration-300 ${
                     isActive ? "max-h-10 opacity-100" : "max-h-0 opacity-0 group-hover:max-h-10 group-hover:opacity-100"
                   }`}
                 >
-                  Get started <ArrowUpRight size={12} />
+                  <T en="Get started" ar="ابدأ" /> <ArrowUpRight size={12} className="rtl-flip" />
                 </div>
               </button>
             );
