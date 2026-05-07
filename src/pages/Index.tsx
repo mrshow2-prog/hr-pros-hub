@@ -190,7 +190,7 @@ const Index = () => {
           {/* Lede */}
           <div className="relative z-10 bg-olive px-6 pt-6 text-paper md:bg-transparent md:px-10 md:pt-5 lg:px-24 md:[grid-column:2] md:[grid-row:3]">
             <p className="mx-auto max-w-md text-[1rem] font-light leading-7 text-paper/90 md:mx-0">
-              <T en="For HR and people professionals across the UAE and GCC who are ready to take their next step seriously. CV, LinkedIn, and coaching — written by an HR director, not a copywriter." ar="لمختصّي الموارد البشرية والكوادر المهنية في الإمارات والخليج المستعدّين لخطوتهم التالية بجدّية. سيرة ذاتية، ولينكدإن، وكوتشينغ — يكتبها مدير موارد بشرية، لا كاتب إعلانات." />
+              <T en="For all professionals from anywhere who are ready to take their next step seriously. CV, LinkedIn, and coaching — written by an HR director, not a copywriter." ar="لكل المهنيّين من أي مكان المستعدّين لخطوتهم التالية بجدّية. سيرة ذاتية، ولينكدإن، وكوتشينغ — يكتبها مدير موارد بشرية، لا كاتب إعلانات." />
             </p>
           </div>
 

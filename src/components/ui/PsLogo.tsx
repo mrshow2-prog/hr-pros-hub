@@ -14,7 +14,7 @@ const sizes = {
 
 export default function PsLogo({ light = false, size = "md", className = "" }: PsLogoProps) {
   return (
-    <Link to="/" aria-label="People.Studio home" className={`inline-flex items-baseline leading-none ${sizes[size]} ${className}`}>
+    <Link to="/" dir="ltr" aria-label="People.Studio home" className={`inline-flex items-baseline leading-none ${sizes[size]} ${className}`}>
       <span
         className="font-serif italic font-normal text-sienna"
         style={{ letterSpacing: "0" }}
