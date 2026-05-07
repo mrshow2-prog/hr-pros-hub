@@ -7,27 +7,27 @@ type Bi = { en: string; ar: string };
 
 type Tier = "essential" | "signature" | "executive";
 
-const PACKAGES: { id: Tier; name: string; stars: number; slug: string; desc: string }[] = [
+const PACKAGES: { id: Tier; name: Bi; stars: number; slug: string; desc: Bi }[] = [
   {
     id: "essential",
-    name: "Essential",
+    name: { en: "Essential", ar: "أساسي" },
     stars: 3,
     slug: "sarah-essential",
-    desc: "A polished one-page web CV — profile, career highlights, education, and contact links. Clean, shareable, and instantly readable by any recruiter.",
+    desc: { en: "A polished one-page web CV — profile, career highlights, education, and contact links. Clean, shareable, and instantly readable by any recruiter.", ar: "سيرة ذاتية إلكترونية أنيقة من صفحة واحدة — نبذة، أبرز المحطات المهنية، التعليم، وروابط التواصل. نظيفة وقابلة للمشاركة ويقرأها أي مسؤول توظيف فورًا." },
   },
   {
     id: "signature",
-    name: "Signature",
+    name: { en: "Signature", ar: "مميّز" },
     stars: 4,
     slug: "sarah-signature",
-    desc: "A fully designed professional profile — narrative bio, key metrics, career timeline, skill strengths, and PDF export. Your story, properly told.",
+    desc: { en: "A fully designed professional profile — narrative bio, key metrics, career timeline, skill strengths, and PDF export. Your story, properly told.", ar: "ملف مهني كامل التصميم — نبذة سردية، مؤشرات رئيسية، خط زمني للمسار المهني، نقاط القوة، وتصدير PDF. قصّتك تُروى كما يجب." },
   },
   {
     id: "executive",
-    name: "Executive",
+    name: { en: "Executive", ar: "تنفيذي" },
     stars: 5,
     slug: "sarah-executive",
-    desc: "A personal brand site — thought leadership positioning, media-ready bio, speaking profile, press mentions, and a tailored visual identity.",
+    desc: { en: "A personal brand site — thought leadership positioning, media-ready bio, speaking profile, press mentions, and a tailored visual identity.", ar: "موقع علامة شخصية — تموضع قيادة فكرية، نبذة جاهزة للإعلام، ملف متحدث، تغطيات صحفية، وهوية بصرية مخصّصة." },
   },
 ];
 
