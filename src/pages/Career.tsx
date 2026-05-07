@@ -87,7 +87,7 @@ function AudienceCard({
       <div className="pointer-events-none absolute inset-x-0 top-full z-10 origin-top translate-y-0 bg-career-deep px-7 pb-6 pt-3 opacity-0 shadow-[0_20px_40px_-12px_hsl(var(--career-deep)/0.6)] ring-1 ring-career-sky/40 transition-opacity duration-200 ease-out group-hover:pointer-events-auto group-hover:opacity-100">
         <p className="mb-3 text-sm leading-6 text-paper/55">{reveal}</p>
         <span className="inline-flex items-center gap-1.5 font-dm text-xs font-bold uppercase tracking-wider2 text-career-sky">
-          This is for you
+          <T en="This is for you" ar="هذا مناسب لك" />
           <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </span>
       </div>
@@ -499,15 +499,15 @@ export default function Career() {
             <p><T en="Your starting salary is the anchor for every future raise, bonus, and pension contribution. A 15% negotiation today means 15% more compounding indefinitely. The investment: AED 2,000. The lifetime cost of not making it: AED 360,000+." ar="راتبك الابتدائي هو المرساة لكل زيادة ومكافأة ومساهمة تقاعدية مستقبلية. تفاوض بنسبة 15% اليوم يعني 15% أكثر تتراكم إلى ما لا نهاية. الاستثمار: 2,000 درهم. التكلفة مدى الحياة لعدم القيام به: 360,000+ درهم." /></p>
           </div>
           <div className="mb-10 grid gap-px overflow-hidden border border-career-border bg-career-border md:grid-cols-3">
-            {[
-              { stat: "18.83%", label: "average salary increase when professionals negotiate", source: "Harvard Business School, 2024–25" },
-              { stat: "55%", label: "of professionals accept the first offer without negotiating", source: "Pew Research Center" },
-              { stat: "67×", label: "ROI on a coaching session that secures 15% more on a AED 25,000/month offer over 3 years", source: "" },
-            ].map((b) => (
-              <div key={b.label} className="bg-career-deep p-7">
+            {([
+              { stat: "18.83%", label: { en: "average salary increase when professionals negotiate", ar: "متوسط الزيادة في الراتب عند التفاوض" }, source: { en: "Harvard Business School, 2024–25", ar: "كلية هارفارد للأعمال، 2024–25" } },
+              { stat: "55%", label: { en: "of professionals accept the first offer without negotiating", ar: "من المحترفين يقبلون أول عرض دون تفاوض" }, source: { en: "Pew Research Center", ar: "مركز بيو للأبحاث" } },
+              { stat: "67×", label: { en: "ROI on a coaching session that secures 15% more on a AED 25,000/month offer over 3 years", ar: "العائد على جلسة تدريب تضمن زيادة 15% على عرض 25,000 درهم/شهر خلال 3 سنوات" }, source: { en: "", ar: "" } },
+            ] as { stat: string; label: Bi; source: Bi }[]).map((b) => (
+              <div key={b.label.en} className="bg-career-deep p-7">
                 <div className="mb-3 font-serif text-4xl font-bold text-career-sky">{b.stat}</div>
-                <div className="mb-2 text-sm leading-6 text-paper/65">{b.label}</div>
-                {b.source && <div className="font-dm text-[10px] uppercase tracking-wider2 text-paper/30">{b.source}</div>}
+                <div className="mb-2 text-sm leading-6 text-paper/65">{pick(b.label, lang)}</div>
+                {pick(b.source, lang) && <div className="font-dm text-[10px] uppercase tracking-wider2 text-paper/30">{pick(b.source, lang)}</div>}
               </div>
             ))}
           </div>
