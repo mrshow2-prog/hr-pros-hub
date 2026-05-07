@@ -470,7 +470,7 @@ export default function Career() {
             ))}
           </div>
           <p className="mt-8 text-sm text-paper/45">
-            <a href="https://www.linkedin.com/in/bmesiha/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-career-sky">More recommendations available on LinkedIn →</a>
+            <a href="https://www.linkedin.com/in/bmesiha/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-career-sky"><T en="More recommendations available on LinkedIn →" ar="مزيد من التوصيات متاحة على لينكدإن ←" /></a>
           </p>
         </div>
       </section>
