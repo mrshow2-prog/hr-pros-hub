@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ToolsNav from "@/components/tools/ToolsNav";
 import HRDiagnostic from "@/components/tools/HRDiagnostic";
 import EmiratesCalculator from "@/components/tools/EmiratesCalculator";
@@ -21,6 +22,18 @@ type TabId = (typeof tabs)[number]["id"];
 export default function Tools() {
   const [activeTab, setActiveTab] = useState<TabId>("diagnostic");
   const lang = useLang();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    const id = hash.replace("#", "") as TabId;
+    if (tabs.some((t) => t.id === id)) {
+      setActiveTab(id);
+      // scroll to tabs after mount
+      requestAnimationFrame(() => {
+        document.getElementById("tools-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [hash]);
 
   return (
     <div className="min-h-screen bg-paper font-dm text-ink">
@@ -49,7 +62,7 @@ export default function Tools() {
           </div>
         </section>
 
-        <div className="border-b border-ink/10 px-5 md:px-10">
+        <div id="tools-tabs" className="border-b border-ink/10 px-5 md:px-10 scroll-mt-24">
           <div className="no-scrollbar mx-auto flex max-w-5xl overflow-x-auto">
             {tabs.map((tab) => (
               <button
