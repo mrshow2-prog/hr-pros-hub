@@ -141,13 +141,13 @@ export default function HRDiagnostic() {
       <section ref={topRef} className="max-w-3xl">
         <div className="py-8 md:py-12">
           <div className="mb-5 flex items-center gap-3 font-dm text-[0.68rem] font-bold uppercase tracking-widest2 text-sienna before:h-px before:w-5 before:bg-sienna">
-            People.Studio · Free Tool
+            <T en="People.Studio · Free Tool" ar="بيبول.ستوديو · أداة مجانية" />
           </div>
           <h2 className="mb-4 font-serif text-4xl font-normal leading-tight text-ink md:text-5xl">
-            How healthy is<br />your HR, <em className="text-sienna">really?</em>
+            <T en={<>How healthy is<br />your HR, <em className="text-sienna">really?</em></>} ar={<>ما مدى صحة<br />مواردك البشرية، <em className="text-sienna">فعلاً؟</em></>} />
           </h2>
           <p className="mb-8 max-w-xl font-dm text-base font-light leading-8 text-ink/60">
-            A practical diagnostic across HR compliance, documentation, talent, performance, compensation, and operations. Start with your company profile so the recommendations are relevant.
+            <T en="A practical diagnostic across HR compliance, documentation, talent, performance, compensation, and operations. Start with your company profile so the recommendations are relevant." ar="تشخيص عملي يشمل الامتثال والتوثيق والمواهب والأداء والتعويضات والعمليات. ابدأ بملف شركتك لتكون التوصيات ذات صلة." />
           </p>
           <div className="border border-ink/10 bg-clay/35 p-6">
             <div className="grid gap-5 md:grid-cols-2">
@@ -158,7 +158,7 @@ export default function HRDiagnostic() {
             </div>
             {error && <p className="mt-4 text-sm font-medium text-risk-red">{error}</p>}
             <button onClick={start} className="mt-6 bg-sienna px-9 py-4 font-dm text-sm font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber">
-              Start the diagnostic →
+              <T en="Start the diagnostic →" ar="ابدأ التشخيص ←" />
             </button>
           </div>
         </div>
