@@ -134,6 +134,8 @@ export default function SiteAssistant() {
 
   const dir = lang === "ar" ? "rtl" : "ltr";
 
+  if (!shouldRender) return null;
+
   return (
     <>
       {/* Floating launcher — sits above WhatsApp button */}
