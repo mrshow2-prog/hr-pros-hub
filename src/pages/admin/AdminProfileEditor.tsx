@@ -17,12 +17,15 @@ interface FormState {
   seo_description: string;
   og_image_url: string;
   published: boolean;
+  assistant_enabled: boolean;
+  assistant_context: string;
   contentJson: string;            // raw JSON string (source of truth)
 }
 
 const empty: FormState = {
   seo_title: "", seo_description: "", og_image_url: "",
-  published: true, contentJson: "{}",
+  published: true, assistant_enabled: false, assistant_context: "",
+  contentJson: "{}",
 };
 
 /** Common shallow fields we surface in "Quick fields". They map onto
