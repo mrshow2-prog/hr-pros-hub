@@ -178,8 +178,10 @@ export default function AdminProfileEditor() {
         seo_description: form.seo_description,
         og_image_url: form.og_image_url || null,
         published: form.published,
+        assistant_enabled: form.assistant_enabled,
+        assistant_context: form.assistant_context,
         content: parsed.value,
-      })
+      } as any)
       .eq("id", data.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
