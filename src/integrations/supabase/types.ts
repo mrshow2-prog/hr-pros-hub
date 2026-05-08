@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       profiles_content: {
         Row: {
+          assistant_context: string
+          assistant_enabled: boolean
           content: Json
           created_at: string
           id: string
@@ -28,6 +30,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assistant_context?: string
+          assistant_enabled?: boolean
           content?: Json
           created_at?: string
           id?: string
@@ -40,6 +44,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assistant_context?: string
+          assistant_enabled?: boolean
           content?: Json
           created_at?: string
           id?: string

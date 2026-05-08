@@ -107,7 +107,7 @@
 /* Nav */
 .chef-mk-page #navbar {
   position: fixed;
-  top: 0; left: 0; width: 100%;
+  top: 44px; left: 0; width: 100%;
   z-index: 900;
   padding: 1.6rem 0;
   transition: background .4s ease, padding .4s ease, border-color .4s ease;

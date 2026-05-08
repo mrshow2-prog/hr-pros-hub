@@ -1,43 +1,67 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useLang, useTr } from "@/i18n/T";
 import { toast } from "@/components/ui/sonner";
+import { getProfileSlugFromPath } from "@/lib/profileRoutes";
+import { useProfileContent } from "@/hooks/useProfileContent";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const STORAGE_KEY = "ps_site_assistant_v1";
+const STORAGE_KEY_BASE = "ps_site_assistant_v1";
 
 export default function SiteAssistant() {
   const lang = useLang();
   const tr = useTr();
+  const { pathname } = useLocation();
+  const profileSlug = getProfileSlugFromPath(pathname);
+  const { data: profile } = useProfileContent(profileSlug ?? undefined);
+
+  // On a profile route, only show when the admin has enabled the assistant.
+  const onProfile = !!profileSlug;
+  const profileAssistantEnabled = onProfile && !!profile?.assistant_enabled;
+  const shouldRender = !onProfile || profileAssistantEnabled;
+
+  const storageKey = onProfile ? `${STORAGE_KEY_BASE}:${profileSlug}` : STORAGE_KEY_BASE;
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // hydrate from localStorage
+  // hydrate from localStorage (per-route key so profile chats don't leak)
   useEffect(() => {
+    setMessages([]);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) setMessages(JSON.parse(raw));
     } catch {}
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-30)));
+      localStorage.setItem(storageKey, JSON.stringify(messages.slice(-30)));
     } catch {}
-  }, [messages]);
+  }, [messages, storageKey]);
 
   useEffect(() => {
     if (open) scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open, isStreaming]);
 
-  const greeting =
-    lang === "ar"
-      ? "مرحبًا! أنا مساعد People.Studio. كيف يمكنني توجيهك اليوم — استشارات موارد بشرية لشركتك، أو دعم مسيرتك المهنية، أو أدوات مجانية؟"
-      : "Hi! I'm the People.Studio assistant. How can I point you in the right direction today — HR for your business, support for your career, or our free tools?";
+  const personName = onProfile ? (profile?.content as any)?.hero?.name_first
+      ? `${(profile!.content as any).hero.name_first} ${(profile!.content as any).hero.name_last ?? ""}`.trim()
+      : (profile?.content as any)?.hero?.name || profile?.seo_title || "this profile"
+    : "";
+
+  const greeting = onProfile
+    ? (lang === "ar"
+        ? `مرحبًا! اسألني أي شيء عن ${personName} — خبرته، إنجازاته، أو كيفية التواصل معه.`
+        : `Hi! Ask me anything about ${personName} — experience, achievements, or how to get in touch.`)
+    : (lang === "ar"
+        ? "مرحبًا! أنا مساعد People.Studio. كيف يمكنني توجيهك اليوم — استشارات موارد بشرية لشركتك، أو دعم مسيرتك المهنية، أو أدوات مجانية؟"
+        : "Hi! I'm the People.Studio assistant. How can I point you in the right direction today — HR for your business, support for your career, or our free tools?");
 
   const send = async () => {
     const text = input.trim();
@@ -55,7 +79,7 @@ export default function SiteAssistant() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: next, lang }),
+        body: JSON.stringify({ messages: next, lang, slug: profileSlug ?? undefined }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -105,10 +129,12 @@ export default function SiteAssistant() {
 
   const clear = () => {
     setMessages([]);
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try { localStorage.removeItem(storageKey); } catch {}
   };
 
   const dir = lang === "ar" ? "rtl" : "ltr";
+
+  if (!shouldRender) return null;
 
   return (
     <>

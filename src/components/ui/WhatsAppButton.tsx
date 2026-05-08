@@ -1,4 +1,6 @@
+import { useLocation } from "react-router-dom";
 import { useTr } from "@/i18n/T";
+import { getProfileSlugFromPath } from "@/lib/profileRoutes";
 
 /**
  * Floating WhatsApp contact button.
@@ -6,6 +8,9 @@ import { useTr } from "@/i18n/T";
  */
 export default function WhatsAppButton() {
   const tr = useTr();
+  const { pathname } = useLocation();
+  // Hide on individual profile pages — those have their own embedded contact UX.
+  if (getProfileSlugFromPath(pathname)) return null;
   return (
     <a
       href="https://wa.me/971581784948"

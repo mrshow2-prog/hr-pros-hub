@@ -95,7 +95,9 @@ export default function ChefMKhalilPage({ profile }: Props) {
 
   return (
     <div ref={rootRef} className="chef-mk-page">
-      <ProfileByPeopleStudioHeader />
+      <div className="fixed top-0 left-0 right-0 z-[1001]">
+        <ProfileByPeopleStudioHeader />
+      </div>
       <SEO
         title={profile.seo_title}
         description={profile.seo_description}

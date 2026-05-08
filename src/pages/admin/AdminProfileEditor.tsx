@@ -17,12 +17,15 @@ interface FormState {
   seo_description: string;
   og_image_url: string;
   published: boolean;
+  assistant_enabled: boolean;
+  assistant_context: string;
   contentJson: string;            // raw JSON string (source of truth)
 }
 
 const empty: FormState = {
   seo_title: "", seo_description: "", og_image_url: "",
-  published: true, contentJson: "{}",
+  published: true, assistant_enabled: false, assistant_context: "",
+  contentJson: "{}",
 };
 
 /** Common shallow fields we surface in "Quick fields". They map onto
@@ -105,6 +108,8 @@ export default function AdminProfileEditor() {
       seo_description: data.seo_description || "",
       og_image_url: data.og_image_url || "",
       published: data.published,
+      assistant_enabled: (data as any).assistant_enabled ?? false,
+      assistant_context: (data as any).assistant_context ?? "",
       contentJson: JSON.stringify(data.content || {}, null, 2),
     });
     setJsonError(null);
@@ -173,8 +178,10 @@ export default function AdminProfileEditor() {
         seo_description: form.seo_description,
         og_image_url: form.og_image_url || null,
         published: form.published,
+        assistant_enabled: form.assistant_enabled,
+        assistant_context: form.assistant_context,
         content: parsed.value,
-      })
+      } as any)
       .eq("id", data.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
@@ -227,6 +234,34 @@ export default function AdminProfileEditor() {
                 <Label htmlFor="pub">Published (visible to public)</Label>
               </div>
             </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-medium">Profile assistant (chatbot)</h2>
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="asst"
+                  checked={form.assistant_enabled}
+                  onCheckedChange={(v) => update("assistant_enabled", v)}
+                />
+                <Label htmlFor="asst">
+                  Enable on-page assistant for /{slug}
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                When on, a chat widget appears on this profile page and only answers
+                questions about this person — using the page content plus any extra
+                background you paste below (CV text, bio, project notes, FAQs).
+              </p>
+              <Field label="Extra background for the assistant (private — not shown on page)">
+                <Textarea
+                  value={form.assistant_context}
+                  onChange={(e) => update("assistant_context", e.target.value)}
+                  rows={10}
+                  placeholder="Paste full CV text, additional bio, FAQs, references, or anything the chatbot should be able to answer about. Visible only to the assistant."
+                />
+              </Field>
+            </section>
+
             <section className="space-y-3">
               <h2 className="text-lg font-medium">SEO</h2>
               <Field label="Page title (≤120 chars)">

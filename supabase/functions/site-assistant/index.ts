@@ -64,6 +64,59 @@ You don't just answer — you DIAGNOSE then RECOMMEND. Behave like a senior advi
 
 type ClientMsg = { role: "user" | "assistant"; content: string };
 
+async function buildProfilePrompt(slug: string): Promise<string | null> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey =
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+      Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !serviceKey) return null;
+    const r = await fetch(
+      `${supabaseUrl}/rest/v1/profiles_content?slug=eq.${encodeURIComponent(slug)}&select=slug,seo_title,seo_description,content,assistant_enabled,assistant_context&limit=1`,
+      {
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+      },
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row || row.assistant_enabled !== true) return null;
+
+    const content = row.content || {};
+    const summary = JSON.stringify(content).slice(0, 12000);
+    const extra = (row.assistant_context || "").toString().slice(0, 20000);
+
+    return `You are a dedicated assistant for the personal profile page "/${row.slug}" on People.Studio.
+
+# STRICT SCOPE
+- You ONLY answer questions about this specific person and their work, experience, achievements, services, contact details, and the documents provided below.
+- If asked about anything else (other people, unrelated topics, the broader People.Studio business, other profiles, general knowledge, jokes, code, etc.), politely refuse in one sentence and steer back: "I can only answer questions about ${row.seo_title || row.slug}."
+- Never invent facts. If something isn't in the data below, say you don't have that information and suggest contacting them directly.
+
+# PROFILE METADATA
+Title: ${row.seo_title || ""}
+Summary: ${row.seo_description || ""}
+
+# PROFILE CONTENT (JSON)
+${summary}
+
+# ADDITIONAL DOCUMENTS / CONTEXT (CV, notes, etc. — admin-curated)
+${extra || "(none provided)"}
+
+# STYLE
+- Reply in the user's language (English or Arabic).
+- Keep answers short (2–5 sentences) and warm.
+- Use Markdown when helpful (bold for names, links for contact).
+- When relevant, end with a clear next step (e.g. "Reach out via the Book / Hire button on this page").`;
+  } catch (e) {
+    console.error("buildProfilePrompt failed", e);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -76,7 +129,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { messages, lang } = (await req.json()) as { messages: ClientMsg[]; lang?: string };
+    const { messages, lang, slug } = (await req.json()) as { messages: ClientMsg[]; lang?: string; slug?: string };
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages must be an array" }), {
         status: 400,
@@ -89,9 +142,22 @@ Deno.serve(async (req) => {
       parts: [{ text: String(m.content || "").slice(0, 4000) }],
     }));
 
+    let basePrompt = SYSTEM_PROMPT;
+    if (slug) {
+      const profilePrompt = await buildProfilePrompt(slug);
+      if (profilePrompt) {
+        basePrompt = profilePrompt;
+      } else {
+        return new Response(JSON.stringify({ error: "Assistant is not enabled for this profile." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const systemInstruction = {
       parts: [
-        { text: SYSTEM_PROMPT + (lang === "ar" ? "\n\nThe user is currently browsing the Arabic version of the site — prefer Arabic unless they switch." : "") },
+        { text: basePrompt + (lang === "ar" ? "\n\nThe user is currently browsing the Arabic version of the site — prefer Arabic unless they switch." : "") },
       ],
     };
 
