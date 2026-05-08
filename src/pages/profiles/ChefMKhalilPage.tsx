@@ -99,6 +99,7 @@ export default function ChefMKhalilPage({ profile }: Props) {
       <div className="fixed top-0 left-0 right-0 z-[1001]">
         <ProfileByPeopleStudioHeader />
       </div>
+      <DownloadCvButton url={c.cv_url} fileName={`${(hero.name_first || "chef")}-${(hero.name_last || "khalil")}-cv.pdf`.toLowerCase().replace(/\s+/g, "-")} />
       <SEO
         title={profile.seo_title}
         description={profile.seo_description}
