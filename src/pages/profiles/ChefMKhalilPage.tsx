@@ -3,6 +3,7 @@ import SEO from "@/components/seo/SEO";
 import type { ProfileContent } from "@/hooks/useProfileContent";
 import "./chef-m-khalil/theme.css";
 import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/components/profiles/ProfileByPeopleStudio";
+import DownloadCvButton from "@/components/profiles/DownloadCvButton";
 
 interface Props { profile: ProfileContent; }
 
