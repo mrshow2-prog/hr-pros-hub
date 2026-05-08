@@ -10,6 +10,7 @@ import {
 import "./bishoy-mesiha/theme.css";
 import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
 import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/components/profiles/ProfileByPeopleStudio";
+import DownloadCvButton from "@/components/profiles/DownloadCvButton";
 
 interface Props { profile: ProfileContent }
 
@@ -83,6 +84,7 @@ export default function BishoyMesihaPage({ profile }: Props) {
         <Landing onSelect={openSpecialty} photoUrl={photoUrl} data={data} />
       )}
       <ProfileByPeopleStudioFooter />
+      <DownloadCvButton url={(c as any).cv_url} fileName={`${HERO.nameFirst}-${HERO.nameLast}-cv.pdf`.toLowerCase().replace(/\s+/g, "-")} />
     </div>
   );
 }

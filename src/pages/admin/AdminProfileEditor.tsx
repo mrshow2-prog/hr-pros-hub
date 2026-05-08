@@ -157,6 +157,32 @@ export default function AdminProfileEditor() {
     return supabase.storage.from("profile-images").getPublicUrl(path).data.publicUrl;
   };
 
+  const cvUrl: string = (parsed.ok ? (parsed.value as any)?.cv_url : "") || "";
+
+  const setCvUrl = (url: string) => {
+    if (!parsed.ok) { toast.error("Fix JSON before changing CV"); return; }
+    const next = { ...(parsed.value || {}), cv_url: url || undefined };
+    if (!url) delete (next as any).cv_url;
+    update("contentJson", JSON.stringify(next, null, 2));
+  };
+
+  const uploadCv = async (file: File) => {
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("CV must be a PDF file"); return;
+    }
+    setUploading(true);
+    // Single canonical path per profile so re-uploads overwrite cleanly.
+    const path = `${slug}/cv.pdf`;
+    const { error } = await supabase.storage.from("profile-cvs")
+      .upload(path, file, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
+    setUploading(false);
+    if (error) { toast.error(error.message); return; }
+    const base = supabase.storage.from("profile-cvs").getPublicUrl(path).data.publicUrl;
+    // Cache-bust so the new file shows immediately.
+    setCvUrl(`${base}?v=${Date.now()}`);
+    toast.success("CV uploaded");
+  };
+
   const formatJson = () => {
     if (!parsed.ok) { setJsonError(parsed.message); toast.error("Invalid JSON"); return; }
     update("contentJson", JSON.stringify(parsed.value, null, 2));
@@ -260,6 +286,41 @@ export default function AdminProfileEditor() {
                   placeholder="Paste full CV text, additional bio, FAQs, references, or anything the chatbot should be able to answer about. Visible only to the assistant."
                 />
               </Field>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-medium">Downloadable CV (PDF)</h2>
+              <p className="text-xs text-muted-foreground">
+                Upload one PDF. Visitors will see a "Download CV" button on the profile page.
+                Re-uploading replaces the existing file.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <label>
+                  <input type="file" accept="application/pdf" className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]; if (!f) return;
+                      await uploadCv(f);
+                      e.target.value = "";
+                    }} />
+                  <span className="inline-flex h-10 items-center px-4 rounded-md border border-input bg-background hover:bg-accent cursor-pointer text-sm">
+                    {uploading ? "Uploading…" : cvUrl ? "Replace PDF" : "Upload PDF"}
+                  </span>
+                </label>
+                {cvUrl && (
+                  <>
+                    <a href={cvUrl} target="_blank" rel="noopener"
+                       className="text-sm underline text-foreground hover:text-primary">
+                      Open current CV ↗
+                    </a>
+                    <Button variant="ghost" size="sm" onClick={() => setCvUrl("")}>
+                      Remove
+                    </Button>
+                  </>
+                )}
+              </div>
+              {cvUrl && (
+                <p className="text-xs text-muted-foreground break-all">{cvUrl}</p>
+              )}
             </section>
 
             <section className="space-y-3">
