@@ -10,6 +10,8 @@ export interface ProfileContent {
   og_image_url: string | null;
   content: Record<string, any>;
   published: boolean;
+  assistant_enabled: boolean;
+  assistant_context: string;
   updated_at: string;
 }
 
