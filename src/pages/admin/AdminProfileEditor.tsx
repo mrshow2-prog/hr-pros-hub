@@ -289,6 +289,41 @@ export default function AdminProfileEditor() {
             </section>
 
             <section className="space-y-3">
+              <h2 className="text-lg font-medium">Downloadable CV (PDF)</h2>
+              <p className="text-xs text-muted-foreground">
+                Upload one PDF. Visitors will see a "Download CV" button on the profile page.
+                Re-uploading replaces the existing file.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <label>
+                  <input type="file" accept="application/pdf" className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]; if (!f) return;
+                      await uploadCv(f);
+                      e.target.value = "";
+                    }} />
+                  <span className="inline-flex h-10 items-center px-4 rounded-md border border-input bg-background hover:bg-accent cursor-pointer text-sm">
+                    {uploading ? "Uploading…" : cvUrl ? "Replace PDF" : "Upload PDF"}
+                  </span>
+                </label>
+                {cvUrl && (
+                  <>
+                    <a href={cvUrl} target="_blank" rel="noopener"
+                       className="text-sm underline text-foreground hover:text-primary">
+                      Open current CV ↗
+                    </a>
+                    <Button variant="ghost" size="sm" onClick={() => setCvUrl("")}>
+                      Remove
+                    </Button>
+                  </>
+                )}
+              </div>
+              {cvUrl && (
+                <p className="text-xs text-muted-foreground break-all">{cvUrl}</p>
+              )}
+            </section>
+
+            <section className="space-y-3">
               <h2 className="text-lg font-medium">SEO</h2>
               <Field label="Page title (≤120 chars)">
                 <Input value={form.seo_title}
