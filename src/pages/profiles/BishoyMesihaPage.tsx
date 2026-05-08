@@ -10,6 +10,7 @@ import {
 import "./bishoy-mesiha/theme.css";
 import bishoyPhoto from "@/assets/bishoy-mesiha.jpg";
 import { ProfileByPeopleStudioHeader, ProfileByPeopleStudioFooter } from "@/components/profiles/ProfileByPeopleStudio";
+import DownloadCvButton from "@/components/profiles/DownloadCvButton";
 
 interface Props { profile: ProfileContent }
 
