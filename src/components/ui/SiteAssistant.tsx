@@ -50,10 +50,18 @@ export default function SiteAssistant() {
     if (open) scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open, isStreaming]);
 
-  const greeting =
-    lang === "ar"
-      ? "مرحبًا! أنا مساعد People.Studio. كيف يمكنني توجيهك اليوم — استشارات موارد بشرية لشركتك، أو دعم مسيرتك المهنية، أو أدوات مجانية؟"
-      : "Hi! I'm the People.Studio assistant. How can I point you in the right direction today — HR for your business, support for your career, or our free tools?";
+  const personName = onProfile ? (profile?.content as any)?.hero?.name_first
+      ? `${(profile!.content as any).hero.name_first} ${(profile!.content as any).hero.name_last ?? ""}`.trim()
+      : (profile?.content as any)?.hero?.name || profile?.seo_title || "this profile"
+    : "";
+
+  const greeting = onProfile
+    ? (lang === "ar"
+        ? `مرحبًا! اسألني أي شيء عن ${personName} — خبرته، إنجازاته، أو كيفية التواصل معه.`
+        : `Hi! Ask me anything about ${personName} — experience, achievements, or how to get in touch.`)
+    : (lang === "ar"
+        ? "مرحبًا! أنا مساعد People.Studio. كيف يمكنني توجيهك اليوم — استشارات موارد بشرية لشركتك، أو دعم مسيرتك المهنية، أو أدوات مجانية؟"
+        : "Hi! I'm the People.Studio assistant. How can I point you in the right direction today — HR for your business, support for your career, or our free tools?");
 
   const send = async () => {
     const text = input.trim();
