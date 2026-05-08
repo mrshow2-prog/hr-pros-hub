@@ -30,19 +30,21 @@ export default function SiteAssistant() {
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // hydrate from localStorage
+  // hydrate from localStorage (per-route key so profile chats don't leak)
   useEffect(() => {
+    setMessages([]);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) setMessages(JSON.parse(raw));
     } catch {}
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-30)));
+      localStorage.setItem(storageKey, JSON.stringify(messages.slice(-30)));
     } catch {}
-  }, [messages]);
+  }, [messages, storageKey]);
 
   useEffect(() => {
     if (open) scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
