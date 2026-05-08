@@ -157,6 +157,32 @@ export default function AdminProfileEditor() {
     return supabase.storage.from("profile-images").getPublicUrl(path).data.publicUrl;
   };
 
+  const cvUrl: string = (parsed.ok ? (parsed.value as any)?.cv_url : "") || "";
+
+  const setCvUrl = (url: string) => {
+    if (!parsed.ok) { toast.error("Fix JSON before changing CV"); return; }
+    const next = { ...(parsed.value || {}), cv_url: url || undefined };
+    if (!url) delete (next as any).cv_url;
+    update("contentJson", JSON.stringify(next, null, 2));
+  };
+
+  const uploadCv = async (file: File) => {
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("CV must be a PDF file"); return;
+    }
+    setUploading(true);
+    // Single canonical path per profile so re-uploads overwrite cleanly.
+    const path = `${slug}/cv.pdf`;
+    const { error } = await supabase.storage.from("profile-cvs")
+      .upload(path, file, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
+    setUploading(false);
+    if (error) { toast.error(error.message); return; }
+    const base = supabase.storage.from("profile-cvs").getPublicUrl(path).data.publicUrl;
+    // Cache-bust so the new file shows immediately.
+    setCvUrl(`${base}?v=${Date.now()}`);
+    toast.success("CV uploaded");
+  };
+
   const formatJson = () => {
     if (!parsed.ok) { setJsonError(parsed.message); toast.error("Invalid JSON"); return; }
     update("contentJson", JSON.stringify(parsed.value, null, 2));
