@@ -108,6 +108,8 @@ export default function AdminProfileEditor() {
       seo_description: data.seo_description || "",
       og_image_url: data.og_image_url || "",
       published: data.published,
+      assistant_enabled: (data as any).assistant_enabled ?? false,
+      assistant_context: (data as any).assistant_context ?? "",
       contentJson: JSON.stringify(data.content || {}, null, 2),
     });
     setJsonError(null);
