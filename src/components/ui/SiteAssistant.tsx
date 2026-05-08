@@ -79,7 +79,7 @@ export default function SiteAssistant() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: next, lang }),
+        body: JSON.stringify({ messages: next, lang, slug: profileSlug ?? undefined }),
       });
 
       if (!resp.ok || !resp.body) {
