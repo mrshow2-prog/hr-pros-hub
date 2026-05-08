@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useLang, useTr } from "@/i18n/T";
 import { toast } from "@/components/ui/sonner";
+import { getProfileSlugFromPath } from "@/lib/profileRoutes";
+import { useProfileContent } from "@/hooks/useProfileContent";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
