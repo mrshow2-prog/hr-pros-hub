@@ -84,6 +84,7 @@ export default function BishoyMesihaPage({ profile }: Props) {
         <Landing onSelect={openSpecialty} photoUrl={photoUrl} data={data} />
       )}
       <ProfileByPeopleStudioFooter />
+      <DownloadCvButton url={(c as any).cv_url} fileName={`${HERO.nameFirst}-${HERO.nameLast}-cv.pdf`.toLowerCase().replace(/\s+/g, "-")} />
     </div>
   );
 }
