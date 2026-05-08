@@ -8,11 +8,22 @@ import { useProfileContent } from "@/hooks/useProfileContent";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const STORAGE_KEY = "ps_site_assistant_v1";
+const STORAGE_KEY_BASE = "ps_site_assistant_v1";
 
 export default function SiteAssistant() {
   const lang = useLang();
   const tr = useTr();
+  const { pathname } = useLocation();
+  const profileSlug = getProfileSlugFromPath(pathname);
+  const { data: profile } = useProfileContent(profileSlug ?? undefined);
+
+  // On a profile route, only show when the admin has enabled the assistant.
+  const onProfile = !!profileSlug;
+  const profileAssistantEnabled = onProfile && !!profile?.assistant_enabled;
+  const shouldRender = !onProfile || profileAssistantEnabled;
+
+  const storageKey = onProfile ? `${STORAGE_KEY_BASE}:${profileSlug}` : STORAGE_KEY_BASE;
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
