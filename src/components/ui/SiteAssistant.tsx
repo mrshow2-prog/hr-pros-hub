@@ -121,7 +121,7 @@ export default function SiteAssistant() {
 
   const clear = () => {
     setMessages([]);
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try { localStorage.removeItem(storageKey); } catch {}
   };
 
   const dir = lang === "ar" ? "rtl" : "ltr";
