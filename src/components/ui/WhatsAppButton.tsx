@@ -1,4 +1,6 @@
+import { useLocation } from "react-router-dom";
 import { useTr } from "@/i18n/T";
+import { getProfileSlugFromPath } from "@/lib/profileRoutes";
 
 /**
  * Floating WhatsApp contact button.
