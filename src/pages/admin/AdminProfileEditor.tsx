@@ -234,6 +234,34 @@ export default function AdminProfileEditor() {
                 <Label htmlFor="pub">Published (visible to public)</Label>
               </div>
             </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg font-medium">Profile assistant (chatbot)</h2>
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="asst"
+                  checked={form.assistant_enabled}
+                  onCheckedChange={(v) => update("assistant_enabled", v)}
+                />
+                <Label htmlFor="asst">
+                  Enable on-page assistant for /{slug}
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                When on, a chat widget appears on this profile page and only answers
+                questions about this person — using the page content plus any extra
+                background you paste below (CV text, bio, project notes, FAQs).
+              </p>
+              <Field label="Extra background for the assistant (private — not shown on page)">
+                <Textarea
+                  value={form.assistant_context}
+                  onChange={(e) => update("assistant_context", e.target.value)}
+                  rows={10}
+                  placeholder="Paste full CV text, additional bio, FAQs, references, or anything the chatbot should be able to answer about. Visible only to the assistant."
+                />
+              </Field>
+            </section>
+
             <section className="space-y-3">
               <h2 className="text-lg font-medium">SEO</h2>
               <Field label="Page title (≤120 chars)">
