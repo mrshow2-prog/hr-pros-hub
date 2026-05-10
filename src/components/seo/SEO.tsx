@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 
 // TODO: update when custom domain is connected.
-const BASE_URL = "https://people-studio.lovable.app";
+const BASE_URL = "https://www.peoplestudiohr.com";
 // TODO: replace with branded 1200×630 OG card
 const DEFAULT_OG_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c1c94bce-cab3-4e13-9216-06ef8f51ff27";
@@ -15,7 +15,7 @@ export const LOCAL_BUSINESS_SCHEMA = {
     "Independent HR advisory and career coaching for UAE and GCC businesses and professionals.",
   url: BASE_URL,
   telephone: "+971581784948",
-  email: "bmesiha@outlook.com",
+  email: "bmesiha@PeopleStudioHR.com",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Dubai",

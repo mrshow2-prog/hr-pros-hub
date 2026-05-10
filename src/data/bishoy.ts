@@ -24,7 +24,7 @@ export const DEFAULT_PHILOSOPHY = {
 };
 
 export const DEFAULT_CONTACT = {
-  email: "bmesiha@outlook.com",
+  email: "bmesiha@PeopleStudioHR.com",
   phone: "+971 562 881 713",
   linkedin: "https://www.linkedin.com/in/bmesiha/",
   location: "Dubai, UAE",

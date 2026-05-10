@@ -63,7 +63,7 @@ export const TESTIMONIALS: Testimonial[] = [
 export const PHILOSOPHY = `"I don't believe HR is a <em>support function</em>.<br>I believe it's the <em>operating system</em> of every great business."`;
 
 export const CONTACT = {
-  email: "bmesiha@outlook.com",
+  email: "bmesiha@PeopleStudioHR.com",
   phone: "+971 562 881 713",
   linkedin: "https://www.linkedin.com/in/bmesiha/",
   location: "Dubai, UAE",

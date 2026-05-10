@@ -232,7 +232,7 @@ export default function HRDiagnostic() {
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
             <button onClick={downloadReport} className="bg-sienna px-6 py-3 font-dm text-xs font-bold uppercase tracking-wider2 text-paper hover:bg-umber">Download PDF report</button>
-            <a href={`mailto:bmesiha@outlook.com?subject=HR Diagnostic — ${company.name} — ${results.overallPct}/100`} className="border border-sienna/25 px-6 py-3 font-dm text-xs font-bold uppercase tracking-wider2 text-sienna hover:bg-sienna/10">Book a free call</a>
+            <a href={`mailto:bmesiha@PeopleStudioHR.com?subject=HR Diagnostic — ${company.name} — ${results.overallPct}/100`} className="border border-sienna/25 px-6 py-3 font-dm text-xs font-bold uppercase tracking-wider2 text-sienna hover:bg-sienna/10">Book a free call</a>
             <button onClick={reset} className="border border-ink/15 px-6 py-3 font-dm text-xs font-bold uppercase tracking-wider2 text-ink/55 hover:text-ink">Retake</button>
           </div>
         </div>

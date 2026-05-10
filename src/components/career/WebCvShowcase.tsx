@@ -477,7 +477,7 @@ export default function WebCvShowcase() {
               </div>
               <div className="flex h-6 flex-1 items-center gap-2 rounded bg-paper/[0.08] px-2.5 font-dm text-[11px] text-paper/45">
                 <span className="h-2 w-2 shrink-0 rounded-full bg-[#28C840] opacity-70" />
-                <span className="truncate">peoplestudio.ae/cv/{activePkg.slug}</span>
+                <span className="truncate">PeopleStudioHR.com/cv/{activePkg.slug}</span>
                 <span className="ml-auto shrink-0 font-dm text-[11px] tracking-[2px] text-career-sky">
                   {"★".repeat(activePkg.stars)}
                 </span>
