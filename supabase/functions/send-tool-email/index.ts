@@ -106,9 +106,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Internal lead notification: always send to mrshow2@gmail.com (Resend sandbox limit).
+    // Internal lead notification: always send to the People.Studio inbox.
     // Includes the user's email and the generated tool output for follow-up.
-    const INTERNAL_RECIPIENT = "mrshow2@gmail.com";
+    const INTERNAL_RECIPIENT = "bmesiha@PeopleStudioHR.com";
     const subject = `[Lead] ${toEmail} — ${documentName} (${documentKind})`;
 
     const leadHtml = `<!doctype html>
