@@ -4,7 +4,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
 const FROM_NAME = "People.Studio Website";
 const DEFAULT_FROM_EMAIL = "onboarding@resend.dev";
-const ADMIN_EMAIL = "mrshow2@gmail.com";
+const ADMIN_EMAIL = "bmesiha@PeopleStudioHR.com";
 
 interface RequestBody {
   source: "Business" | "Career" | string;
