@@ -26,7 +26,7 @@ export default function ToolsNav() {
         <div className="flex items-center gap-4">
           <LanguageToggle tone="ink" />
           <a
-            href="mailto:bmesiha@outlook.com?subject=People.Studio — Free tools call"
+            href="mailto:bmesiha@PeopleStudioHR.com?subject=People.Studio — Free tools call"
             className="bg-sienna px-4 py-2.5 font-dm text-[0.68rem] font-bold uppercase tracking-wider2 text-paper transition-colors hover:bg-umber"
           >
             <T en="Book a Call" ar="احجز مكالمة" />

@@ -84,7 +84,7 @@ export default function Profile() {
           <div className="flex items-center px-6 py-28 md:px-12 lg:px-16">
             <div className="max-w-xl">
               <span className="font-dm text-[10px] uppercase text-blush mb-5 block" style={{ letterSpacing: "0.2em" }}>
-                Signature CV · peoplestudio.ae/cv/sarah-mahmoud
+                Signature CV · PeopleStudioHR.com/cv/sarah-mahmoud
               </span>
               <h1
                 className="font-serif font-normal text-paper leading-[0.96] mb-5"

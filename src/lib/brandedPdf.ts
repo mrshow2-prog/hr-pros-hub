@@ -49,7 +49,7 @@ function addFooter(doc: jsPDF, pageNumber: number, totalPages: number) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(90, 82, 73);
-  doc.text("Dubai, UAE · +971 58 178 4948 · peoplestudio.ae", margin, 286);
+  doc.text("Dubai, UAE · +971 58 178 4948 · PeopleStudioHR.com", margin, 286);
   doc.text("Prepared as a free People.Studio tool output for general HR reference only. It is not legal advice and should be tailored before use.", margin, 291, { maxWidth: 130 });
   doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin, 286, { align: "right" });
 }
@@ -178,7 +178,7 @@ export function buildLeadEmailHref(payload: {
     "Summary:",
     payload.summary,
   ].join("\n");
-  return `mailto:bmesiha@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return `mailto:bmesiha@PeopleStudioHR.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export function openLeadEmail(payload: Parameters<typeof buildLeadEmailHref>[0]) {
