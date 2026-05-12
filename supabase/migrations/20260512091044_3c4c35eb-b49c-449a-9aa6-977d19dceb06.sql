@@ -1,0 +1,1 @@
+UPDATE public.profiles_content SET content = REPLACE(content::text, 'Senior Chef De Cuisine', 'Executive Sous Chef')::jsonb WHERE slug = 'chef-m-khalil';
