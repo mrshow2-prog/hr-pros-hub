@@ -129,56 +129,43 @@ const extractPdfText = async (file: File) => {
 const NON_CV_MESSAGE =
   "This doesn't appear to be a CV or resume. Please upload a CV or resume file to use this tool. If you uploaded the wrong file, try again — or use the Policy Generator for HR policy documents.";
 
-// Heuristic: lenient check that the document looks like a CV/resume.
-// We score multiple signal categories and require any 2+ to pass. This avoids
-// false rejections on real CVs that use unusual name formatting, omit an
-// "Education" section, or use non-standard date formats.
+// Strict CV check: must have a name AND email AND phone number AND
+// (education OR experience). Rejects documents that lack any of these.
 const looksLikeCv = (text: string): boolean => {
   const cleaned = text.replace(/\s+/g, " ").trim();
   if (cleaned.length < 80) return false;
 
   const lower = cleaned.toLowerCase();
-  let signals = 0;
 
-  // Contact signals (email / phone / linkedin)
+  // Email
   const hasEmail = /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i.test(cleaned);
-  const hasPhone = /(\+?\d[\d\s().-]{7,}\d)/.test(cleaned);
-  const hasLinkedin = /linkedin\.com\/in\//i.test(cleaned);
-  if (hasEmail || hasPhone || hasLinkedin) signals++;
+  if (!hasEmail) return false;
 
-  // Experience / section heading signals
-  const sectionTerms = [
-    "experience", "employment", "work history", "professional experience",
-    "career history", "work experience", "summary", "profile", "objective",
-    "skills", "key skills", "achievements", "certifications", "references",
-    "languages", "projects",
-  ];
-  if (sectionTerms.some((t) => lower.includes(t))) signals++;
+  // Phone number — at least 7 digits across the document, allowing common separators
+  const digitGroups = cleaned.match(/\+?\d[\d\s().-]{6,}\d/g) || [];
+  const hasPhone = digitGroups.some((g) => (g.match(/\d/g) || []).length >= 7);
+  if (!hasPhone) return false;
 
-  // Job title signals
-  const jobTitleTerms = [
-    "manager", "director", "engineer", "consultant", "analyst", "officer",
-    "specialist", "coordinator", "lead", "head of", "executive", "chef",
-    "supervisor", "assistant", "associate", "intern", "developer", "designer",
-    "architect", "administrator", "accountant", "advisor", "president",
-    "vice president", "vp", "ceo", "cfo", "coo", "cto", "founder",
-  ];
-  if (jobTitleTerms.some((t) => lower.includes(t))) signals++;
+  // Name — at least two consecutive capitalised words somewhere near the top
+  const top = cleaned.slice(0, 600);
+  const hasName = /\b[A-Z][a-z'’-]{1,}(?:\s+[A-Z][a-z'’-]{1,}){1,3}\b/.test(top);
+  if (!hasName) return false;
 
-  // Date range signals
-  const dateRangeRegex =
-    /\b(19|20)\d{2}\s*[-–—to]+\s*((19|20)\d{2}|present|current)\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(19|20)\d{2}\b/i;
-  if (dateRangeRegex.test(cleaned)) signals++;
-
-  // Education signals
+  // Education OR Experience
   const educationTerms = [
     "education", "bachelor", "master", "mba", "phd", "degree", "university",
     "college", "diploma", "bsc", "msc", "b.a.", "m.a.", "high school",
     "secondary school", "graduated",
   ];
-  if (educationTerms.some((t) => lower.includes(t))) signals++;
+  const experienceTerms = [
+    "experience", "employment", "work history", "professional experience",
+    "career history", "work experience",
+  ];
+  const hasEducation = educationTerms.some((t) => lower.includes(t));
+  const hasExperience = experienceTerms.some((t) => lower.includes(t));
+  if (!hasEducation && !hasExperience) return false;
 
-  return signals >= 2;
+  return true;
 };
 
 const analyseCvText = (text: string, file: File): AtsResult => {
