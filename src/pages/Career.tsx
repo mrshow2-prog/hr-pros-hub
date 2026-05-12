@@ -129,75 +129,56 @@ const extractPdfText = async (file: File) => {
 const NON_CV_MESSAGE =
   "This doesn't appear to be a CV or resume. Please upload a CV or resume file to use this tool. If you uploaded the wrong file, try again — or use the Policy Generator for HR policy documents.";
 
-// Heuristic: check the document looks like a CV/resume.
-// Requires (a) a plausible name in the top of the document,
-// (b) employment/experience signals, and (c) education signals.
+// Heuristic: lenient check that the document looks like a CV/resume.
+// We score multiple signal categories and require any 2+ to pass. This avoids
+// false rejections on real CVs that use unusual name formatting, omit an
+// "Education" section, or use non-standard date formats.
 const looksLikeCv = (text: string): boolean => {
   const cleaned = text.replace(/\s+/g, " ").trim();
-  if (cleaned.length < 120) return false;
+  if (cleaned.length < 80) return false;
 
-  // (a) Name-like line near the top: 2–5 capitalised words within the first ~40 lines / 600 chars
-  const head = text.slice(0, 1200);
-  const headLines = head
-    .split(/\r?\n|(?<=\.)\s{2,}/)
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, 40);
-  const nameLineRegex = /^(?:[A-Z][a-zA-Z'’.-]{1,20}\s+){1,4}[A-Z][a-zA-Z'’.-]{1,20}$/;
-  const hasNameAtTop =
-    headLines.some((l) => l.length <= 60 && nameLineRegex.test(l)) ||
-    // Fallback: a sequence like "FIRST LAST" in caps within the first 200 chars
-    /\b[A-Z][A-Z'’.-]{1,}\s+[A-Z][A-Z'’.-]{1,}\b/.test(head.slice(0, 200));
+  const lower = cleaned.toLowerCase();
+  let signals = 0;
 
-  const lower = text.toLowerCase();
+  // Contact signals (email / phone / linkedin)
+  const hasEmail = /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i.test(cleaned);
+  const hasPhone = /(\+?\d[\d\s().-]{7,}\d)/.test(cleaned);
+  const hasLinkedin = /linkedin\.com\/in\//i.test(cleaned);
+  if (hasEmail || hasPhone || hasLinkedin) signals++;
 
-  // (b) Employment / experience signals
-  const experienceTerms = [
-    "experience",
-    "employment",
-    "work history",
-    "professional experience",
-    "career history",
-    "work experience",
+  // Experience / section heading signals
+  const sectionTerms = [
+    "experience", "employment", "work history", "professional experience",
+    "career history", "work experience", "summary", "profile", "objective",
+    "skills", "key skills", "achievements", "certifications", "references",
+    "languages", "projects",
   ];
+  if (sectionTerms.some((t) => lower.includes(t))) signals++;
+
+  // Job title signals
   const jobTitleTerms = [
-    "manager",
-    "director",
-    "engineer",
-    "consultant",
-    "analyst",
-    "officer",
-    "specialist",
-    "coordinator",
-    "lead",
-    "head of",
-    "executive",
+    "manager", "director", "engineer", "consultant", "analyst", "officer",
+    "specialist", "coordinator", "lead", "head of", "executive", "chef",
+    "supervisor", "assistant", "associate", "intern", "developer", "designer",
+    "architect", "administrator", "accountant", "advisor", "president",
+    "vice president", "vp", "ceo", "cfo", "coo", "cto", "founder",
   ];
+  if (jobTitleTerms.some((t) => lower.includes(t))) signals++;
+
+  // Date range signals
   const dateRangeRegex =
     /\b(19|20)\d{2}\s*[-–—to]+\s*((19|20)\d{2}|present|current)\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(19|20)\d{2}\b/i;
-  const hasExperience =
-    experienceTerms.some((t) => lower.includes(t)) &&
-    (jobTitleTerms.some((t) => lower.includes(t)) || dateRangeRegex.test(text));
+  if (dateRangeRegex.test(cleaned)) signals++;
 
-  // (c) Education signals
+  // Education signals
   const educationTerms = [
-    "education",
-    "bachelor",
-    "master",
-    "mba",
-    "phd",
-    "degree",
-    "university",
-    "college",
-    "diploma",
-    "bsc",
-    "msc",
-    "b.a.",
-    "m.a.",
+    "education", "bachelor", "master", "mba", "phd", "degree", "university",
+    "college", "diploma", "bsc", "msc", "b.a.", "m.a.", "high school",
+    "secondary school", "graduated",
   ];
-  const hasEducation = educationTerms.some((t) => lower.includes(t));
+  if (educationTerms.some((t) => lower.includes(t))) signals++;
 
-  return hasNameAtTop && hasExperience && hasEducation;
+  return signals >= 2;
 };
 
 const analyseCvText = (text: string, file: File): AtsResult => {
