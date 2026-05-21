@@ -19,6 +19,8 @@ export default function Business() {
       <SEO
         title="HR Advisory UAE · Fractional HR · People.Studio"
         description="Senior HR advisory for UAE SMEs. Emiratisation, HR foundation, org design, and fractional HR director retainers. Fixed fees."
+        titleAr="استشارات موارد بشرية الإمارات · موارد بشرية بدوام جزئي · بيبول.ستوديو"
+        descriptionAr="استشارات موارد بشرية للشركات الصغيرة والمتوسطة في الإمارات. التوطين، تأسيس الموارد البشرية، التصميم التنظيمي، ومدير موارد بشرية بدوام جزئي. أتعاب ثابتة."
         path="/business"
         jsonLd={[PERSON_SCHEMA]}
       />

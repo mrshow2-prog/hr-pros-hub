@@ -17,6 +17,8 @@ const Index = () => {
       <SEO
         title="People.Studio — HR Advisory & Career Studio · UAE & GCC"
         description="Senior HR advisory and career coaching for UAE and GCC. Emiratisation, HR setup, org design, CV and LinkedIn — by Bishoy Mesiha."
+        titleAr="بيبول.ستوديو — استشارات موارد بشرية واستوديو مسار مهني · الإمارات والخليج"
+        descriptionAr="استشارات موارد بشرية وكوتشينغ مهني للإمارات والخليج. التوطين، تأسيس الموارد البشرية، التصميم التنظيمي، السيرة الذاتية ولينكدإن — بإشراف بيشوي مسيحة."
         path="/"
       />
       {/* Header */}

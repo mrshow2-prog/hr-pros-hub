@@ -40,6 +40,8 @@ export default function Tools() {
       <SEO
         title="Free HR Tools UAE · Calculator & Generators — People.Studio"
         description="Free UAE HR tools, no signup. HR diagnostic, Emiratisation calculator, AI policy generator, and JD builder for UAE and GCC businesses."
+        titleAr="أدوات موارد بشرية مجانية الإمارات · حاسبة ومولّدات — بيبول.ستوديو"
+        descriptionAr="أدوات موارد بشرية مجانية للإمارات بدون تسجيل: تشخيص الموارد البشرية، حاسبة التوطين، مولّد السياسات بالذكاء الاصطناعي، ومنشئ الوصف الوظيفي."
         path="/tools"
       />
       <ToolsNav />

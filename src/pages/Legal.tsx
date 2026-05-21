@@ -23,6 +23,8 @@ export default function Legal() {
       <SEO
         title="Legal & Privacy — People.Studio"
         description="Privacy policy, terms of service, and disclaimer for People.Studio — independent HR advisory and career coaching, Dubai UAE."
+        titleAr="القانوني والخصوصية — بيبول.ستوديو"
+        descriptionAr="سياسة الخصوصية، شروط الخدمة، وإخلاء المسؤولية لـ بيبول.ستوديو — استشارات موارد بشرية وكوتشينغ مهني مستقل، دبي الإمارات."
         path="/legal"
       />
 
