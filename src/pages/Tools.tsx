@@ -38,8 +38,8 @@ export default function Tools() {
   return (
     <div className="min-h-screen bg-paper font-dm text-ink">
       <SEO
-        title="Free HR Tools UAE · Diagnostic, Emiratisation Calculator & Policy Generator — People.Studio"
-        description="Free UAE HR tools — no signup required. HR health diagnostic, Emiratisation fine calculator, AI policy generator, and JD builder. Built for UAE and GCC businesses."
+        title="Free HR Tools UAE · Calculator & Generators — People.Studio"
+        description="Free UAE HR tools, no signup. HR diagnostic, Emiratisation calculator, AI policy generator, and JD builder for UAE and GCC businesses."
         path="/tools"
       />
       <ToolsNav />

@@ -17,8 +17,8 @@ export default function Business() {
   return (
     <div className="font-dm bg-paper text-ink">
       <SEO
-        title="HR Advisory UAE · Emiratisation, Compliance & Fractional HR — People.Studio"
-        description="Senior HR advisory for UAE SMEs. Emiratisation compliance, HR foundation packs, org design, and fractional HR director retainers. Fixed fees. Direct access to Bishoy Mesiha."
+        title="HR Advisory UAE · Fractional HR · People.Studio"
+        description="Senior HR advisory for UAE SMEs. Emiratisation, HR foundation, org design, and fractional HR director retainers. Fixed fees."
         path="/business"
         jsonLd={[PERSON_SCHEMA]}
       />

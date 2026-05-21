@@ -16,7 +16,7 @@ const Index = () => {
     <div className="relative min-h-screen w-full overflow-x-hidden bg-paper text-ink font-dm md:h-[100svh] md:min-h-[100svh] md:overflow-hidden">
       <SEO
         title="People.Studio — HR Advisory & Career Studio · UAE & GCC"
-        description="Independent HR advisory and career coaching for UAE and GCC professionals and businesses. Emiratisation, HR setup, org design, CV and LinkedIn coaching — by Bishoy Mesiha."
+        description="Senior HR advisory and career coaching for UAE and GCC. Emiratisation, HR setup, org design, CV and LinkedIn — by Bishoy Mesiha."
         path="/"
       />
       {/* Header */}
