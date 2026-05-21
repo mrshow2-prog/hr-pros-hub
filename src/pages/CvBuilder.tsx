@@ -48,6 +48,7 @@ export default function CvBuilder() {
       <SEO
         title="CV Builder — People.Studio"
         description="AI-powered CV builder with ATS optimisation."
+        path="/career-studio/cv-builder"
       />
       <main className="min-h-screen bg-paper py-16">
         <StatusCard />
