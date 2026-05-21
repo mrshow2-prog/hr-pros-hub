@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      cv_builder_sessions: {
+        Row: {
+          anon_token: string | null
+          created_at: string
+          id: string
+          payment_status: string
+          state: Json
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          anon_token?: string | null
+          created_at?: string
+          id?: string
+          payment_status?: string
+          state?: Json
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          anon_token?: string | null
+          created_at?: string
+          id?: string
+          payment_status?: string
+          state?: Json
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles_content: {
         Row: {
           assistant_context: string
