@@ -1,0 +1,26 @@
+# People.Studio
+
+> Independent HR advisory and career coaching for UAE and GCC businesses and professionals. Led by Bishoy Mesiha, a senior HR practitioner with 16 years of executive HR experience across MENAT.
+
+People.Studio is a senior-led HR practice — not a firm. It serves founders, GMs, and owner-operators of SMEs (1–150 staff) across the UAE and GCC with practical HR advisory, and works directly with professionals on CV, LinkedIn, and career coaching.
+
+## Pages
+
+- [Home](/): Overview of HR Advisory and Career Studio.
+- [HR Advisory](/business): Services for founders, GMs, and owner-operators — Emiratisation, HR setup, org design, retainers.
+- [Career Studio](/career): CV writing, LinkedIn optimisation, career coaching, and the free ATS analyser.
+- [Free HR Tools](/tools): JD builder, HR policy generator, Emiratisation calculator, HR diagnostic.
+- [Legal](/legal): Terms, privacy, and policies.
+
+## Profiles
+
+- [Bishoy Mesiha](/bishoy-mesiha): Senior HR Consultant & Career Coach — founder of People.Studio.
+- [Chef M. Khalil](/chef-m-khalil): Executive Sous Chef — sample web CV.
+
+## Optional
+
+- [Arabic — Home](/ar): Arabic mirror of the home page.
+- [Arabic — HR Advisory](/ar/business)
+- [Arabic — Career Studio](/ar/career)
+- [Arabic — Tools](/ar/tools)
+- [Arabic — Legal](/ar/legal)
