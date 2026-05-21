@@ -315,8 +315,8 @@ export default function Career() {
   return (
     <main className="min-h-screen overflow-hidden bg-career-bg font-dm text-paper">
       <SEO
-        title="Career Studio UAE · CV, LinkedIn & Career Coaching — People.Studio"
-        description="Career coaching, CV design, LinkedIn optimisation, and personal brand websites for professionals across the UAE and GCC. Written by an HR director who has made thousands of hiring decisions."
+        title="Career Studio · CV, LinkedIn & Coaching — People.Studio"
+        description="Career coaching, CV design, LinkedIn optimisation, and personal brand sites for UAE and GCC professionals — by an HR director."
         path="/career"
         jsonLd={[PERSON_SCHEMA]}
       />
