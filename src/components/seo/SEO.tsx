@@ -65,22 +65,40 @@ interface SEOProps {
   jsonLd?: object[];
   ogTitle?: string;
   ogDescription?: string;
+  titleAr?: string;
+  descriptionAr?: string;
+  ogTitleAr?: string;
+  ogDescriptionAr?: string;
 }
 
-export default function SEO({ title, description, path, image, jsonLd, ogTitle, ogDescription }: SEOProps) {
-  const url = `${BASE_URL}${path}`;
+const PROFILE_OR_ADMIN = [/^\/admin(\/|$)/, /^\/bishoy-mesiha(\/|$)/, /^\/chef-m-khalil(\/|$)/];
+
+function isLangNeutral(path: string) {
+  return PROFILE_OR_ADMIN.some((re) => re.test(path));
+}
+
+export default function SEO({ title, description, path, image, jsonLd, ogTitle, ogDescription, titleAr, descriptionAr, ogTitleAr, ogDescriptionAr }: SEOProps) {
+  const isArabic = typeof window !== "undefined" && (window.location.pathname === "/ar" || window.location.pathname.startsWith("/ar/"));
+  const lang: "en" | "ar" = isArabic ? "ar" : "en";
+  const arPath = !isLangNeutral(path) && !path.startsWith("/ar")
+    ? (path === "/" ? "/ar" : `/ar${path}`)
+    : path;
+  const finalPath = lang === "ar" ? arPath : path;
+  const url = `${BASE_URL}${finalPath}`;
   const ogImage = image ?? DEFAULT_OG_IMAGE;
   const schemas = [LOCAL_BUSINESS_SCHEMA, ...(jsonLd ?? [])];
-  const finalOgTitle = ogTitle ?? title;
-  const finalOgDescription = ogDescription ?? description;
+  const finalTitle = lang === "ar" && titleAr ? titleAr : title;
+  const finalDescription = lang === "ar" && descriptionAr ? descriptionAr : description;
+  const finalOgTitle = lang === "ar" && ogTitleAr ? ogTitleAr : (ogTitle ?? finalTitle);
+  const finalOgDescription = lang === "ar" && ogDescriptionAr ? ogDescriptionAr : (ogDescription ?? finalDescription);
   return (
-    <Helmet>
-      <title>{title}</title>
-      <meta name="description" content={description} />
+    <Helmet htmlAttributes={{ lang, dir: lang === "ar" ? "rtl" : "ltr" }}>
+      <title>{finalTitle}</title>
+      <meta name="description" content={finalDescription} />
       <link rel="canonical" href={url} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="People.Studio" />
-      <meta property="og:locale" content="en_AE" />
+      <meta property="og:locale" content={lang === "ar" ? "ar_AE" : "en_AE"} />
       <meta property="og:title" content={finalOgTitle} />
       <meta property="og:description" content={finalOgDescription} />
       <meta property="og:url" content={url} />
