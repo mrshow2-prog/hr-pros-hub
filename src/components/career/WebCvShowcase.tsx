@@ -397,7 +397,7 @@ function AiAgentWidget() {
           <input
             disabled
             placeholder="Ask about Sarah…"
-            className="flex-1 bg-transparent font-dm text-[11px] text-ink outline-none placeholder:text-ink/35"
+            className="flex-1 bg-transparent font-dm text-[11px] text-ink outline-none placeholder:text-ink/55"
           />
           <button className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md bg-career-blue text-paper">
             <Send size={11} />

@@ -58,7 +58,7 @@ export default function BusinessRetainers() {
                 <div className={`font-serif font-bold text-xl ${t.featured ? "text-cream/85" : "text-terracotta"}`}>
                   {pick(t.price, lang)}
                 </div>
-                <div className={`font-dm text-xs ${t.featured ? "text-cream/50" : "text-ink/40"}`} style={{ fontWeight: 300 }}>
+                <div className={`font-dm text-xs ${t.featured ? "text-cream/50" : "text-ink/65"}`} style={{ fontWeight: 300 }}>
                   {pick(t.per, lang)}
                 </div>
               </div>

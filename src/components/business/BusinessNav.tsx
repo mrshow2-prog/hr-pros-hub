@@ -32,7 +32,7 @@ export default function BusinessNav() {
       <div className="flex items-center justify-between px-6 md:px-8 py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <PsLogo size="md" />
-          <span className="hidden border-l border-ink/15 pl-3 font-dm text-[10px] font-bold uppercase text-ink/45 sm:inline" style={{ letterSpacing: "0.12em" }}>
+          <span className="hidden border-l border-ink/15 pl-3 font-dm text-[10px] font-bold uppercase text-ink/65 sm:inline" style={{ letterSpacing: "0.12em" }}>
             <T en="HR Advisory" ar="استشارات الموارد البشرية" />
           </span>
         </div>
@@ -41,7 +41,7 @@ export default function BusinessNav() {
             <a
               key={l.en}
               href={l.href}
-              className="font-dm font-bold text-xs uppercase text-ink/50 hover:text-terracotta transition-colors duration-200"
+              className="font-dm font-bold text-xs uppercase text-ink/65 hover:text-terracotta transition-colors duration-200"
               style={{ letterSpacing: "0.12em" }}
             >
               <T en={l.en} ar={l.ar} />
