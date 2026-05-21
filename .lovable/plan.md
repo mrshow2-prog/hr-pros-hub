@@ -1,45 +1,34 @@
-# AI Assistant Chat Widget (Gemini API)
+… 
 
-A floating bilingual chat assistant on every page that guides visitors to the right service, tool, or page — powered by your own Google Gemini API key.
+## Goal
+Verify ownership of `https://www.peoplestudiohr.com/` in Google Search Console and submit the sitemap, automated end-to-end.
 
-## Security note
+## Steps
 
-You shared the API key in plain chat. I will store it as a secret (`GEMINI_API_KEY`) — never in code — but please **rotate that key in Google AI Studio** after this is wired up, since it is now exposed in this conversation history.
+1. **Connect Google Search Console**
+   - Trigger the connector flow so you can authorize Lovable with your Google account that will own the Search Console property.
 
-## What the user will see
+2. **Request a verification token**
+   - Call the Site Verification API through the connector gateway to get a `google-site-verification` meta tag value for `https://www.peoplestudiohr.com/`.
 
-- Floating button in the bottom corner (stacked above the WhatsApp button so they don't overlap), present on all routes.
-- Click opens a compact chat panel with a bilingual greeting ("Hi! I can help you find the right service or tool…" / "مرحبًا! يمكنني مساعدتك…").
-- Streaming token-by-token responses, rendered as Markdown so suggested links to `/business`, `/career`, `/tools`, etc. are clickable.
-- Language and RTL follow the current site language (EN on `/*`, AR on `/ar/*`).
-- Conversation persists in `localStorage`; "Clear" button resets it.
+3. **Add the meta tag to the site `<head>`**
+   - Inject the returned tag into `index.html` so it is present in the server-rendered HTML at the root URL.
+   - This is the only code change in this plan.
 
-## How it works
+4. **Publish**
+   - You'll need to click Publish so the meta tag is live on `www.peoplestudiohr.com`. I'll pause and ask you to confirm after publishing before continuing.
 
-- New edge function `supabase/functions/site-assistant/index.ts`:
-  - Reads `GEMINI_API_KEY` from secrets (never exposed to the client).
-  - Calls Google's Gemini API directly: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent` with SSE.
-  - Curated system prompt describing People.Studio, the three audiences (Business / Career / Tools), key pages, and tone — instructs the model to reply in the user's language, keep answers short, and recommend a next step (book a call, run the diagnostic, open a tool).
-  - Streams chunks back to the browser.
-  - Surfaces 429 (rate limit) and quota errors as friendly toasts.
+5. **Verify ownership with Google**
+   - Call the Site Verification `webResource` endpoint. Google fetches the homepage and confirms the meta tag.
 
-## Files to add
+6. **Add the site as a Search Console property**
+   - PUT `https://www.peoplestudiohr.com/` to the Search Console sites endpoint so it appears in your property list.
 
-- `supabase/functions/site-assistant/index.ts` — streaming Gemini edge function.
-- `src/components/ui/SiteAssistant.tsx` — floating button + chat panel (RTL-aware, uses existing Tailwind tokens).
-- `src/components/ui/SiteAssistantMessage.tsx` — message bubble with `react-markdown`.
+7. **Submit the sitemap**
+   - POST `https://www.peoplestudiohr.com/sitemap.xml` to the sitemaps endpoint for the property.
 
-## Files to edit
-
-- `src/App.tsx` — mount `<SiteAssistant />` next to `<WhatsAppButton />` so it appears on every route.
-- `src/components/ui/WhatsAppButton.tsx` — small position tweak so the two buttons stack cleanly.
-
-## Setup step
-
-- I will trigger the secrets form to save `GEMINI_API_KEY`. You paste the key there (from Google AI Studio), and the edge function picks it up automatically.
-
-## Out of scope (future)
-
-- Persisting conversations to the database per visitor.
-- Lead capture (email/phone) inside the chat.
-- Handing off to a human via WhatsApp from inside the chat.
+## Notes
+- Uses your custom domain (matches canonical URLs and the sitemap).
+- The verification meta tag is harmless and can stay in `<head>` permanently — Google rechecks it periodically.
+- No changes to existing SEO files (`sitemap.xml`, `robots.txt`, `llms.txt`) needed.
+- Other failing SEO findings (long titles/descriptions, Lighthouse perf/accessibility) are not addressed here — say the word and I'll tackle them in a follow-up.
