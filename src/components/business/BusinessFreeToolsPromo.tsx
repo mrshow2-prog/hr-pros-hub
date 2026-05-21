@@ -17,7 +17,7 @@ export default function BusinessFreeToolsPromo() {
             <h2 className="font-serif font-bold mb-3 text-ink" style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", letterSpacing: "-0.02em" }}>
               <T en="Try before you talk to us." ar="جرّب قبل أن تتحدّث إلينا." />
             </h2>
-            <p className="font-dm max-w-lg text-ink/55" style={{ fontWeight: 300, fontSize: "1rem" }}>
+            <p className="font-dm max-w-lg text-ink/65" style={{ fontWeight: 300, fontSize: "1rem" }}>
               <T
                 en="Generate a JD, write a policy, calculate your Emiratisation fine exposure, or run a full HR health diagnostic — all free, no email required."
                 ar="أنشئ وصفًا وظيفيًا، اكتب سياسة، احسب تعرّضك لغرامات التوطين، أو شغّل تشخيصًا كاملاً لصحة الموارد البشرية — كله مجانًا وبدون بريد إلكتروني."
@@ -43,7 +43,7 @@ export default function BusinessFreeToolsPromo() {
             >
               <div className="text-2xl mb-3">{t.icon}</div>
               <h3 className="font-dm font-bold text-sm mb-2 text-ink">{pick(t.name, lang)}</h3>
-              <p className="font-dm text-xs leading-relaxed text-ink/50" style={{ fontWeight: 300 }}>
+              <p className="font-dm text-xs leading-relaxed text-ink/65" style={{ fontWeight: 300 }}>
                 {pick(t.desc, lang)}
               </p>
               <span className="font-dm text-xs font-bold mt-4 block text-terracotta" style={{ letterSpacing: "0.06em" }}>

@@ -24,21 +24,21 @@ const Index = () => {
         <PsLogo size="lg" className="pointer-events-auto" />
         <nav
           aria-label="Utility"
-          className="pointer-events-auto flex items-center gap-5 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 md:gap-6"
+          className="pointer-events-auto flex items-center gap-5 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/65 md:gap-6"
         >
           <Link
             to={localize("/business#about")}
-            className="hidden transition-colors hover:text-ink md:text-paper/45 md:hover:text-paper sm:inline"
+            className="hidden transition-colors hover:text-ink md:text-paper/70 md:hover:text-paper sm:inline"
           >
             <T en="About" ar="من نحن" />
           </Link>
           <a
             href={`mailto:${COMPANY_EMAIL}`}
-            className="transition-colors hover:text-ink md:text-paper/65 md:hover:text-paper"
+            className="transition-colors hover:text-ink md:text-paper/80 md:hover:text-paper"
           >
             <T en="Contact" ar="تواصل" />
           </a>
-          <LanguageToggle tone="ink" className="md:[--tw-text-opacity:0.55] md:text-paper/55 md:hover:text-paper" />
+          <LanguageToggle tone="ink" className="md:[--tw-text-opacity:0.55] md:text-paper/70 md:hover:text-paper" />
         </nav>
       </header>
 
@@ -87,7 +87,7 @@ const Index = () => {
         <div className="contents md:contents">
           {/* Eyebrow */}
           <div className="relative z-10 bg-paper px-6 pt-28 md:bg-transparent md:px-10 md:pt-0 lg:px-24 md:[grid-column:1] md:[grid-row:1]">
-            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/55 before:block before:h-px before:w-7 before:bg-sienna md:mx-0">
+            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-ink/65 before:block before:h-px before:w-7 before:bg-sienna md:mx-0">
               <span className="text-sienna">01</span>
               <span><T en="HR Advisory" ar="استشارات الموارد البشرية" /></span>
             </div>
@@ -117,7 +117,7 @@ const Index = () => {
               className="mx-auto flex max-w-xl flex-wrap content-start gap-2 border-t border-ink/10 pt-5 md:mx-0"
               aria-label="Service areas"
             >
-              <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-ink/55">
+              <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-ink/65">
                 <T en="Practice" ar="الممارسة" />
               </span>
               {SERVICE_PILLS.map((p) => (
@@ -148,7 +148,7 @@ const Index = () => {
 
           {/* Stat strip */}
           <div className="relative z-10 bg-paper px-6 pt-8 pb-24 md:bg-transparent md:px-10 md:pt-7 md:pb-0 lg:px-24 md:[grid-column:1] md:[grid-row:6]">
-            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-ink/55 md:mx-0">
+            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-ink/65 md:mx-0">
               <div>
                 <span className="block font-serif text-3xl italic leading-none text-ink">
                   16
@@ -170,7 +170,7 @@ const Index = () => {
         <div className="contents md:contents">
           {/* Eyebrow */}
           <div className="relative z-10 bg-olive px-6 pt-16 text-paper md:bg-transparent md:px-10 md:pt-0 lg:px-24 md:[grid-column:2] md:[grid-row:1]">
-            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-paper/65 before:block before:h-px before:w-7 before:bg-blush md:mx-0">
+            <div className="mx-auto flex max-w-xl items-center gap-3 font-dm text-[0.68rem] font-medium uppercase tracking-widest2 text-paper/80 before:block before:h-px before:w-7 before:bg-blush md:mx-0">
               <span className="text-blush">02</span>
               <span><T en="Career Studio" ar="استوديو المسار المهني" /></span>
             </div>
@@ -200,7 +200,7 @@ const Index = () => {
               className="mx-auto flex max-w-xl flex-wrap content-start gap-2 border-t border-paper/15 pt-5 md:mx-0"
               aria-label="Career services"
             >
-              <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-paper/60">
+              <span className="mr-2 pt-1 font-dm text-[0.64rem] font-medium uppercase tracking-widest2 text-paper/75">
                 <T en="Studio" ar="الاستوديو" />
               </span>
               {CAREER_PILLS.map((p) => (
@@ -225,7 +225,7 @@ const Index = () => {
 
           {/* Stat strip */}
           <div className="relative z-10 bg-olive px-6 pt-8 pb-24 text-paper md:bg-transparent md:px-10 md:pt-7 md:pb-0 lg:px-24 md:[grid-column:2] md:[grid-row:6]">
-            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-paper/60 md:mx-0">
+            <div className="mx-auto flex max-w-xl items-end justify-between gap-6 text-paper/75 md:mx-0">
               <div>
                 <span className="block font-serif text-3xl italic leading-none text-paper">
                   11

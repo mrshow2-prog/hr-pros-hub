@@ -52,7 +52,7 @@ export default function BusinessHero() {
               <div className="font-serif font-bold mb-2 text-terracotta" style={{ fontSize: "2rem", letterSpacing: "-0.02em" }}>
                 {pick(s.value, lang)}
               </div>
-              <div className="font-dm text-sm text-ink/50" style={{ fontWeight: 300 }}>
+              <div className="font-dm text-sm text-ink/65" style={{ fontWeight: 300 }}>
                 {pick(s.label, lang)}
               </div>
             </div>
