@@ -200,13 +200,15 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       const userId = sessionData.session?.user.id ?? null;
       const { sessionId, anonToken, ...persisted } = state;
       await supabase.from("cv_builder_sessions").upsert(
-        {
-          id: sessionId,
-          user_id: userId,
-          anon_token: userId ? null : anonToken,
-          state: persisted as unknown as Record<string, unknown>,
-          payment_status: state.paymentStatus,
-        },
+        [
+          {
+            id: sessionId,
+            user_id: userId,
+            anon_token: userId ? null : anonToken,
+            state: persisted as unknown as Record<string, unknown>,
+            payment_status: state.paymentStatus,
+          },
+        ],
         { onConflict: "id" },
       );
     }, 1000);
