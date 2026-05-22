@@ -1,7 +1,7 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are an ATS (Applicant Tracking System) expert.
 Evaluate the provided CV text against the target role and function. Return ONLY a JSON object with no markdown, no explanation, no code fences:
@@ -59,6 +59,35 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   }
 }
 
+async function callGeminiWithRetry(
+  apiKey: string,
+  payload: unknown,
+  timeoutMs = 25000,
+): Promise<Response | { error: { status?: number; details: string } }> {
+  let lastErr: { status?: number; details: string } = { details: "Unknown error" };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const model = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    try {
+      const resp = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }, timeoutMs);
+      if (resp.ok) return resp;
+      const text = await resp.text();
+      lastErr = { status: resp.status, details: text };
+      console.error(`Gemini ${model} attempt ${attempt + 1} failed:`, resp.status, text);
+      if (!RETRY_STATUSES.has(resp.status)) break;
+    } catch (e) {
+      lastErr = { details: (e as Error).message };
+      console.error(`Gemini ${model} attempt ${attempt + 1} threw:`, lastErr.details);
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+  }
+  return { error: lastErr };
+}
+
 
 function cvToText(cv: any): string {
   if (!cv) return "";
@@ -99,42 +128,36 @@ Deno.serve(async (req) => {
 TARGET ROLES: ${JSON.stringify(targetRoles)}
 FUNCTION: ${intent.function ?? ""}`;
 
-    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
-      }),
+    const result = await callGeminiWithRetry(apiKey, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
     });
 
     let aiScore: any;
-    if (!resp.ok) {
-      const t = await resp.text();
-      console.error("Gemini error:", resp.status, t);
+    if (!(result instanceof Response)) {
       return new Response(
         JSON.stringify({
-          error: `Gemini API error ${resp.status}`,
-          status: resp.status,
-          details: t,
+          error: result.error.status
+            ? `Gemini API error ${result.error.status}`
+            : "Gemini request failed",
+          status: result.error.status,
+          details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    if (!aiScore) {
-      const data = await resp.json();
-      const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-      try {
-        aiScore = JSON.parse(stripFences(raw));
-      } catch {
-        console.error("Failed to parse Gemini response:", raw);
-        return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
+    const data = await result.json();
+    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    try {
+      aiScore = JSON.parse(stripFences(raw));
+    } catch {
+      console.error("Failed to parse Gemini response:", raw);
+      return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
     }
 
     // Adapt to client-side shape used by StepDraft (formatting checklist + readability number).

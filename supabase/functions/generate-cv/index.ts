@@ -3,8 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import mammoth from "npm:mammoth@1.8.0";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
 
@@ -141,6 +141,35 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 9000
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function callGeminiWithRetry(
+  apiKey: string,
+  payload: unknown,
+  timeoutMs = 90000,
+): Promise<Response | { error: { status?: number; details: string } }> {
+  let lastErr: { status?: number; details: string } = { details: "Unknown error" };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const model = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    try {
+      const resp = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }, timeoutMs);
+      if (resp.ok) return resp;
+      const text = await resp.text();
+      lastErr = { status: resp.status, details: text };
+      console.error(`Gemini ${model} attempt ${attempt + 1} failed:`, resp.status, text);
+      if (!RETRY_STATUSES.has(resp.status)) break;
+    } catch (e) {
+      lastErr = { details: (e as Error).message };
+      console.error(`Gemini ${model} attempt ${attempt + 1} threw:`, lastErr.details);
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+  }
+  return { error: lastErr };
 }
 
 async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
@@ -343,40 +372,26 @@ Deno.serve(async (req) => {
 
     const userMessage = buildUserMessage(parsedText, intent, gapResponses);
 
-    let resp: Response;
-    try {
-      resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: "user", parts: [{ text: userMessage }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-        }),
-      });
-    } catch (e) {
-      const msg = (e as Error).message;
-      console.error("Gemini fetch threw:", msg);
-      return new Response(
-        JSON.stringify({ error: `Gemini request failed: ${msg}` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
-      );
-    }
+    const result = await callGeminiWithRetry(apiKey, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
+    });
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      console.error("Gemini error:", resp.status, t);
+    if (!(result instanceof Response)) {
       return new Response(
         JSON.stringify({
-          error: `Gemini API error ${resp.status}`,
-          status: resp.status,
-          details: t,
+          error: result.error.status
+            ? `Gemini API error ${result.error.status}`
+            : "Gemini request failed",
+          status: result.error.status,
+          details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    const data = await resp.json();
+    const data = await result.json();
     const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
     let parsed: any;

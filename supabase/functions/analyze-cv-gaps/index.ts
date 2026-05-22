@@ -3,8 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import mammoth from "npm:mammoth@1.8.0";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are an expert CV consultant. You will be given the EXACT text of one candidate's CV plus their target role context. You must analyse THIS specific CV — never produce generic gaps. Every "example" field you return must be a real quote or specific observation from the CV text provided. If something is already addressed well, do NOT flag it. Return ONLY a JSON array (no markdown, no fences, no prose) of 4–6 objects with fields: id, category, example, question.`;
 
@@ -51,6 +51,35 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function callGeminiWithRetry(
+  apiKey: string,
+  payload: unknown,
+  timeoutMs = 25000,
+): Promise<Response | { error: { status?: number; details: string } }> {
+  let lastErr: { status?: number; details: string } = { details: "Unknown error" };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const model = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    try {
+      const resp = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }, timeoutMs);
+      if (resp.ok) return resp;
+      const text = await resp.text();
+      lastErr = { status: resp.status, details: text };
+      console.error(`Gemini ${model} attempt ${attempt + 1} failed:`, resp.status, text);
+      if (!RETRY_STATUSES.has(resp.status)) break;
+    } catch (e) {
+      lastErr = { details: (e as Error).message };
+      console.error(`Gemini ${model} attempt ${attempt + 1} threw:`, lastErr.details);
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+  }
+  return { error: lastErr };
 }
 
 async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
@@ -164,30 +193,26 @@ Return ONLY a JSON array. Each object must have:
 
 Do not wrap in markdown. Do not add explanation.`;
 
-    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-      }),
+    const result = await callGeminiWithRetry(apiKey, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
     });
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      console.error("Gemini error:", resp.status, t);
+    if (!(result instanceof Response)) {
       return new Response(
         JSON.stringify({
-          error: `Gemini API error ${resp.status}`,
-          status: resp.status,
-          details: t,
+          error: result.error.status
+            ? `Gemini API error ${result.error.status}`
+            : "Gemini request failed",
+          status: result.error.status,
+          details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    const data = await resp.json();
+    const data = await result.json();
     const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
     let gaps: unknown;
