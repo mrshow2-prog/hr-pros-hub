@@ -1,5 +1,5 @@
-import { useRef, useState, DragEvent } from "react";
-import { FileText, UploadCloud, X, FileType2 } from "lucide-react";
+import { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
+import { UploadCloud, X, FileType2, User, Camera } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
@@ -8,14 +8,37 @@ const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED = ["pdf", "doc", "docx"];
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_FILES = 3;
+const PHOTO_TYPES = ["image/jpeg", "image/png"];
+const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 
 export default function StepUpload() {
-  const { state, setUploadedFiles, setParsedText, setStep } = useCVBuilder();
+  const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
   const [pasteMode, setPasteMode] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [photoUploading, setPhotoUploading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!state.photoPath) {
+        setPhotoUrl(null);
+        return;
+      }
+      const { data } = await supabase.storage
+        .from("cv-builder-uploads")
+        .createSignedUrl(state.photoPath, 60 * 60);
+      if (active) setPhotoUrl(data?.signedUrl ?? null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [state.photoPath]);
 
   const validate = (f: File): string | null => {
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
@@ -65,13 +88,38 @@ export default function StepUpload() {
     uploadFiles(e.dataTransfer.files);
   };
 
+  const handlePhoto = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setPhotoError("");
+    if (!PHOTO_TYPES.includes(f.type)) {
+      setPhotoError("Please upload a JPG or PNG image.");
+      return;
+    }
+    if (f.size > PHOTO_MAX_BYTES) {
+      setPhotoError("Photo must be 2MB or smaller.");
+      return;
+    }
+    setPhotoUploading(true);
+    const path = `${state.sessionId}/photo-${Date.now()}-${f.name}`;
+    const { error: upErr } = await supabase.storage
+      .from("cv-builder-uploads")
+      .upload(path, f, { upsert: true });
+    setPhotoUploading(false);
+    if (upErr) {
+      setPhotoError("Couldn't upload the photo. Try again.");
+      return;
+    }
+    setPhotoPath(path);
+  };
+
   const canContinue = pasteMode
     ? state.parsedText.trim().length > 80
     : state.uploadedFiles.length > 0;
 
   const handleNext = () => {
     if (!pasteMode && !state.parsedText) {
-      // Use file names as placeholder context; real parsing happens server-side later.
       setParsedText(
         state.uploadedFiles.map((f) => `[${f.name}]`).join("\n") +
           "\n\n(Parsed content will be extracted server-side.)",
@@ -180,6 +228,72 @@ export default function StepUpload() {
           {error}
         </p>
       )}
+
+      {/* Photo section */}
+      <section className="mt-10 border-t border-ink/10 pt-8">
+        <p className="font-syne text-lg text-ink">Profile photo (optional)</p>
+        <p className="mt-1 font-dm text-sm text-ink/60">
+          Recommended in the UAE, GCC, and most MENA markets. JPG or PNG, max 2MB.
+        </p>
+
+        <div className="mt-5 flex items-center gap-5">
+          <button
+            type="button"
+            onClick={() => photoInputRef.current?.click()}
+            className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-ink/20 bg-clay/30 transition-colors hover:border-sienna"
+            aria-label={photoUrl ? "Replace profile photo" : "Upload profile photo"}
+          >
+            {photoUrl ? (
+              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <User size={32} className="text-ink/35 group-hover:text-sienna" />
+            )}
+            {photoUploading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-paper/75 font-dm text-[10px] text-ink/70">
+                Uploading…
+              </div>
+            )}
+            {!photoUrl && !photoUploading && (
+              <span className="absolute -bottom-1 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper">
+                <Camera size={14} />
+              </span>
+            )}
+          </button>
+
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/jpeg,image/png"
+            className="sr-only"
+            onChange={handlePhoto}
+          />
+
+          <div className="flex-1">
+            {photoUrl ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setPhotoPath(null);
+                  setPhotoError("");
+                }}
+                className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-3 py-1.5 font-dm text-xs text-ink/65 hover:border-amber-500 hover:text-amber-700"
+              >
+                <X size={12} /> Remove photo
+              </button>
+            ) : (
+              <p className="font-dm text-xs text-ink/55">
+                Click the circle to add a headshot. Skip this if you'd rather not include one.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {photoError && (
+          <p className="mt-3 rounded border-l-2 border-amber-500 bg-amber-50 px-3 py-2 font-dm text-sm text-amber-900">
+            {photoError}
+          </p>
+        )}
+      </section>
 
       <StepFooter
         hideBack
