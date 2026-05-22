@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Lock, RefreshCw } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
@@ -10,33 +10,31 @@ export default function StepGaps() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const runAnalysis = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("analyze-cv-gaps", {
+        body: {
+          parsedText: state.parsedText,
+          intentForm: state.intentForm,
+          uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(`${data.error}${data.details ? ` — ${data.details}` : ""}`);
+      if (data?.gaps) setGaps(data.gaps);
+    } catch (err) {
+      console.error("Gap analysis failed", err);
+      setError((err as Error).message ?? "unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, [state.parsedText, state.intentForm, state.uploadedFiles, setGaps]);
+
   useEffect(() => {
     if (state.gapAnalysis.gaps.length > 0) return;
-    let active = true;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error: fnError } = await supabase.functions.invoke("analyze-cv-gaps", {
-          body: {
-            parsedText: state.parsedText,
-            intentForm: state.intentForm,
-            uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
-          },
-        });
-        if (fnError) throw fnError;
-        if (data?.error) throw new Error(`${data.error}${data.details ? ` — ${data.details}` : ""}`);
-        if (active && data?.gaps) setGaps(data.gaps);
-      } catch (err) {
-        console.error("Gap analysis failed", err);
-        if (active) setError(`Gap analysis failed: ${(err as Error).message ?? "unknown error"}`);
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+    runAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
