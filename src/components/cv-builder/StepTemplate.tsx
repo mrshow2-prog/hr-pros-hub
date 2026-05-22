@@ -101,7 +101,7 @@ export default function StepTemplate() {
   return (
     <>
       <StepHeader
-        eyebrow="Step 5 · Template"
+        eyebrow="Step 4 · Template"
         title="Pick a layout that fits the room"
         subtitle="All five are ATS-friendly. The difference is tone and density — pick the one your reader expects."
       />
