@@ -106,8 +106,10 @@ const randomToken = () =>
   (crypto.randomUUID() + crypto.randomUUID()).replace(/-/g, "").slice(0, 48);
 
 const defaultIntent: IntentForm = {
-  targetRole: "",
+  targetRoles: [],
+  functionArea: "",
   targetIndustry: "",
+  industryAgnostic: false,
   seniority: "",
   cvType: "",
   tone: "",
