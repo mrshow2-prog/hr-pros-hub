@@ -18,7 +18,11 @@ export default function StepGaps() {
       setError(null);
       try {
         const { data, error: fnError } = await supabase.functions.invoke("analyze-cv-gaps", {
-          body: { parsedText: state.parsedText, intentForm: state.intentForm },
+          body: {
+            parsedText: state.parsedText,
+            intentForm: state.intentForm,
+            uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
+          },
         });
         if (fnError) throw fnError;
         if (active && data?.gaps) setGaps(data.gaps);
