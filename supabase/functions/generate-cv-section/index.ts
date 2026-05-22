@@ -3,13 +3,18 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
-const SYSTEM_PROMPT = `You rewrite a single role's bullet points on a real person's CV. Use ONLY information present in the provided bullets and the role/intent context. Never invent companies, dates, metrics, or achievements not implied by the inputs. Keep statements truthful and specific. Return ONLY a valid JSON object with no markdown.`;
+const SYSTEM_PROMPT = `You are an expert CV writer. You will rewrite a set of bullet points for a specific job role according to the action requested.
+
+Rules:
+- Use ONLY information from currentBullets and originalBullets — never invent facts, metrics, or responsibilities not present in those inputs
+- Return ONLY a JSON array of strings (the new bullets), no markdown, no explanation, no code fences
+- Calibrate language and depth to the seniority level provided`;
 
 function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 60000) {
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 20000) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -22,7 +27,7 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 6000
 async function callGeminiWithRetry(
   apiKey: string,
   payload: unknown,
-  timeoutMs = 60000,
+  timeoutMs = 20000,
 ): Promise<Response | { error: { status?: number; details: string } }> {
   let lastErr: { status?: number; details: string } = { details: "Unknown error" };
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -48,17 +53,56 @@ async function callGeminiWithRetry(
   return { error: lastErr };
 }
 
-function instructionFor(action: string): string {
-  switch (action) {
-    case "condense":
-      return "CONDENSE: Merge overlapping points and reduce to only the highest-impact bullets (aim for 3-5). Keep strong metrics. Remove fluff. Each bullet should be tight and outcome-led.";
-    case "expand":
-      return "EXPAND: Add depth and stronger framing. Strengthen verbs, surface scope, and frame outcomes with metric-style language where the inputs already suggest one. Do NOT invent numbers. Aim for 5-7 bullets.";
-    case "tailor":
-      return "TAILOR: Rewrite each bullet to be optimised for the target role's keywords, seniority, and expectations. Reframe responsibilities so they read as evidence for the target role. Do NOT invent experience.";
-    default:
-      return "Improve the bullets while preserving truth.";
+function buildUserMessage(
+  action: string,
+  jobTitle: string,
+  company: string,
+  currentBullets: string[],
+  originalBullets: string[],
+  intent: any,
+): string {
+  const cur = currentBullets.map((b, i) => `${i + 1}. ${b}`).join("\n");
+  const orig = originalBullets.length
+    ? originalBullets.map((b, i) => `${i + 1}. ${b}`).join("\n")
+    : "(none)";
+  const targetRoles = Array.isArray(intent?.targetRoles) ? intent.targetRoles.join(", ") : "";
+  const seniority = intent?.seniority ?? "";
+  const tone = intent?.tone ?? "";
+  const industry = intent?.industry ?? intent?.targetIndustry ?? "";
+  const functionArea = intent?.function ?? intent?.functionArea ?? "";
+
+  if (action === "condense") {
+    return `Condense these bullet points for the role of ${jobTitle} at ${company}. Merge related points, remove low-impact or generic responsibilities, and keep only the strongest 3-4 bullets. Prioritise specificity and measurable outcomes.
+
+Current bullets:
+${cur}
+
+Original bullets for reference:
+${orig}
+
+Seniority: ${seniority} | Tone: ${tone}`;
   }
+  if (action === "expand") {
+    return `Expand and strengthen these bullet points for the role of ${jobTitle} at ${company}. Add depth, context, and stronger framing. Where the original bullets hint at metrics or scope, draw that out. Aim for 5-6 strong bullets.
+
+Current bullets:
+${cur}
+
+Original bullets for reference:
+${orig}
+
+Seniority: ${seniority} | Tone: ${tone}`;
+  }
+  return `Rewrite these bullet points to be optimised for someone targeting: ${targetRoles} in ${industry}. Emphasise competencies, language, and outcomes that are most relevant to that target role. Retain the factual content but reframe the emphasis and vocabulary.
+
+Current bullets:
+${cur}
+
+Original bullets for reference:
+${orig}
+
+Target roles: ${targetRoles} | Function: ${functionArea}
+Seniority: ${seniority} | Industry: ${industry}`;
 }
 
 Deno.serve(async (req) => {
@@ -75,6 +119,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const action: string = body.action ?? "";
+    const roleId: string = body.roleId ?? "";
+    const jobTitle: string = body.jobTitle ?? "";
+    const company: string = body.company ?? "";
     const currentBullets: string[] = Array.isArray(body.currentBullets)
       ? body.currentBullets.map((b: unknown) => String(b ?? "").trim()).filter((s: string) => s.length > 0)
       : [];
@@ -96,28 +143,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const targetRoles = Array.isArray(intent?.targetRoles) ? intent.targetRoles.join(", ") : "";
-    const userMessage = `${instructionFor(action)}
+    console.log(`generate-cv-section: action=${action} roleId=${roleId} bullets=${currentBullets.length}`);
 
-TARGET ROLES: ${targetRoles}
-FUNCTION: ${intent?.functionArea ?? ""}
-SENIORITY: ${intent?.seniority ?? ""}
-INDUSTRY: ${intent?.targetIndustry ?? ""}
-TONE: ${intent?.tone ?? ""}
-
-CURRENT BULLETS:
-${currentBullets.map((b, i) => `${i + 1}. ${b}`).join("\n")}
-
-ORIGINAL BULLETS (for reference, do not contradict):
-${originalBullets.length ? originalBullets.map((b, i) => `${i + 1}. ${b}`).join("\n") : "(none)"}
-
-Return ONLY a JSON object: { "bullets": [string, ...] }`;
+    const userMessage = buildUserMessage(action, jobTitle, company, currentBullets, originalBullets, intent);
 
     const result = await callGeminiWithRetry(apiKey, {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: "user", parts: [{ text: userMessage }] }],
       generationConfig: { responseMimeType: "application/json", temperature: 0.5 },
-    });
+    }, 20000);
 
     if (!(result instanceof Response)) {
       return new Response(
@@ -135,20 +169,19 @@ Return ONLY a JSON object: { "bullets": [string, ...] }`;
     const data = await result.json();
     const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
-    let parsed: any;
+    let bullets: string[] = [];
     try {
-      parsed = JSON.parse(stripFences(raw));
+      const parsed = JSON.parse(stripFences(raw));
+      const arr = Array.isArray(parsed) ? parsed : parsed?.bullets;
+      if (!Array.isArray(arr)) throw new Error("Not an array");
+      bullets = arr.map((b: unknown) => String(b ?? "").trim()).filter((s: string) => s.length > 0);
     } catch {
-      console.error("Failed to parse Gemini response:", raw);
-      return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
+      console.error("Failed to parse section rewrite. Raw response:", raw);
+      return new Response(JSON.stringify({ error: "Failed to parse section rewrite" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
       });
     }
-
-    const bullets = Array.isArray(parsed?.bullets)
-      ? parsed.bullets.map((b: unknown) => String(b ?? "").trim()).filter((s: string) => s.length > 0)
-      : [];
 
     if (bullets.length === 0) {
       return new Response(JSON.stringify({ error: "AI returned no bullets" }), {
