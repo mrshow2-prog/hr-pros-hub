@@ -144,24 +144,6 @@ export default function StepExport() {
         </button>
       </div>
 
-      {/* Offscreen full-size render used for PDF capture */}
-      {cv && (
-        <div
-          aria-hidden
-          style={{
-            position: "fixed",
-            left: "-10000px",
-            top: 0,
-            width: "794px", // ~A4 width at 96dpi
-            background: "#ffffff",
-            pointerEvents: "none",
-          }}
-        >
-          <div ref={printRef}>
-            <CVRenderer cv={cv} template={template} photoUrl={photoUrl} />
-          </div>
-        </div>
-      )}
 
       <StepFooter onBack={() => setStep(6)} />
     </>
