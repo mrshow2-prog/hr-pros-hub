@@ -237,6 +237,7 @@ interface CVBuilderContextValue {
   setStep: (step: CVBuilderState["currentStep"]) => void;
   setUploadedFiles: (files: UploadedFile[]) => void;
   setParsedText: (text: string) => void;
+  setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
   setGapResponse: (id: string, value: string) => void;
