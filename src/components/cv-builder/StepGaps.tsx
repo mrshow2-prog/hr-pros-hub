@@ -86,36 +86,68 @@ export default function StepGaps() {
             </button>
           </div>
         )}
-        {gaps.map((g) => {
-          const value = state.gapAnalysis.responses[g.id] ?? "";
-          const incomplete = value.trim().length < 9;
+        {gaps.length > 0 && (() => {
+          const writingGaps = gaps.filter((g) => (g.layer ?? "writing") === "writing");
+          const expectationGaps = gaps.filter((g) => g.layer === "expectation");
+
+          const renderGap = (g: typeof gaps[number]) => {
+            const value = state.gapAnalysis.responses[g.id] ?? "";
+            const incomplete = value.trim().length < 9;
+            return (
+              <article
+                key={g.id}
+                className={cn(
+                  "rounded-md border bg-paper p-5 transition-colors sm:p-6",
+                  incomplete ? "border-ink/10" : "border-sienna/40",
+                )}
+              >
+                <span className="inline-block rounded-full bg-sienna/10 px-3 py-1 font-dm text-[11px] uppercase tracking-wider2 text-sienna">
+                  {g.category}
+                </span>
+
+                <blockquote className="mt-4 border-l-2 border-ink/20 pl-4 font-serif text-base italic text-ink/70">
+                  "{g.example}"
+                </blockquote>
+
+                <p className="mt-4 font-dm text-sm text-ink">{g.question}</p>
+
+                <textarea
+                  value={value}
+                  onChange={(e) => setGapResponse(g.id, e.target.value)}
+                  placeholder="Your answer — specifics welcome"
+                  className="mt-3 min-h-24 w-full resize-y rounded border border-ink/15 bg-paper p-3 font-dm text-sm text-ink placeholder:text-ink/40 focus:border-sienna focus:outline-none"
+                />
+              </article>
+            );
+          };
+
           return (
-            <article
-              key={g.id}
-              className={cn(
-                "rounded-md border bg-paper p-5 transition-colors sm:p-6",
-                incomplete ? "border-ink/10" : "border-sienna/40",
+            <div className="space-y-10">
+              {writingGaps.length > 0 && (
+                <section className="space-y-5">
+                  <header>
+                    <h3 className="font-syne text-lg text-ink">Strengthen what's there</h3>
+                    <p className="mt-1 font-dm text-sm text-ink/60">
+                      Tighten wording, add metrics, and sharpen claims that already exist in your CV.
+                    </p>
+                  </header>
+                  {writingGaps.map(renderGap)}
+                </section>
               )}
-            >
-              <span className="inline-block rounded-full bg-sienna/10 px-3 py-1 font-dm text-[11px] uppercase tracking-wider2 text-sienna">
-                {g.category}
-              </span>
-
-              <blockquote className="mt-4 border-l-2 border-ink/20 pl-4 font-serif text-base italic text-ink/70">
-                "{g.example}"
-              </blockquote>
-
-              <p className="mt-4 font-dm text-sm text-ink">{g.question}</p>
-
-              <textarea
-                value={value}
-                onChange={(e) => setGapResponse(g.id, e.target.value)}
-                placeholder="Your answer — specifics welcome"
-                className="mt-3 min-h-24 w-full resize-y rounded border border-ink/15 bg-paper p-3 font-dm text-sm text-ink placeholder:text-ink/40 focus:border-sienna focus:outline-none"
-              />
-            </article>
+              {expectationGaps.length > 0 && (
+                <section className="space-y-5">
+                  <header>
+                    <h3 className="font-syne text-lg text-ink">Fill in what's missing for this role</h3>
+                    <p className="mt-1 font-dm text-sm text-ink/60">
+                      Competencies and outcomes typically expected for your target role that aren't yet evident.
+                    </p>
+                  </header>
+                  {expectationGaps.map(renderGap)}
+                </section>
+              )}
+            </div>
           );
-        })}
+        })()}
       </div>
 
       {!loading && gaps.length > 0 && (

@@ -6,7 +6,27 @@ import mammoth from "npm:mammoth@1.8.0";
 const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
-const SYSTEM_PROMPT = `You are an expert CV consultant. You will be given the EXACT text of one candidate's CV plus their target role context. You must analyse THIS specific CV — never produce generic gaps. Every "example" field you return must be a real quote or specific observation from the CV text provided. If something is already addressed well, do NOT flag it. Return ONLY a JSON array (no markdown, no fences, no prose) of 4–6 objects with fields: id, category, example, question.`;
+const SYSTEM_PROMPT = `You are a senior executive recruiter with deep knowledge of hiring standards across industries.
+
+Analyze this CV on two levels:
+
+LEVEL 1 — WRITING QUALITY GAPS:
+Look at what IS in the CV and identify where it is weak, vague, or undersells the candidate.
+Quote actual text from the CV. Flag: missing metrics, passive language, thin bullet points, weak summary, unexplained gaps.
+
+LEVEL 2 — ROLE EXPECTATION GAPS:
+Based on the target role, function, seniority, and industry, identify what a strong candidate for this role would typically demonstrate that is ABSENT from this CV.
+For example:
+- A Senior Hotel Sales Manager targeting Director of Sales would typically evidence: P&L ownership, revenue forecasting accuracy, RFP win rates, ADR/RevPAR contribution, budget management, cross-functional leadership. If these are absent, flag them.
+- A Senior HR professional targeting CHRO would typically evidence: board-level reporting, workforce planning at scale, M&A people integration. If absent, flag them.
+Use your knowledge of the target role to identify 3-4 missing expected competencies or experiences specific to THIS role and industry.
+
+IMPORTANT RULES:
+- Never fabricate quotes. Only quote actual text that appears in the CV.
+- For Level 2 gaps, the 'example' field should describe what's absent, not fabricate a quote. e.g. 'No mention of P&L ownership or budget management despite targeting a Director level role'.
+- Every gap must include a question that helps the user surface real information from their experience to fill the gap.
+
+Return ONLY a JSON array (no markdown, no fences, no prose) of 6-8 gap objects (mix of Level 1 and Level 2). Each object must have fields: id, category, example, question, layer. The 'layer' field must be either 'writing' (Level 1) or 'expectation' (Level 2).`;
 
 function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
@@ -170,11 +190,9 @@ Deno.serve(async (req) => {
     const functionArea = intent.function ?? intent.functionArea ?? "";
     const industry = intent.industry ?? intent.targetIndustry ?? "Not industry-specific";
 
-    const userMessage = `You are analyzing THIS SPECIFIC CV TEXT below. Do not generate generic gaps. Every gap you identify must quote an actual phrase or section from the CV text provided. If the CV already addresses something well, do not flag it as a gap.
+    const userMessage = `Analyze THIS SPECIFIC CV TEXT below on two levels as described in the system instructions.
 
-Focus only on what is genuinely missing or weak in THIS CV for THIS target role.
-
-CV TEXT (analyze this exactly):
+CV TEXT:
 ---
 ${parsedText}
 ---
@@ -185,13 +203,14 @@ SENIORITY: ${intent.seniority ?? ""}
 INDUSTRY: ${industry}
 CV TYPE: ${intent.cvType ?? ""}
 
-Return ONLY a JSON array. Each object must have:
+Return ONLY a JSON array of 6-8 gap objects. Each object must have:
 - id: string
 - category: string
-- example: string (must be an actual quote or specific observation from the CV text above — never fabricate a quote)
-- question: string (targeted to what's actually missing from this specific CV)
+- example: string (Level 1: actual quote from CV; Level 2: description of what's absent — never fabricate quotes)
+- question: string (helps the user surface real information to fill the gap)
+- layer: "writing" | "expectation"
 
-Do not wrap in markdown. Do not add explanation.`;
+Aim for a mix: ~3-4 writing gaps and ~3-4 expectation gaps. Do not wrap in markdown. Do not add explanation.`;
 
     const result = await callGeminiWithRetry(apiKey, {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },

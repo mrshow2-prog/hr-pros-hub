@@ -40,6 +40,7 @@ export interface Gap {
   category: string;
   example: string;
   question: string;
+  layer?: "writing" | "expectation";
 }
 
 export interface GapAnalysis {
