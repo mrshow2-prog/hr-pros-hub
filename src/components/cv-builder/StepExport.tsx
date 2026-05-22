@@ -1,15 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FileDown, FileText, Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
-import CVRenderer from "./templates/CVRenderer";
-import { exportCVToDocx, exportNodeToPdf, slugify } from "@/lib/cvExport";
+import { exportCVToDocx, exportCVToPdf, slugify } from "@/lib/cvExport";
 
 export default function StepExport() {
   const { state, setStep, resetSession } = useCVBuilder();
-  const printRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<"pdf" | "docx" | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
