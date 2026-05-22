@@ -135,7 +135,7 @@ export default function StepTemplate() {
                 aria-label={`Preview ${t.name}`}
               >
                 <ScaledPreview scale={0.38} className="h-[380px] border-b border-ink/10">
-                  <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={null} />
+                  <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={SAMPLE_PHOTO_URL} />
                 </ScaledPreview>
                 {active && (
                   <div className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper shadow">
