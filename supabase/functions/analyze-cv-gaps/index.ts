@@ -210,17 +210,20 @@ Do not wrap in markdown. Do not add explanation.`;
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
+      // Fall back to Lovable AI for any retryable Gemini error (rate limit, overload, server error)
+      try {
         const gaps = await generateGapsWithLovableAI(userMessage);
         return new Response(JSON.stringify({ gaps }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
+      } catch (fallbackErr) {
+        console.error("Lovable AI fallback also failed:", (fallbackErr as Error).message);
+        return new Response(JSON.stringify({ error: "AI request failed" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        });
       }
-      return new Response(JSON.stringify({ error: "Gemini request failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
     }
 
     const data = await resp.json();
