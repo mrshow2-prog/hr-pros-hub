@@ -59,45 +59,6 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   }
 }
 
-async function scoreWithLovableAI(userMessage: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: LOVABLE_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      tools: [ATS_TOOL_SCHEMA],
-      tool_choice: { type: "function", function: { name: "return_ats_score" } },
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    console.error("Lovable AI fallback error:", resp.status, text);
-    throw new Error("AI fallback request failed");
-  }
-
-  const data = await resp.json();
-  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  const content = data?.choices?.[0]?.message?.content;
-  const raw = args ?? content ?? "";
-
-  try {
-    return JSON.parse(stripFences(raw));
-  } catch (_e) {
-    console.error("Failed to parse AI fallback response:", raw);
-    throw new SyntaxError("Failed to parse AI response");
-  }
-}
 
 function cvToText(cv: any): string {
   if (!cv) return "";
