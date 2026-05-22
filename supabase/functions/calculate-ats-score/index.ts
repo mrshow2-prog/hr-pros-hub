@@ -128,42 +128,36 @@ Deno.serve(async (req) => {
 TARGET ROLES: ${JSON.stringify(targetRoles)}
 FUNCTION: ${intent.function ?? ""}`;
 
-    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
-      }),
+    const result = await callGeminiWithRetry(apiKey, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
     });
 
     let aiScore: any;
-    if (!resp.ok) {
-      const t = await resp.text();
-      console.error("Gemini error:", resp.status, t);
+    if (!(result instanceof Response)) {
       return new Response(
         JSON.stringify({
-          error: `Gemini API error ${resp.status}`,
-          status: resp.status,
-          details: t,
+          error: result.error.status
+            ? `Gemini API error ${result.error.status}`
+            : "Gemini request failed",
+          status: result.error.status,
+          details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    if (!aiScore) {
-      const data = await resp.json();
-      const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-      try {
-        aiScore = JSON.parse(stripFences(raw));
-      } catch {
-        console.error("Failed to parse Gemini response:", raw);
-        return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
+    const data = await result.json();
+    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    try {
+      aiScore = JSON.parse(stripFences(raw));
+    } catch {
+      console.error("Failed to parse Gemini response:", raw);
+      return new Response(JSON.stringify({ error: "Failed to parse AI response" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
     }
 
     // Adapt to client-side shape used by StepDraft (formatting checklist + readability number).
