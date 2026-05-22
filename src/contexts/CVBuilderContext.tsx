@@ -366,6 +366,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       setStep: (step) => setState((s) => ({ ...s, currentStep: step })),
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
+      setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
       patchIntent: (patch) =>
         setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),
       setGaps: (gaps) =>
