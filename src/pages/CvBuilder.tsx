@@ -27,8 +27,8 @@ function Wizard() {
       {step === 1 && <StepUpload />}
       {step === 2 && <StepIntent />}
       {step === 3 && <StepGaps />}
-      {step === 4 && <StepPayment />}
-      {step === 5 && <StepTemplate />}
+      {step === 4 && <StepTemplate />}
+      {step === 5 && <StepPayment />}
       {step === 6 && <StepDraft />}
       {step === 7 && <StepExport />}
     </WizardShell>
