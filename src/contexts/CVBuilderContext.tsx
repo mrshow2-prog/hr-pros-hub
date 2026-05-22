@@ -17,8 +17,10 @@ export interface UploadedFile {
 }
 
 export interface IntentForm {
-  targetRole: string;
-  targetIndustry: string;
+  targetRoles: string[];
+  functionArea: string;
+  targetIndustry: string | null;
+  industryAgnostic: boolean;
   seniority: Seniority;
   cvType: CVType;
   tone: Tone;
