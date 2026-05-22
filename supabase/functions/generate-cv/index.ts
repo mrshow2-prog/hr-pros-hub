@@ -3,8 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import mammoth from "npm:mammoth@1.8.0";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
 
