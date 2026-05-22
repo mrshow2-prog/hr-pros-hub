@@ -31,7 +31,19 @@ const ATS_TOOL_SCHEMA = {
         keywordMatch: { type: "number" },
         formattingCompliance: { type: "boolean" },
         readabilityScore: { type: "number" },
-        breakdown: { type: "array", items: { type: "object" } },
+        breakdown: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string" },
+              status: { type: "string", enum: ["pass", "fail", "warn"] },
+              note: { type: "string" },
+            },
+            required: ["label", "status", "note"],
+            additionalProperties: false,
+          },
+        },
       },
       required: ["overall", "keywordMatch", "formattingCompliance", "readabilityScore", "breakdown"],
       additionalProperties: true,
@@ -120,11 +132,12 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const intent = body.intentForm ?? {};
+    const targetRoles = intent.targetRoles ?? intent.targetRole ?? body.targetRole ?? "";
     const generatedCVText =
       body.generatedCVText ?? cvToText(body.generatedCV) ?? body.parsedText ?? "";
 
     const userMessage = `CV: ${generatedCVText}
-TARGET ROLES: ${JSON.stringify(intent.targetRoles ?? intent.targetRole ?? "")}
+TARGET ROLES: ${JSON.stringify(targetRoles)}
 FUNCTION: ${intent.function ?? ""}`;
 
     const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
