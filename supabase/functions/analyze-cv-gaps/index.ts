@@ -53,6 +53,35 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   }
 }
 
+async function callGeminiWithRetry(
+  apiKey: string,
+  payload: unknown,
+  timeoutMs = 25000,
+): Promise<Response | { error: { status?: number; details: string } }> {
+  let lastErr: { status?: number; details: string } = { details: "Unknown error" };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const model = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    try {
+      const resp = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }, timeoutMs);
+      if (resp.ok) return resp;
+      const text = await resp.text();
+      lastErr = { status: resp.status, details: text };
+      console.error(`Gemini ${model} attempt ${attempt + 1} failed:`, resp.status, text);
+      if (!RETRY_STATUSES.has(resp.status)) break;
+    } catch (e) {
+      lastErr = { details: (e as Error).message };
+      console.error(`Gemini ${model} attempt ${attempt + 1} threw:`, lastErr.details);
+    }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+  }
+  return { error: lastErr };
+}
+
 async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   try {
