@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import CVRenderer, { SAMPLE_CV } from "./templates/CVRenderer";
 import { ScaledPreview } from "./templates/shared";
 
+const SAMPLE_PHOTO_URL =
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=faces";
+
 interface TemplateMeta {
   id: TemplateId;
   name: string;
