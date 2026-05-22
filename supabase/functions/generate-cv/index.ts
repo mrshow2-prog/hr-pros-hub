@@ -5,8 +5,6 @@ import mammoth from "npm:mammoth@1.8.0";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
 
