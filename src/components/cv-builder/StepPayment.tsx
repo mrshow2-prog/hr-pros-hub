@@ -63,8 +63,8 @@ export default function StepPayment() {
       </div>
 
       <StepFooter
-        onBack={() => setStep(3)}
-        onNext={paid ? () => setStep(5) : undefined}
+        onBack={() => setStep(4)}
+        onNext={paid ? () => setStep(6) : undefined}
         nextLabel="Continue"
       />
     </>
