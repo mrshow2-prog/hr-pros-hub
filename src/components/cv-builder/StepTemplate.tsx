@@ -118,7 +118,7 @@ export default function StepTemplate() {
         ))}
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
         {TEMPLATES.map((t) => {
           const active = selected === t.id;
           return (
@@ -137,7 +137,11 @@ export default function StepTemplate() {
                 className="relative block w-full"
                 aria-label={`Preview ${t.name}`}
               >
-                <ScaledPreview scale={0.38} className="h-[380px] border-b border-ink/10">
+                <ScaledPreview
+                  scale={0.36}
+                  visibleHeight={360}
+                  className="border-b border-ink/10"
+                >
                   <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={SAMPLE_PHOTO_URL} />
                 </ScaledPreview>
                 {active && (
@@ -148,41 +152,44 @@ export default function StepTemplate() {
               </button>
 
               <div className="flex flex-1 flex-col p-5">
-                <span className="mb-3 inline-block w-fit rounded bg-clay px-2.5 py-1 font-dm text-[10px] font-semibold uppercase tracking-wider2 text-sienna">
-                  {t.badge}
-                </span>
-                <h3 className="font-syne text-xl text-ink">{t.name}</h3>
-                <p className="mt-2 font-dm text-sm font-light text-ink/65">{t.description}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="inline-block rounded bg-clay px-2.5 py-1 font-dm text-[10px] font-semibold uppercase tracking-wider2 text-sienna">
+                    {t.badge}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-dm text-[11px] font-medium text-olive">
+                    <ShieldCheck size={12} /> ATS {t.ats}%
+                  </span>
+                </div>
 
-                <ul className="mt-4 space-y-1">
+                <h3 className="mt-3 font-syne text-xl text-ink">{t.name}</h3>
+                <p className="mt-1.5 font-dm text-[13px] font-light leading-relaxed text-ink/65">
+                  {t.description}
+                </p>
+
+                <ul className="mt-4 space-y-1.5">
                   {t.features.map((f) => (
                     <li
                       key={f}
-                      className="relative pl-5 font-dm text-[13px] font-light text-ink/80"
+                      className="relative pl-4 font-dm text-[12.5px] font-light leading-snug text-ink/80"
                     >
-                      <span className="absolute left-0 font-bold text-sienna">•</span>
+                      <span className="absolute left-0 top-0 font-bold text-sienna">•</span>
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-5 flex flex-col gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setTemplate(t.id)}
-                    className={cn(
-                      "w-full rounded px-5 py-3 font-dm text-sm font-semibold uppercase tracking-wider2 transition-colors",
-                      active
-                        ? "bg-ink text-paper"
-                        : "bg-sienna text-paper hover:opacity-90",
-                    )}
-                  >
-                    {active ? "Selected" : "Use this template"}
-                  </button>
-                  <div className="inline-flex items-center gap-1.5 font-dm text-xs font-medium text-olive">
-                    <ShieldCheck size={12} /> ATS Optimised {t.ats}%
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setTemplate(t.id)}
+                  className={cn(
+                    "mt-5 w-full rounded px-5 py-3 font-dm text-sm font-semibold uppercase tracking-wider2 transition-colors",
+                    active
+                      ? "bg-ink text-paper"
+                      : "bg-sienna text-paper hover:opacity-90",
+                  )}
+                >
+                  {active ? "Selected" : "Use this template"}
+                </button>
               </div>
             </div>
           );
