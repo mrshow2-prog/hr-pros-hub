@@ -125,17 +125,17 @@ export async function exportCVToDocx(
 
   // Photo (inline at top)
   if (photoUrl) {
-    const buf = await urlToArrayBuffer(photoUrl);
-    if (buf) {
+    const img = await urlToImageData(photoUrl);
+    if (img) {
       children.push(
         new Paragraph({
           alignment: AlignmentType.LEFT,
           spacing: { after: 120 },
           children: [
             new ImageRun({
-              data: buf,
+              data: img.buffer,
               transformation: { width: 80, height: 80 },
-              type: "png",
+              type: img.type,
             } as any),
           ],
         }),
