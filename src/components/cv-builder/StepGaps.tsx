@@ -8,17 +8,26 @@ import { cn } from "@/lib/utils";
 export default function StepGaps() {
   const { state, setGaps, setGapResponse, setStep } = useCVBuilder();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.gapAnalysis.gaps.length > 0) return;
     let active = true;
     (async () => {
       setLoading(true);
-      const { data } = await supabase.functions.invoke("analyze-cv-gaps", {
-        body: { parsedText: state.parsedText, intentForm: state.intentForm },
-      });
-      if (active && data?.gaps) setGaps(data.gaps);
-      setLoading(false);
+      setError(null);
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke("analyze-cv-gaps", {
+          body: { parsedText: state.parsedText, intentForm: state.intentForm },
+        });
+        if (fnError) throw fnError;
+        if (active && data?.gaps) setGaps(data.gaps);
+      } catch (err) {
+        console.error("Gap analysis failed", err);
+        if (active) setError("We couldn't analyse gaps automatically right now. You can continue and edit the draft manually.");
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => {
       active = false;
@@ -56,6 +65,11 @@ export default function StepGaps() {
         {loading && (
           <div className="rounded-md border border-ink/10 bg-clay/30 p-8 text-center font-dm text-sm text-ink/55">
             Pulling specifics from your CV…
+          </div>
+        )}
+        {!loading && error && gaps.length === 0 && (
+          <div className="rounded-md border border-sienna/30 bg-clay/30 p-6 font-dm text-sm text-ink/70">
+            {error}
           </div>
         )}
         {gaps.map((g) => {
