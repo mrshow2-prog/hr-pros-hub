@@ -10,6 +10,15 @@ export type TemplateId = "classic" | "modern" | "compact" | "skills-first" | "ex
 export type TypeOption = "light" | "dark";
 export type PaymentStatus = "unpaid" | "pending" | "paid";
 
+export type SectionKey =
+  | "contact"
+  | "summary"
+  | "experience"
+  | "skills"
+  | "education"
+  | "competencies"
+  | "languages";
+
 export interface UploadedFile {
   path: string;
   name: string;
@@ -50,7 +59,11 @@ export interface CVExperience {
   id: string;
   company: string;
   role: string;
-  period: string;
+  location?: string;
+  startDate?: string;
+  endDate?: string;
+  /** Legacy / display fallback */
+  period?: string;
   bullets: CVBullet[];
 }
 
@@ -67,12 +80,31 @@ export interface CompetencyCluster {
   items: string[];
 }
 
+export interface LanguageEntry {
+  id: string;
+  name: string;
+  level: "Basic" | "Conversational" | "Professional" | "Fluent" | "Native";
+}
+
+export interface ContactInfo {
+  name: string;
+  jobTitle: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedinUrl: string;
+  photoPath: string | null;
+}
+
 export interface GeneratedCV {
+  contact: ContactInfo;
   summary: string;
   experience: CVExperience[];
   skills: string[];
   education: CVEducation[];
-  competencyClusters?: CompetencyCluster[];
+  competencyClusters: CompetencyCluster[];
+  languages: LanguageEntry[];
+  hiddenSections: SectionKey[];
 }
 
 export interface AtsScore {
@@ -95,6 +127,8 @@ export interface CVBuilderState {
   typeOption: TypeOption;
   generatedCV: GeneratedCV | null;
   atsScore: AtsScore | null;
+  lastSavedAt: number | null;
+  lastScoredAt: number | null;
 }
 
 // ---------- Defaults & storage ----------
@@ -115,6 +149,61 @@ const defaultIntent: IntentForm = {
   tone: "",
 };
 
+const emptyContact: ContactInfo = {
+  name: "",
+  jobTitle: "",
+  email: "",
+  phone: "",
+  location: "",
+  linkedinUrl: "",
+  photoPath: null,
+};
+
+const newId = (prefix: string) =>
+  `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+
+/** Normalises whatever shape we get (legacy/stub/generated) into the full GeneratedCV */
+export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined): GeneratedCV {
+  return {
+    contact: { ...emptyContact, ...(raw?.contact ?? {}) },
+    summary: raw?.summary ?? "",
+    experience: (raw?.experience ?? []).map((e) => ({
+      id: e.id ?? newId("exp"),
+      company: e.company ?? "",
+      role: e.role ?? "",
+      location: e.location ?? "",
+      startDate: e.startDate ?? "",
+      endDate: e.endDate ?? "",
+      period: e.period ?? "",
+      bullets: (e.bullets ?? []).map((b) => ({
+        id: b.id ?? newId("b"),
+        original: b.original ?? "",
+        rewrite: b.rewrite ?? "",
+        explanation: b.explanation ?? "",
+        status: b.status ?? "accepted",
+      })),
+    })),
+    skills: raw?.skills ?? [],
+    education: (raw?.education ?? []).map((ed) => ({
+      id: ed.id ?? newId("ed"),
+      institution: ed.institution ?? "",
+      qualification: ed.qualification ?? "",
+      period: ed.period ?? "",
+    })),
+    competencyClusters: (raw?.competencyClusters ?? []).map((c) => ({
+      id: c.id ?? newId("cl"),
+      title: c.title ?? "",
+      items: c.items ?? [],
+    })),
+    languages: (raw?.languages ?? []).map((l) => ({
+      id: l.id ?? newId("lang"),
+      name: l.name ?? "",
+      level: l.level ?? "Professional",
+    })),
+    hiddenSections: raw?.hiddenSections ?? [],
+  };
+}
+
 const buildInitialState = (): CVBuilderState => {
   const sessionId = localStorage.getItem(LS_SESSION_KEY) ?? crypto.randomUUID();
   const anonToken = localStorage.getItem(LS_TOKEN_KEY) ?? randomToken();
@@ -133,6 +222,8 @@ const buildInitialState = (): CVBuilderState => {
     typeOption: "light",
     generatedCV: null,
     atsScore: null,
+    lastSavedAt: null,
+    lastScoredAt: null,
   };
 };
 
@@ -150,8 +241,27 @@ interface CVBuilderContextValue {
   setPayment: (status: PaymentStatus) => void;
   setTemplate: (id: TemplateId) => void;
   setTypeOption: (opt: TypeOption) => void;
-  setGeneratedCV: (cv: GeneratedCV | null) => void;
+  setGeneratedCV: (cv: Partial<GeneratedCV> | null) => void;
+
+  // Editing mutators
+  patchContact: (patch: Partial<ContactInfo>) => void;
+  patchSummary: (summary: string) => void;
+  patchExperience: (expId: string, patch: Partial<CVExperience>) => void;
+  addExperience: () => void;
+  removeExperience: (expId: string) => void;
   updateBullet: (experienceId: string, bulletId: string, patch: Partial<CVBullet>) => void;
+  addBullet: (experienceId: string) => void;
+  removeBullet: (experienceId: string, bulletId: string) => void;
+  setSkills: (skills: string[]) => void;
+  patchEducation: (edId: string, patch: Partial<CVEducation>) => void;
+  addEducation: () => void;
+  removeEducation: (edId: string) => void;
+  patchCluster: (clId: string, patch: Partial<CompetencyCluster>) => void;
+  addCluster: () => void;
+  removeCluster: (clId: string) => void;
+  setLanguages: (languages: LanguageEntry[]) => void;
+  toggleSection: (key: SectionKey) => void;
+
   setAts: (ats: AtsScore | null) => void;
   resetSession: () => void;
 }
@@ -181,6 +291,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
         setState((prev) => ({
           ...prev,
           ...remote,
+          generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
           sessionId: prev.sessionId,
           anonToken: prev.anonToken,
           paymentStatus: (data.payment_status as PaymentStatus) ?? prev.paymentStatus,
@@ -202,8 +313,8 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     saveTimer.current = window.setTimeout(async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id ?? null;
-      const { sessionId, anonToken, ...persisted } = state;
-      await supabase.from("cv_builder_sessions").upsert(
+      const { sessionId, anonToken, lastSavedAt, ...persisted } = state;
+      const { error } = await supabase.from("cv_builder_sessions").upsert(
         [
           {
             id: sessionId,
@@ -215,111 +326,191 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
         ],
         { onConflict: "id" },
       );
+      if (!error) {
+        setState((s) => ({ ...s, lastSavedAt: Date.now() }));
+      }
     }, 1000);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [state]);
+    // Only persist on meaningful state changes (exclude lastSavedAt to avoid loop)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    state.currentStep,
+    state.uploadedFiles,
+    state.parsedText,
+    state.intentForm,
+    state.gapAnalysis,
+    state.paymentStatus,
+    state.selectedTemplate,
+    state.typeOption,
+    state.generatedCV,
+    state.atsScore,
+    state.lastScoredAt,
+  ]);
 
-  const setStep = useCallback((step: CVBuilderState["currentStep"]) => {
-    setState((s) => ({ ...s, currentStep: step }));
-  }, []);
-  const setUploadedFiles = useCallback((files: UploadedFile[]) => {
-    setState((s) => ({ ...s, uploadedFiles: files }));
-  }, []);
-  const setParsedText = useCallback((text: string) => {
-    setState((s) => ({ ...s, parsedText: text }));
-  }, []);
-  const patchIntent = useCallback((patch: Partial<IntentForm>) => {
-    setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } }));
-  }, []);
-  const setGaps = useCallback((gaps: Gap[]) => {
-    setState((s) => ({ ...s, gapAnalysis: { ...s.gapAnalysis, gaps } }));
-  }, []);
-  const setGapResponse = useCallback((id: string, value: string) => {
-    setState((s) => ({
-      ...s,
-      gapAnalysis: { ...s.gapAnalysis, responses: { ...s.gapAnalysis.responses, [id]: value } },
-    }));
-  }, []);
-  const setPayment = useCallback((status: PaymentStatus) => {
-    setState((s) => ({ ...s, paymentStatus: status }));
-  }, []);
-  const setTemplate = useCallback((id: TemplateId) => {
-    setState((s) => ({ ...s, selectedTemplate: id }));
-  }, []);
-  const setTypeOption = useCallback((opt: TypeOption) => {
-    setState((s) => ({ ...s, typeOption: opt }));
-  }, []);
-  const setGeneratedCV = useCallback((cv: GeneratedCV | null) => {
-    setState((s) => ({ ...s, generatedCV: cv }));
-  }, []);
-  const updateBullet = useCallback(
-    (experienceId: string, bulletId: string, patch: Partial<CVBullet>) => {
-      setState((s) => {
-        if (!s.generatedCV) return s;
-        return {
-          ...s,
-          generatedCV: {
-            ...s.generatedCV,
-            experience: s.generatedCV.experience.map((exp) =>
-              exp.id !== experienceId
-                ? exp
-                : {
-                    ...exp,
-                    bullets: exp.bullets.map((b) => (b.id === bulletId ? { ...b, ...patch } : b)),
-                  },
-            ),
-          },
-        };
-      });
+  const patchCV = useCallback(
+    (mutator: (cv: GeneratedCV) => GeneratedCV) => {
+      setState((s) => (s.generatedCV ? { ...s, generatedCV: mutator(s.generatedCV) } : s));
     },
     [],
   );
-  const setAts = useCallback((ats: AtsScore | null) => {
-    setState((s) => ({ ...s, atsScore: ats }));
-  }, []);
-  const resetSession = useCallback(() => {
-    localStorage.removeItem(LS_SESSION_KEY);
-    localStorage.removeItem(LS_TOKEN_KEY);
-    setState(buildInitialState());
-  }, []);
 
   const value = useMemo<CVBuilderContextValue>(
     () => ({
       state,
       loading,
-      setStep,
-      setUploadedFiles,
-      setParsedText,
-      patchIntent,
-      setGaps,
-      setGapResponse,
-      setPayment,
-      setTemplate,
-      setTypeOption,
-      setGeneratedCV,
-      updateBullet,
-      setAts,
-      resetSession,
+      setStep: (step) => setState((s) => ({ ...s, currentStep: step })),
+      setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
+      setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
+      patchIntent: (patch) =>
+        setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),
+      setGaps: (gaps) =>
+        setState((s) => ({ ...s, gapAnalysis: { ...s.gapAnalysis, gaps } })),
+      setGapResponse: (id, value) =>
+        setState((s) => ({
+          ...s,
+          gapAnalysis: {
+            ...s.gapAnalysis,
+            responses: { ...s.gapAnalysis.responses, [id]: value },
+          },
+        })),
+      setPayment: (status) => setState((s) => ({ ...s, paymentStatus: status })),
+      setTemplate: (id) => setState((s) => ({ ...s, selectedTemplate: id })),
+      setTypeOption: (opt) => setState((s) => ({ ...s, typeOption: opt })),
+      setGeneratedCV: (cv) =>
+        setState((s) => ({ ...s, generatedCV: cv ? hydrateGeneratedCV(cv) : null })),
+
+      patchContact: (patch) =>
+        patchCV((cv) => ({ ...cv, contact: { ...cv.contact, ...patch } })),
+      patchSummary: (summary) => patchCV((cv) => ({ ...cv, summary })),
+      patchExperience: (expId, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.map((e) => (e.id === expId ? { ...e, ...patch } : e)),
+        })),
+      addExperience: () =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: [
+            ...cv.experience,
+            {
+              id: newId("exp"),
+              company: "",
+              role: "",
+              location: "",
+              startDate: "",
+              endDate: "",
+              bullets: [],
+            },
+          ],
+        })),
+      removeExperience: (expId) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.filter((e) => e.id !== expId),
+        })),
+      updateBullet: (experienceId, bulletId, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.map((exp) =>
+            exp.id !== experienceId
+              ? exp
+              : {
+                  ...exp,
+                  bullets: exp.bullets.map((b) =>
+                    b.id === bulletId ? { ...b, ...patch } : b,
+                  ),
+                },
+          ),
+        })),
+      addBullet: (experienceId) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.map((exp) =>
+            exp.id !== experienceId
+              ? exp
+              : {
+                  ...exp,
+                  bullets: [
+                    ...exp.bullets,
+                    {
+                      id: newId("b"),
+                      original: "",
+                      rewrite: "",
+                      explanation: "Added by you.",
+                      status: "edited",
+                    },
+                  ],
+                },
+          ),
+        })),
+      removeBullet: (experienceId, bulletId) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.map((exp) =>
+            exp.id !== experienceId
+              ? exp
+              : { ...exp, bullets: exp.bullets.filter((b) => b.id !== bulletId) },
+          ),
+        })),
+      setSkills: (skills) => patchCV((cv) => ({ ...cv, skills })),
+      patchEducation: (edId, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          education: cv.education.map((e) => (e.id === edId ? { ...e, ...patch } : e)),
+        })),
+      addEducation: () =>
+        patchCV((cv) => ({
+          ...cv,
+          education: [
+            ...cv.education,
+            { id: newId("ed"), institution: "", qualification: "", period: "" },
+          ],
+        })),
+      removeEducation: (edId) =>
+        patchCV((cv) => ({
+          ...cv,
+          education: cv.education.filter((e) => e.id !== edId),
+        })),
+      patchCluster: (clId, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          competencyClusters: cv.competencyClusters.map((c) =>
+            c.id === clId ? { ...c, ...patch } : c,
+          ),
+        })),
+      addCluster: () =>
+        patchCV((cv) => ({
+          ...cv,
+          competencyClusters: [
+            ...cv.competencyClusters,
+            { id: newId("cl"), title: "New cluster", items: [] },
+          ],
+        })),
+      removeCluster: (clId) =>
+        patchCV((cv) => ({
+          ...cv,
+          competencyClusters: cv.competencyClusters.filter((c) => c.id !== clId),
+        })),
+      setLanguages: (languages) => patchCV((cv) => ({ ...cv, languages })),
+      toggleSection: (key) =>
+        patchCV((cv) => ({
+          ...cv,
+          hiddenSections: cv.hiddenSections.includes(key)
+            ? cv.hiddenSections.filter((k) => k !== key)
+            : [...cv.hiddenSections, key],
+        })),
+
+      setAts: (ats) =>
+        setState((s) => ({ ...s, atsScore: ats, lastScoredAt: ats ? Date.now() : s.lastScoredAt })),
+      resetSession: () => {
+        localStorage.removeItem(LS_SESSION_KEY);
+        localStorage.removeItem(LS_TOKEN_KEY);
+        setState(buildInitialState());
+      },
     }),
-    [
-      state,
-      loading,
-      setStep,
-      setUploadedFiles,
-      setParsedText,
-      patchIntent,
-      setGaps,
-      setGapResponse,
-      setPayment,
-      setTemplate,
-      setTypeOption,
-      setGeneratedCV,
-      updateBullet,
-      setAts,
-      resetSession,
-    ],
+    [state, loading, patchCV],
   );
 
   return <CVBuilderContext.Provider value={value}>{children}</CVBuilderContext.Provider>;
