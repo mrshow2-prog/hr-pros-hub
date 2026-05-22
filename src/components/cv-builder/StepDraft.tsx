@@ -1003,32 +1003,6 @@ function AutoTextarea({
   );
 }
 
-function ActionBtn({
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-1 rounded border px-2 py-1 font-dm text-[11px]",
-        active
-          ? "border-sienna bg-sienna/10 text-sienna"
-          : "border-ink/15 text-ink/65 hover:border-ink/30",
-      )}
-    >
-      {icon} {label}
-    </button>
-  );
-}
 
 /* ---------------- ATS panel + saved indicator ---------------- */
 
