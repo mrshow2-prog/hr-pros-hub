@@ -441,22 +441,49 @@ function ExperienceList({ experience }: { experience: CVExperience[] }) {
 }
 
 function ExperienceCard({ exp }: { exp: CVExperience }) {
-  const { patchExperience, removeExperience, addBullet } = useCVBuilder();
+  const { patchExperience, removeExperience, addBullet, updateBullet, removeBullet, replaceBullets, state } =
+    useCVBuilder();
   const [confirming, setConfirming] = useState(false);
+  const [originalsOpen, setOriginalsOpen] = useState(false);
+  const [showChanges, setShowChanges] = useState(false);
+  const [busy, setBusy] = useState<null | "condense" | "expand" | "tailor">(null);
+  const [aiError, setAiError] = useState<{ msg: string; details?: string } | null>(null);
+
+  const originals = exp.bullets.map((b) => b.original).filter(Boolean);
+
+  const runAction = async (action: "condense" | "expand" | "tailor") => {
+    setBusy(action);
+    setAiError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-cv-section", {
+        body: {
+          roleId: exp.id,
+          currentBullets: exp.bullets.map((b) => b.rewrite).filter(Boolean),
+          originalBullets: exp.bullets.map((b) => b.original).filter(Boolean),
+          intentForm: state.intentForm,
+          action,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) {
+        setAiError({ msg: "AI is busy right now — try again in a moment.", details: data.details ?? data.error });
+      } else if (Array.isArray(data?.bullets) && data.bullets.length > 0) {
+        replaceBullets(exp.id, data.bullets);
+      } else {
+        setAiError({ msg: "AI returned no bullets." });
+      }
+    } catch (e) {
+      setAiError({ msg: "AI is busy right now — try again in a moment.", details: (e as Error).message });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <article className="rounded-md border border-ink/10 bg-paper p-5">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field
-          label="Job title"
-          value={exp.role}
-          onChange={(v) => patchExperience(exp.id, { role: v })}
-        />
-        <Field
-          label="Company"
-          value={exp.company}
-          onChange={(v) => patchExperience(exp.id, { company: v })}
-        />
+        <Field label="Job title" value={exp.role} onChange={(v) => patchExperience(exp.id, { role: v })} />
+        <Field label="Company" value={exp.company} onChange={(v) => patchExperience(exp.id, { company: v })} />
         <Field
           label="From"
           placeholder="MMM YYYY"
@@ -476,13 +503,56 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
         />
       </div>
 
+      {/* Originals drawer */}
+      {originals.length > 0 && (
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={() => setOriginalsOpen((o) => !o)}
+            className="inline-flex items-center gap-1.5 font-dm text-[11px] uppercase tracking-wider2 text-ink/55 hover:text-ink"
+          >
+            <ChevronRight
+              size={12}
+              className={cn("transition-transform", originalsOpen && "rotate-90")}
+            />
+            Original bullets from your CV
+          </button>
+          {originalsOpen && (
+            <ul className="mt-2 space-y-1.5 border-l-2 border-ink/10 pl-3">
+              {originals.map((o, i) => (
+                <li key={i} className="font-dm text-xs text-ink/55">
+                  {o}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Bullets section */}
       <div className="mt-5">
-        <p className="mb-2 font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
-          Bullets
-        </p>
-        <ul className="space-y-3">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">Bullets</p>
+          <label className="inline-flex cursor-pointer items-center gap-2 font-dm text-[11px] text-ink/55 hover:text-ink">
+            <input
+              type="checkbox"
+              checked={showChanges}
+              onChange={(e) => setShowChanges(e.target.checked)}
+              className="h-3 w-3 accent-sienna"
+            />
+            Show changes
+          </label>
+        </div>
+        <ul className="space-y-2">
           {exp.bullets.map((b) => (
-            <BulletEditor key={b.id} bullet={b} experienceId={exp.id} />
+            <BulletRow
+              key={b.id}
+              bullet={b}
+              experienceId={exp.id}
+              showChanges={showChanges}
+              onChange={(v) => updateBullet(exp.id, b.id, { rewrite: v, status: "edited" })}
+              onDelete={() => removeBullet(exp.id, b.id)}
+            />
           ))}
         </ul>
         <button
@@ -492,6 +562,30 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
         >
           <Plus size={13} /> Add bullet
         </button>
+
+        {/* Role-level AI actions */}
+        <div className="mt-4 border-t border-ink/10 pt-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-dm text-xs">
+            <AiActionBtn label="Condense" busy={busy === "condense"} disabled={!!busy} onClick={() => runAction("condense")} />
+            <span className="text-ink/25">·</span>
+            <AiActionBtn label="Expand" busy={busy === "expand"} disabled={!!busy} onClick={() => runAction("expand")} />
+            <span className="text-ink/25">·</span>
+            <AiActionBtn label="Tailor to role" busy={busy === "tailor"} disabled={!!busy} onClick={() => runAction("tailor")} />
+            {busy && (
+              <span className="ml-2 inline-flex items-center gap-1.5 text-ink/55">
+                <Loader2 size={12} className="animate-spin" /> Rewriting bullets…
+              </span>
+            )}
+          </div>
+          {aiError && (
+            <p
+              className="mt-2 font-dm text-[11px] text-amber-700"
+              title={aiError.details}
+            >
+              {aiError.msg}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="mt-5 flex justify-end border-t border-ink/10 pt-3">
@@ -527,75 +621,85 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
   );
 }
 
-function BulletEditor({
+function AiActionBtn({
+  label,
+  busy,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  busy: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline disabled:opacity-40 disabled:hover:no-underline",
+        busy && "text-sienna",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function BulletRow({
   bullet,
-  experienceId,
+  showChanges,
+  onChange,
+  onDelete,
 }: {
   bullet: CVBullet;
   experienceId: string;
+  showChanges: boolean;
+  onChange: (v: string) => void;
+  onDelete: () => void;
 }) {
-  const { updateBullet, removeBullet } = useCVBuilder();
-  const [editing, setEditing] = useState(false);
-  const reverted = bullet.status === "reverted";
+  let tag: { label: string; cls: string } | null = null;
+  if (bullet.original && bullet.original !== bullet.rewrite) {
+    tag = { label: "Rewritten", cls: "bg-clay/40 text-ink/65" };
+  } else if (!bullet.original) {
+    tag = { label: "Added", cls: "bg-sienna/15 text-sienna" };
+  } else {
+    tag = { label: "Unchanged", cls: "bg-ink/5 text-ink/45" };
+  }
 
   return (
-    <li className="rounded-md border border-ink/10 bg-clay/20 p-3">
-      {bullet.original && (
-        <p className="font-dm text-xs text-ink/45 line-through">{bullet.original}</p>
-      )}
-      {editing ? (
+    <li className="group flex items-start gap-2">
+      <div className="flex-1">
         <AutoTextarea
           value={bullet.rewrite}
-          onChange={(v) => updateBullet(experienceId, bullet.id, { rewrite: v, status: "edited" })}
-          className="mt-2 min-h-16"
-          autoFocus
+          onChange={onChange}
+          placeholder="Write a bullet…"
+          className="min-h-12"
         />
-      ) : (
-        <p
-          className={cn(
-            "mt-2 font-dm text-sm text-ink",
-            reverted && "line-through opacity-40",
-          )}
-        >
-          {bullet.rewrite || <span className="italic text-ink/40">Empty bullet</span>}
-        </p>
-      )}
-      {bullet.explanation && (
-        <p className="mt-2 font-serif text-xs italic text-ink/55">{bullet.explanation}</p>
-      )}
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <ActionBtn
-          icon={<Check size={12} />}
-          label="Accept"
-          active={bullet.status === "accepted" && !editing}
-          onClick={() => {
-            setEditing(false);
-            updateBullet(experienceId, bullet.id, { status: "accepted" });
-          }}
-        />
-        <ActionBtn
-          icon={<Pencil size={12} />}
-          label="Edit"
-          active={editing}
-          onClick={() => setEditing((e) => !e)}
-        />
-        <ActionBtn
-          icon={<RotateCcw size={12} />}
-          label="Revert"
-          active={reverted}
-          onClick={() => updateBullet(experienceId, bullet.id, { status: "reverted" })}
-        />
-        <button
-          type="button"
-          onClick={() => removeBullet(experienceId, bullet.id)}
-          className="ml-auto inline-flex items-center gap-1 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/55 hover:border-amber-500 hover:text-amber-700"
-        >
-          <Trash2 size={11} /> Delete
-        </button>
+        {showChanges && tag && (
+          <span
+            className={cn(
+              "mt-1 inline-block rounded-full px-2 py-0.5 font-dm text-[10px]",
+              tag.cls,
+            )}
+          >
+            {tag.label}
+          </span>
+        )}
       </div>
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label="Delete bullet"
+        className="mt-2 rounded p-1 text-ink/30 opacity-60 transition hover:bg-amber-50 hover:text-amber-700 group-hover:opacity-100"
+      >
+        <Trash2 size={14} />
+      </button>
     </li>
   );
 }
+
 
 /* ---------------- Skills ---------------- */
 
