@@ -113,6 +113,30 @@ export default function WizardShell({ children, stepKey }: Props) {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start over from the beginning?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear your uploaded CV, answers, generated draft, and
+              template selection. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                resetSession();
+                setConfirmOpen(false);
+              }}
+              className="bg-sienna text-paper hover:bg-sienna/90"
+            >
+              Yes, start over
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
