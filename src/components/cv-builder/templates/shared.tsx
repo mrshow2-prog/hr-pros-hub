@@ -62,7 +62,7 @@ export function Page({
   return (
     <div
       className={cn(
-        "mx-auto w-[794px] max-w-full min-h-[1123px] bg-white text-ink shadow-sm font-dm",
+        "mx-auto w-[794px] max-w-full min-h-[1123px] bg-white text-ink shadow-sm font-dm text-left",
         className,
       )}
     >
@@ -91,14 +91,15 @@ export function ScaledPreview({
   className?: string;
 }) {
   const scaledWidth = pageWidth * scale;
-  const cropHeight = visibleHeight ?? Math.round(scaledWidth * 1.15);
+  const hasExplicitHeight = typeof visibleHeight === "number";
+  const cropHeight = hasExplicitHeight ? visibleHeight : Math.round(scaledWidth * 1.15);
   return (
     <div
       className={cn(
         "relative w-full overflow-hidden bg-clay/40 flex justify-center",
         className,
       )}
-      style={{ height: cropHeight }}
+      style={hasExplicitHeight ? { height: cropHeight } : undefined}
     >
       <div
         className="relative"
