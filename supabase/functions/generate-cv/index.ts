@@ -2,6 +2,8 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are an expert CV writer. Using the original CV text, the gap analysis responses, and the candidate's target details, produce a fully rewritten, ATS-optimised CV.
 Rules:
@@ -47,6 +49,142 @@ Return ONLY a JSON object with no markdown, no explanation, no code fences, with
 
 function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+}
+
+const CV_TOOL_SCHEMA = {
+  type: "function" as const,
+  function: {
+    name: "return_rewritten_cv",
+    description: "Return the fully rewritten CV in the requested structure.",
+    parameters: {
+      type: "object",
+      properties: {
+        summary: { type: "string" },
+        experience: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              jobTitle: { type: "string" },
+              company: { type: "string" },
+              location: { type: "string" },
+              from: { type: "string" },
+              to: { type: "string" },
+              bullets: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    original: { type: "string" },
+                    rewritten: { type: "string" },
+                    explanation: { type: "string" },
+                  },
+                  required: ["id", "original", "rewritten", "explanation"],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ["id", "jobTitle", "company", "location", "from", "to", "bullets"],
+            additionalProperties: false,
+          },
+        },
+        skills: { type: "array", items: { type: "string" } },
+        education: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              institution: { type: "string" },
+              qualification: { type: "string" },
+              year: { type: "string" },
+            },
+            required: ["id", "institution", "qualification", "year"],
+            additionalProperties: false,
+          },
+        },
+        competencyClusters: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              title: { type: "string" },
+              items: { type: "array", items: { type: "string" } },
+            },
+            required: ["id", "title", "items"],
+            additionalProperties: false,
+          },
+        },
+        languages: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              language: { type: "string" },
+              proficiency: { type: "string" },
+            },
+            required: ["language", "proficiency"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["summary", "experience", "skills", "education", "competencyClusters", "languages"],
+      additionalProperties: false,
+    },
+  },
+};
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 25000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function generateCVWithLovableAI(userMessage: string) {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+
+  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: LOVABLE_MODEL,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ],
+      tools: [CV_TOOL_SCHEMA],
+      tool_choice: { type: "function", function: { name: "return_rewritten_cv" } },
+    }),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    console.error("Lovable AI fallback error:", resp.status, text);
+    throw new Error("AI fallback request failed");
+  }
+
+  const data = await resp.json();
+  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+  const content = data?.choices?.[0]?.message?.content;
+  const raw = args ?? content ?? "";
+
+  try {
+    return JSON.parse(stripFences(raw));
+  } catch (_e) {
+    console.error("Failed to parse AI fallback response:", raw);
+    throw new SyntaxError("Failed to parse AI response");
+  }
 }
 
 function adaptToClientShape(ai: any, intent: any) {
@@ -130,23 +268,26 @@ CV TYPE: ${intent.cvType ?? ""}
 TONE: ${intent.tone ?? ""}
 GAP RESPONSES: ${JSON.stringify(gapResponses)}`;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
-
-    const resp = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
       }),
-    }).finally(() => clearTimeout(timeout));
+    });
 
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
+      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
+        const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
+        return new Response(JSON.stringify({ generatedCV }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       return new Response(JSON.stringify({ error: "Gemini request failed" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,

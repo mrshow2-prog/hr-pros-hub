@@ -38,32 +38,41 @@ const LANG_LEVELS: LanguageEntry["level"][] = [
 export default function StepDraft() {
   const { state, setGeneratedCV, setAts, setStep } = useCVBuilder();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.generatedCV) return;
     let active = true;
     (async () => {
       setLoading(true);
-      const { data } = await supabase.functions.invoke("generate-cv", {
-        body: {
-          parsedText: state.parsedText,
-          intentForm: state.intentForm,
-          gapResponses: state.gapAnalysis.responses,
-          template: state.selectedTemplate,
-          typeOption: state.typeOption,
-        },
-      });
-      if (active && data?.generatedCV) {
-        setGeneratedCV(data.generatedCV);
-        const ats = await supabase.functions.invoke("calculate-ats-score", {
+      setError(null);
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke("generate-cv", {
           body: {
-            generatedCV: data.generatedCV,
-            targetRole: state.intentForm.targetRoles.join(", "),
+            parsedText: state.parsedText,
+            intentForm: state.intentForm,
+            gapResponses: state.gapAnalysis.responses,
+            template: state.selectedTemplate,
+            typeOption: state.typeOption,
           },
         });
-        if (ats.data?.atsScore) setAts(ats.data.atsScore);
+        if (fnError) throw fnError;
+        if (active && data?.generatedCV) {
+          setGeneratedCV(data.generatedCV);
+          const ats = await supabase.functions.invoke("calculate-ats-score", {
+            body: {
+              generatedCV: data.generatedCV,
+              targetRole: state.intentForm.targetRoles.join(", "),
+            },
+          });
+          if (ats.data?.atsScore) setAts(ats.data.atsScore);
+        }
+      } catch (err) {
+        console.error("CV generation failed", err);
+        if (active) setError("We couldn't generate the CV automatically right now. Please go back and try again in a moment.");
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     })();
     return () => {
       active = false;
@@ -79,11 +88,17 @@ export default function StepDraft() {
           title="Rewriting your CV"
           subtitle="Pulling your answers into a clean draft. This usually takes 20–30 seconds."
         />
-        <div className="grid gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded bg-clay/40" />
-          ))}
-        </div>
+        {error ? (
+          <div className="rounded-md border border-sienna/30 bg-clay/30 p-6 font-dm text-sm text-ink/70">
+            {error}
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-16 animate-pulse rounded bg-clay/40" />
+            ))}
+          </div>
+        )}
       </>
     );
   }
