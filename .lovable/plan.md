@@ -1,43 +1,35 @@
-# Fix generate-cv hallucination — ground output in real CV text
+# Wire up PDF + Word downloads on Step 7
 
-## Root cause
+## Problem
 
-`StepUpload` never extracts PDF/DOCX text on the client. It stores a placeholder string ("(Parsed content will be extracted server-side.)") into `parsedText`. The `analyze-cv-gaps` function was already patched to detect that placeholder and re-extract server-side from storage, but `generate-cv` was never given the same treatment — so it sends a near-empty CV to Gemini and the model fabricates everything (name, companies, locations, metrics).
+The "Download PDF" and "Download Word" buttons in `StepExport.tsx` only call `alert("... will be generated server-side.")`. Nothing is actually exported — no edge function, no client-side generation.
 
-A secondary issue: the current `adaptToClientShape` in `generate-cv` hard-codes the contact block to empty strings, so even if Gemini returned name/email/phone/location/linkedIn, those would never reach Step 6's editor.
+## Approach
 
-## What to change
+Generate both files **client-side** from the `GeneratedCV` state already in the wizard. This is the fastest, most reliable path and avoids the Supabase Edge Function timeout problems that have plagued the other CV flows.
 
-### 1. `supabase/functions/generate-cv/index.ts`
+- **PDF** — render the user's selected template (the same React component shown in Step 6 preview) into an offscreen container, snapshot it with `html2canvas`, and paginate into A4 pages with `jsPDF` (already a dep).
+- **Word** — build a `.docx` from the structured `GeneratedCV` JSON using the `docx` library (headings, sections, bullet lists, contact block). Save with `file-saver`.
 
-- Mirror the server-side extraction pattern from `analyze-cv-gaps`:
-  - Read `uploadedFiles` from the request body.
-  - Add `console.log` for incoming `parsedText` length and preview (first 300 chars).
-  - If `parsedText` is missing, shorter than 200 chars, or matches the "extracted server-side" placeholder, download each uploaded file from the `cv-builder-uploads` bucket using the service-role client and extract text with `unpdf` (PDF) / `mammoth` (DOCX). Log per-file char counts and the final length.
-  - If after extraction the text is still under 100 chars, return `400 { error: "CV text too short or empty — PDF may not have parsed correctly" }`.
-- Replace the system prompt + user message with the new strict, grounding prompt that:
-  - Forbids inventing companies, metrics, dates, locations, names, placeholder names.
-  - Requires `name`, `jobTitle`, `email`, `phone`, `location`, `linkedIn` at the top level of the JSON.
-  - Includes the full extracted CV text between `---` fences as the only source of truth.
-- Update `CV_TOOL_SCHEMA` (Lovable AI fallback) so the same six top-level contact fields are required.
-- Update `adaptToClientShape` so `contact.name/email/phone/location/linkedinUrl` come from the AI output instead of being blanked. `jobTitle` should prefer the AI value and fall back to the first target role.
-- Keep the existing Gemini → Lovable AI quota fallback and the 25s timeout.
+Both run entirely in the browser, so there's no signal-abort/timeout risk.
 
-### 2. `src/components/cv-builder/StepDraft.tsx`
+## Changes
 
-- Pass `uploadedFiles: state.uploadedFiles` in the `generate-cv` invoke body so the edge function can fetch and re-extract the original files when needed.
+1. **`package.json`** — add `html2canvas`, `docx`, `file-saver` (+ `@types/file-saver`).
+
+2. **`src/lib/cvExport.ts`** (new) — two functions:
+   - `exportCVToPdf(nodeId, fileName)` — html2canvas → jsPDF, multi-page A4.
+   - `exportCVToDocx(cv, fileName)` — maps `GeneratedCV` → docx `Document` (contact header, summary, experience with bullets, skills, education, languages), saves via file-saver.
+
+3. **`src/components/cv-builder/StepExport.tsx`** — 
+   - Read `state.generatedCV`, `state.selectedTemplate`, photo URL from context.
+   - Render the selected template via `CVRenderer` into a hidden, fixed-size A4 container (off-screen, `position: absolute; left: -10000px`) so html2canvas can capture it.
+   - Replace `alert()` with calls to the two export helpers; show loading state on the buttons and a toast on success/error.
+   - File name: `<slugified name>-cv.pdf` / `.docx`.
+   - If no `generatedCV` (user landed here directly), show a disabled state with a "Go back to Step 6" hint.
 
 ## Out of scope
 
-- No changes to `CVBuilderContext` shape — `parsedText` continues to flow through as today; server extraction is the source of truth.
-- No client-side PDF parsing rewrite.
-- No changes to other edge functions, templates, or storage policies.
-
-## Verification
-
-After deploying, the user can re-run the flow on Abanoub's CV and we will check `generate-cv` edge logs for:
-- `parsedText length` (client value, expected small/placeholder)
-- `Extracted N chars from <file>` (server extraction)
-- `Server-side parsedText length` (expected several thousand chars)
-
-Then confirm in Step 6 that the name "Abanoub Nabil", company "Fairmont The Palm", and location "Dubai" appear, and that the contact fields (name/email/phone/location/LinkedIn) are pre-populated.
+- No edge function, no server-side rendering, no storage upload.
+- Booking-a-review section and "Start a fresh CV" button stay as-is.
+- Template fidelity in `.docx` is structural (semantic Word doc), not a pixel-perfect clone of the React template — PDF is the pixel-perfect output.
