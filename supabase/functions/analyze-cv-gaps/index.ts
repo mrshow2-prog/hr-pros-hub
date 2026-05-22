@@ -1,7 +1,7 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 const SYSTEM_PROMPT = `You are an expert CV consultant. Analyze the provided CV text against the candidate's target role, function, seniority, industry, and CV type. Identify 4-6 specific, actionable gaps. Return ONLY a JSON array with no markdown, no explanation, no code fences. Each gap object must have exactly these fields:
 - id: string (slug, e.g. 'weak-bullets')
