@@ -60,14 +60,79 @@ const CV_TOOL_SCHEMA = {
       type: "object",
       properties: {
         summary: { type: "string" },
-        experience: { type: "array", items: { type: "object" } },
+        experience: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              jobTitle: { type: "string" },
+              company: { type: "string" },
+              location: { type: "string" },
+              from: { type: "string" },
+              to: { type: "string" },
+              bullets: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    original: { type: "string" },
+                    rewritten: { type: "string" },
+                    explanation: { type: "string" },
+                  },
+                  required: ["id", "original", "rewritten", "explanation"],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ["id", "jobTitle", "company", "location", "from", "to", "bullets"],
+            additionalProperties: false,
+          },
+        },
         skills: { type: "array", items: { type: "string" } },
-        education: { type: "array", items: { type: "object" } },
-        competencyClusters: { type: "array", items: { type: "object" } },
-        languages: { type: "array", items: { type: "object" } },
+        education: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              institution: { type: "string" },
+              qualification: { type: "string" },
+              year: { type: "string" },
+            },
+            required: ["id", "institution", "qualification", "year"],
+            additionalProperties: false,
+          },
+        },
+        competencyClusters: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              title: { type: "string" },
+              items: { type: "array", items: { type: "string" } },
+            },
+            required: ["id", "title", "items"],
+            additionalProperties: false,
+          },
+        },
+        languages: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              language: { type: "string" },
+              proficiency: { type: "string" },
+            },
+            required: ["language", "proficiency"],
+            additionalProperties: false,
+          },
+        },
       },
       required: ["summary", "experience", "skills", "education", "competencyClusters", "languages"],
-      additionalProperties: true,
+      additionalProperties: false,
     },
   },
 };
