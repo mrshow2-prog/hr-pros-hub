@@ -5,8 +5,6 @@ import mammoth from "npm:mammoth@1.8.0";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
 
@@ -228,45 +226,6 @@ Return ONLY a valid JSON object, no markdown, no code fences, matching this exac
 }`;
 }
 
-async function generateCVWithLovableAI(userMessage: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: LOVABLE_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      tools: [CV_TOOL_SCHEMA],
-      tool_choice: { type: "function", function: { name: "return_rewritten_cv" } },
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    console.error("Lovable AI fallback error:", resp.status, text);
-    throw new Error("AI fallback request failed");
-  }
-
-  const data = await resp.json();
-  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  const content = data?.choices?.[0]?.message?.content;
-  const raw = args ?? content ?? "";
-
-  try {
-    return JSON.parse(stripFences(raw));
-  } catch (_e) {
-    console.error("Failed to parse AI fallback response:", raw);
-    throw new SyntaxError("Failed to parse AI response");
-  }
-}
 
 function adaptToClientShape(ai: any, intent: any) {
   const fallbackRole =
@@ -396,28 +355,25 @@ Deno.serve(async (req) => {
         }),
       });
     } catch (e) {
-      console.error("Gemini fetch threw, falling back to Lovable AI:", (e as Error).message);
-      const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
-      return new Response(JSON.stringify({ generatedCV }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      const msg = (e as Error).message;
+      console.error("Gemini fetch threw:", msg);
+      return new Response(
+        JSON.stringify({ error: `Gemini request failed: ${msg}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
-        const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
-        return new Response(JSON.stringify({ generatedCV }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-      return new Response(JSON.stringify({ error: "Gemini request failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Gemini API error ${resp.status}`,
+          status: resp.status,
+          details: t,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     const data = await resp.json();

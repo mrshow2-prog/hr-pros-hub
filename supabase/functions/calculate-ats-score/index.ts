@@ -2,8 +2,6 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are an ATS (Applicant Tracking System) expert.
 Evaluate the provided CV text against the target role and function. Return ONLY a JSON object with no markdown, no explanation, no code fences:
@@ -61,45 +59,6 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   }
 }
 
-async function scoreWithLovableAI(userMessage: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: LOVABLE_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      tools: [ATS_TOOL_SCHEMA],
-      tool_choice: { type: "function", function: { name: "return_ats_score" } },
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    console.error("Lovable AI fallback error:", resp.status, text);
-    throw new Error("AI fallback request failed");
-  }
-
-  const data = await resp.json();
-  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  const content = data?.choices?.[0]?.message?.content;
-  const raw = args ?? content ?? "";
-
-  try {
-    return JSON.parse(stripFences(raw));
-  } catch (_e) {
-    console.error("Failed to parse AI fallback response:", raw);
-    throw new SyntaxError("Failed to parse AI response");
-  }
-}
 
 function cvToText(cv: any): string {
   if (!cv) return "";
@@ -154,14 +113,14 @@ FUNCTION: ${intent.function ?? ""}`;
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
-        aiScore = await scoreWithLovableAI(userMessage);
-      } else {
-        return new Response(JSON.stringify({ error: "Gemini request failed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
+      return new Response(
+        JSON.stringify({
+          error: `Gemini API error ${resp.status}`,
+          status: resp.status,
+          details: t,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     if (!aiScore) {

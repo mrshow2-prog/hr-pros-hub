@@ -5,8 +5,6 @@ import mammoth from "npm:mammoth@1.8.0";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are an expert CV consultant. You will be given the EXACT text of one candidate's CV plus their target role context. You must analyse THIS specific CV — never produce generic gaps. Every "example" field you return must be a real quote or specific observation from the CV text provided. If something is already addressed well, do NOT flag it. Return ONLY a JSON array (no markdown, no fences, no prose) of 4–6 objects with fields: id, category, example, question.`;
 
@@ -77,37 +75,6 @@ async function extractFromFile(bytes: Uint8Array, name: string): Promise<string>
   return "";
 }
 
-async function generateGapsWithLovableAI(userMessage: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: LOVABLE_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      tools: [GAPS_TOOL_SCHEMA],
-      tool_choice: { type: "function", function: { name: "return_cv_gaps" } },
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    console.error("Lovable AI fallback error:", resp.status, text);
-    throw new Error("AI fallback request failed");
-  }
-
-  const data = await resp.json();
-  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  const content = data?.choices?.[0]?.message?.content;
-  const raw = args ?? content ?? "";
-  const parsed = JSON.parse(stripFences(raw));
-  return parsed.gaps ?? parsed;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -210,20 +177,14 @@ Do not wrap in markdown. Do not add explanation.`;
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      // Fall back to Lovable AI for any retryable Gemini error (rate limit, overload, server error)
-      try {
-        const gaps = await generateGapsWithLovableAI(userMessage);
-        return new Response(JSON.stringify({ gaps }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      } catch (fallbackErr) {
-        console.error("Lovable AI fallback also failed:", (fallbackErr as Error).message);
-        return new Response(JSON.stringify({ error: "AI request failed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
+      return new Response(
+        JSON.stringify({
+          error: `Gemini API error ${resp.status}`,
+          status: resp.status,
+          details: t,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     const data = await resp.json();

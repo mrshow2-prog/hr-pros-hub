@@ -25,10 +25,11 @@ export default function StepGaps() {
           },
         });
         if (fnError) throw fnError;
+        if (data?.error) throw new Error(`${data.error}${data.details ? ` — ${data.details}` : ""}`);
         if (active && data?.gaps) setGaps(data.gaps);
       } catch (err) {
         console.error("Gap analysis failed", err);
-        if (active) setError("We couldn't analyse gaps automatically right now. You can continue and edit the draft manually.");
+        if (active) setError(`Gap analysis failed: ${(err as Error).message ?? "unknown error"}`);
       } finally {
         if (active) setLoading(false);
       }
