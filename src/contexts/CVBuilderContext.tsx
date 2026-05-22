@@ -17,8 +17,10 @@ export interface UploadedFile {
 }
 
 export interface IntentForm {
-  targetRole: string;
-  targetIndustry: string;
+  targetRoles: string[];
+  functionArea: string;
+  targetIndustry: string | null;
+  industryAgnostic: boolean;
   seniority: Seniority;
   cvType: CVType;
   tone: Tone;
@@ -104,8 +106,10 @@ const randomToken = () =>
   (crypto.randomUUID() + crypto.randomUUID()).replace(/-/g, "").slice(0, 48);
 
 const defaultIntent: IntentForm = {
-  targetRole: "",
+  targetRoles: [],
+  functionArea: "",
   targetIndustry: "",
+  industryAgnostic: false,
   seniority: "",
   cvType: "",
   tone: "",

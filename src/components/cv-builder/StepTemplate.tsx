@@ -101,7 +101,7 @@ export default function StepTemplate() {
   return (
     <>
       <StepHeader
-        eyebrow="Step 5 · Template"
+        eyebrow="Step 4 · Template"
         title="Pick a layout that fits the room"
         subtitle="All five are ATS-friendly. The difference is tone and density — pick the one your reader expects."
       />
@@ -154,10 +154,10 @@ export default function StepTemplate() {
       </div>
 
       <StepFooter
-        onBack={() => setStep(4)}
-        onNext={() => setStep(6)}
+        onBack={() => setStep(3)}
+        onNext={() => setStep(5)}
         nextDisabled={!selected}
-        nextLabel="Generate my CV"
+        nextLabel="Continue to unlock"
       />
     </>
   );

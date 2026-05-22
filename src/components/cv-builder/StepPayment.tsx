@@ -19,7 +19,7 @@ export default function StepPayment() {
     // Stripe checkout will be wired here. Stub: mark paid and advance.
     await new Promise((r) => setTimeout(r, 600));
     setPayment("paid");
-    setStep(5);
+    setStep(6);
   };
 
   const paid = state.paymentStatus === "paid";
@@ -27,7 +27,7 @@ export default function StepPayment() {
   return (
     <>
       <StepHeader
-        eyebrow="Step 4 · Unlock"
+        eyebrow="Step 5 · Unlock"
         title="One payment. The CV is yours."
         subtitle="No subscription, no monthly fee. You unlock the builder once and keep every export."
       />
@@ -63,8 +63,8 @@ export default function StepPayment() {
       </div>
 
       <StepFooter
-        onBack={() => setStep(3)}
-        onNext={paid ? () => setStep(5) : undefined}
+        onBack={() => setStep(4)}
+        onNext={paid ? () => setStep(6) : undefined}
         nextLabel="Continue"
       />
     </>

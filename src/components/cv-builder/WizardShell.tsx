@@ -8,8 +8,8 @@ const STEPS = [
   { n: 1, label: "Upload", tier: "Free" },
   { n: 2, label: "Intent", tier: "Free" },
   { n: 3, label: "Gaps", tier: "Free" },
-  { n: 4, label: "Unlock", tier: "Free" },
-  { n: 5, label: "Template", tier: "Paid" },
+  { n: 4, label: "Template", tier: "Free" },
+  { n: 5, label: "Unlock", tier: "Paid" },
   { n: 6, label: "Draft", tier: "Paid" },
   { n: 7, label: "Export", tier: "Paid" },
 ] as const;

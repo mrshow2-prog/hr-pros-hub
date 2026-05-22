@@ -30,7 +30,7 @@ export default function StepDraft() {
       if (active && data?.generatedCV) {
         setGeneratedCV(data.generatedCV);
         const ats = await supabase.functions.invoke("calculate-ats-score", {
-          body: { generatedCV: data.generatedCV, targetRole: state.intentForm.targetRole },
+          body: { generatedCV: data.generatedCV, targetRole: state.intentForm.targetRoles.join(", ") },
         });
         if (ats.data?.atsScore) setAts(ats.data.atsScore);
       }
