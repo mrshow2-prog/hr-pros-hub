@@ -133,7 +133,8 @@ export default function StepDraft() {
           </SectionShell>
         </div>
 
-        <aside className="lg:sticky lg:top-32 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+          <LivePreview />
           <AtsPanel />
           <SavedIndicator />
         </aside>
