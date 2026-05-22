@@ -72,7 +72,18 @@ export default function StepGaps() {
         )}
         {!loading && error && gaps.length === 0 && (
           <div className="rounded-md border border-sienna/30 bg-clay/30 p-6 font-dm text-sm text-ink/70">
-            {error}
+            <p className="font-medium text-ink">We're experiencing high demand right now.</p>
+            <p className="mt-2">
+              Our AI couldn't analyse your CV after several attempts. Please wait a few minutes and try again — your progress is saved.
+            </p>
+            <p className="mt-3 text-xs text-ink/50">Details: {error}</p>
+            <button
+              type="button"
+              onClick={runAnalysis}
+              className="mt-4 inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
+            >
+              <RefreshCw size={14} /> Retry analysis
+            </button>
           </div>
         )}
         {gaps.map((g) => {
