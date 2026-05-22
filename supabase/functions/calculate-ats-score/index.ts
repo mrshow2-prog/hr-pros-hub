@@ -113,14 +113,14 @@ FUNCTION: ${intent.function ?? ""}`;
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
-        aiScore = await scoreWithLovableAI(userMessage);
-      } else {
-        return new Response(JSON.stringify({ error: "Gemini request failed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
+      return new Response(
+        JSON.stringify({
+          error: `Gemini API error ${resp.status}`,
+          status: resp.status,
+          details: t,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     if (!aiScore) {
