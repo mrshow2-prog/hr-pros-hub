@@ -71,34 +71,49 @@ export function Page({
   );
 }
 
-/** Scales any node (e.g. <Page />) down by `scale` inside a clipped container. */
+/**
+ * Scales a Page-sized node down by `scale` and crops to a fixed visible
+ * height. The scaled content is rendered at its natural scaled width and
+ * horizontally centred so cards never end up with awkward empty bands.
+ */
 export function ScaledPreview({
   children,
   scale,
-  width = 794,
-  height,
+  pageWidth = 794,
+  visibleHeight,
   className,
 }: {
   children: ReactNode;
   scale: number;
-  width?: number;
-  height?: number;
+  pageWidth?: number;
+  /** Cropped visible height in px. Defaults to ~A4 aspect of the scaled width. */
+  visibleHeight?: number;
   className?: string;
 }) {
+  const scaledWidth = pageWidth * scale;
+  const cropHeight = visibleHeight ?? Math.round(scaledWidth * 1.15);
   return (
     <div
-      className={cn("relative overflow-hidden bg-clay/40", className)}
-      style={{ width: "100%", height: height ?? "auto", aspectRatio: !height ? "794 / 500" : undefined }}
+      className={cn(
+        "relative w-full overflow-hidden bg-clay/40 flex justify-center",
+        className,
+      )}
+      style={{ height: cropHeight }}
     >
       <div
-        style={{
-          width,
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          pointerEvents: "none",
-        }}
+        className="relative"
+        style={{ width: scaledWidth, height: cropHeight, overflow: "hidden" }}
       >
-        {children}
+        <div
+          style={{
+            width: pageWidth,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            pointerEvents: "none",
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
