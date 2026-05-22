@@ -384,15 +384,25 @@ Deno.serve(async (req) => {
 
     const userMessage = buildUserMessage(parsedText, intent, gapResponses);
 
-    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-      }),
-    });
+    let resp: Response;
+    try {
+      resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: "user", parts: [{ text: userMessage }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
+        }),
+      });
+    } catch (e) {
+      console.error("Gemini fetch threw, falling back to Lovable AI:", (e as Error).message);
+      const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
+      return new Response(JSON.stringify({ generatedCV }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     if (!resp.ok) {
       const t = await resp.text();
