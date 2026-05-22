@@ -176,32 +176,54 @@ function SectionShell({
 
 /* ---------------- Contact ---------------- */
 
+type PhotoShape = "circle" | "square";
+type PhotoPos = "left" | "right";
+type PhotoSize = "sm" | "md";
+
+const TEMPLATE_PHOTO: Record<string, { shape: PhotoShape; pos: PhotoPos; size: PhotoSize }> = {
+  classic: { shape: "square", pos: "left", size: "sm" },
+  modern: { shape: "circle", pos: "right", size: "md" },
+  compact: { shape: "circle", pos: "right", size: "sm" },
+  "skills-first": { shape: "circle", pos: "left", size: "md" },
+  executive: { shape: "square", pos: "right", size: "sm" },
+};
+
+const PHOTO_PX: Record<PhotoSize, string> = {
+  sm: "h-20 w-20",
+  md: "h-28 w-28",
+};
+
 function ContactBlock({ contact }: { contact: ContactInfo }) {
-  const { patchContact, state } = useCVBuilder();
+  const { patchContact, state, setPhotoPath } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const photoPath = state.photoPath;
+  const template = state.selectedTemplate ?? "modern";
+  const layout = TEMPLATE_PHOTO[template] ?? TEMPLATE_PHOTO.modern;
 
   useEffect(() => {
     let active = true;
     (async () => {
-      if (!contact.photoPath) {
+      if (!photoPath) {
         setPhotoUrl(null);
         return;
       }
       const { data } = await supabase.storage
         .from("cv-builder-uploads")
-        .createSignedUrl(contact.photoPath, 60 * 60);
+        .createSignedUrl(photoPath, 60 * 60);
       if (active) setPhotoUrl(data?.signedUrl ?? null);
     })();
     return () => {
       active = false;
     };
-  }, [contact.photoPath]);
+  }, [photoPath]);
 
   const handlePhoto = async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = "";
     if (!f) return;
     setErr("");
     if (!["image/jpeg", "image/png"].includes(f.type)) {
@@ -222,51 +244,78 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
       setErr("Upload failed. Try again.");
       return;
     }
-    patchContact({ photoPath: path });
+    setPhotoPath(path);
   };
+
+  const photoNode = photoUrl ? (
+    <div className="shrink-0">
+      <div
+        className={cn(
+          "relative overflow-hidden border border-ink/10",
+          PHOTO_PX[layout.size],
+          layout.shape === "circle" ? "rounded-full" : "rounded-md",
+        )}
+      >
+        <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+      </div>
+      <div className="mt-2 flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="font-dm text-[10px] text-ink/55 hover:text-ink"
+        >
+          Replace
+        </button>
+        <button
+          type="button"
+          onClick={() => setPhotoPath(null)}
+          className="font-dm text-[10px] text-ink/55 hover:text-amber-700"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="shrink-0">
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        className={cn(
+          "group relative flex items-center justify-center border border-dashed border-ink/25 bg-clay/30 hover:border-sienna",
+          PHOTO_PX[layout.size],
+          layout.shape === "circle" ? "rounded-full" : "rounded-md",
+        )}
+      >
+        {uploading ? (
+          <span className="font-dm text-[10px] text-ink/65">Uploading…</span>
+        ) : (
+          <div className="flex flex-col items-center text-ink/55 group-hover:text-sienna">
+            <Camera size={16} />
+            <span className="mt-1 px-2 text-center font-dm text-[9px] leading-tight">
+              Add photo
+            </span>
+          </div>
+        )}
+      </button>
+    </div>
+  );
 
   return (
     <div className="rounded-md border border-ink/10 bg-paper p-5">
-      <div className="flex flex-col gap-5 sm:flex-row">
-        <div className="shrink-0">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-dashed border-ink/25 bg-clay/30 hover:border-sienna"
-          >
-            {photoUrl ? (
-              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center text-ink/55">
-                <Camera size={18} />
-                <span className="mt-1 px-2 text-center font-dm text-[10px] leading-tight">
-                  Add photo
-                </span>
-              </div>
-            )}
-            {uploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-paper/70 font-dm text-[10px]">
-                Uploading…
-              </div>
-            )}
-          </button>
-          {contact.photoPath && (
-            <button
-              type="button"
-              onClick={() => patchContact({ photoPath: null })}
-              className="mt-2 block w-full font-dm text-[11px] text-ink/55 hover:text-ink"
-            >
-              Remove
-            </button>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png"
-            className="sr-only"
-            onChange={handlePhoto}
-          />
-        </div>
+      <div
+        className={cn(
+          "flex flex-col gap-5 sm:items-start",
+          layout.pos === "right" ? "sm:flex-row-reverse" : "sm:flex-row",
+        )}
+      >
+        {photoNode}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png"
+          className="sr-only"
+          onChange={handlePhoto}
+        />
 
         <div className="grid flex-1 gap-3 sm:grid-cols-2">
           <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
@@ -281,11 +330,7 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
             value={contact.email}
             onChange={(v) => patchContact({ email: v })}
           />
-          <Field
-            label="Phone"
-            value={contact.phone}
-            onChange={(v) => patchContact({ phone: v })}
-          />
+          <Field label="Phone" value={contact.phone} onChange={(v) => patchContact({ phone: v })} />
           <Field
             label="Location"
             value={contact.location}

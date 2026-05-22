@@ -120,6 +120,7 @@ export interface CVBuilderState {
   currentStep: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   uploadedFiles: UploadedFile[];
   parsedText: string;
+  photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
   paymentStatus: PaymentStatus;
@@ -215,6 +216,7 @@ const buildInitialState = (): CVBuilderState => {
     currentStep: 1,
     uploadedFiles: [],
     parsedText: "",
+    photoPath: null,
     intentForm: defaultIntent,
     gapAnalysis: { gaps: [], responses: {} },
     paymentStatus: "unpaid",
@@ -235,6 +237,7 @@ interface CVBuilderContextValue {
   setStep: (step: CVBuilderState["currentStep"]) => void;
   setUploadedFiles: (files: UploadedFile[]) => void;
   setParsedText: (text: string) => void;
+  setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
   setGapResponse: (id: string, value: string) => void;
@@ -339,6 +342,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     state.currentStep,
     state.uploadedFiles,
     state.parsedText,
+    state.photoPath,
     state.intentForm,
     state.gapAnalysis,
     state.paymentStatus,
@@ -363,6 +367,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       setStep: (step) => setState((s) => ({ ...s, currentStep: step })),
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
+      setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
       patchIntent: (patch) =>
         setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),
       setGaps: (gaps) =>
