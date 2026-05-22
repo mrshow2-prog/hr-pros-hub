@@ -120,6 +120,7 @@ export interface CVBuilderState {
   currentStep: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   uploadedFiles: UploadedFile[];
   parsedText: string;
+  photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
   paymentStatus: PaymentStatus;
