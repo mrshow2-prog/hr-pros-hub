@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState, ChangeEvent, KeyboardEvent } from "react";
 import {
   Check,
-  RotateCcw,
-  Pencil,
   Plus,
   Trash2,
   Eye,
@@ -10,6 +8,8 @@ import {
   Camera,
   RefreshCw,
   X,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import {
   useCVBuilder,
