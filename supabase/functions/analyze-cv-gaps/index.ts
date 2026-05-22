@@ -5,8 +5,6 @@ import mammoth from "npm:mammoth@1.8.0";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `You are an expert CV consultant. You will be given the EXACT text of one candidate's CV plus their target role context. You must analyse THIS specific CV — never produce generic gaps. Every "example" field you return must be a real quote or specific observation from the CV text provided. If something is already addressed well, do NOT flag it. Return ONLY a JSON array (no markdown, no fences, no prose) of 4–6 objects with fields: id, category, example, question.`;
 
