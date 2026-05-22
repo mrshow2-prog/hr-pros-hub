@@ -179,23 +179,6 @@ function SectionShell({
 
 /* ---------------- Contact ---------------- */
 
-type PhotoShape = "circle" | "square";
-type PhotoPos = "left" | "right";
-type PhotoSize = "sm" | "md";
-
-const TEMPLATE_PHOTO: Record<string, { shape: PhotoShape; pos: PhotoPos; size: PhotoSize }> = {
-  classic: { shape: "square", pos: "left", size: "sm" },
-  modern: { shape: "circle", pos: "right", size: "md" },
-  compact: { shape: "circle", pos: "right", size: "sm" },
-  "skills-first": { shape: "circle", pos: "left", size: "md" },
-  executive: { shape: "square", pos: "right", size: "sm" },
-};
-
-const PHOTO_PX: Record<PhotoSize, string> = {
-  sm: "h-20 w-20",
-  md: "h-28 w-28",
-};
-
 function ContactBlock({ contact }: { contact: ContactInfo }) {
   const { patchContact, state, setPhotoPath } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -204,8 +187,6 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
   const [uploading, setUploading] = useState(false);
 
   const photoPath = state.photoPath;
-  const template = state.selectedTemplate ?? "modern";
-  const layout = TEMPLATE_PHOTO[template] ?? TEMPLATE_PHOTO.modern;
 
   useEffect(() => {
     let active = true;
@@ -252,13 +233,7 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
 
   const photoNode = photoUrl ? (
     <div className="shrink-0">
-      <div
-        className={cn(
-          "relative overflow-hidden border border-ink/10",
-          PHOTO_PX[layout.size],
-          layout.shape === "circle" ? "rounded-full" : "rounded-md",
-        )}
-      >
+      <div className="relative h-24 w-24 overflow-hidden rounded-full border border-ink/10">
         <img src={photoUrl} alt="" className="h-full w-full object-cover" />
       </div>
       <div className="mt-2 flex flex-col items-center gap-1">
@@ -283,11 +258,7 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
       <button
         type="button"
         onClick={() => fileRef.current?.click()}
-        className={cn(
-          "group relative flex items-center justify-center border border-dashed border-ink/25 bg-clay/30 hover:border-sienna",
-          PHOTO_PX[layout.size],
-          layout.shape === "circle" ? "rounded-full" : "rounded-md",
-        )}
+        className="group relative flex h-24 w-24 items-center justify-center rounded-full border border-dashed border-ink/25 bg-clay/30 hover:border-sienna"
       >
         {uploading ? (
           <span className="font-dm text-[10px] text-ink/65">Uploading…</span>
@@ -305,12 +276,7 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
 
   return (
     <div className="rounded-md border border-ink/10 bg-paper p-5">
-      <div
-        className={cn(
-          "flex flex-col gap-5 sm:items-start",
-          layout.pos === "right" ? "sm:flex-row-reverse" : "sm:flex-row",
-        )}
-      >
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
         {photoNode}
         <input
           ref={fileRef}
@@ -351,6 +317,47 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
           {err}
         </p>
       )}
+    </div>
+  );
+}
+
+/* ---------------- Live preview pane ---------------- */
+
+function LivePreview() {
+  const { state } = useCVBuilder();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!state.photoPath) {
+        setPhotoUrl(null);
+        return;
+      }
+      const { data } = await supabase.storage
+        .from("cv-builder-uploads")
+        .createSignedUrl(state.photoPath, 60 * 60);
+      if (active) setPhotoUrl(data?.signedUrl ?? null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [state.photoPath]);
+
+  if (!state.generatedCV || !state.selectedTemplate) return null;
+
+  return (
+    <div className="rounded-md border border-ink/10 bg-paper p-3">
+      <p className="mb-2 font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
+        Live preview · {state.selectedTemplate}
+      </p>
+      <ScaledPreview scale={0.36} className="h-[420px] rounded">
+        <CVRenderer
+          cv={state.generatedCV}
+          template={state.selectedTemplate}
+          photoUrl={photoUrl}
+        />
+      </ScaledPreview>
     </div>
   );
 }
