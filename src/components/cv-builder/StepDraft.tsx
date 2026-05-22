@@ -54,6 +54,7 @@ export default function StepDraft() {
             gapResponses: state.gapAnalysis.responses,
             template: state.selectedTemplate,
             typeOption: state.typeOption,
+            uploadedFiles: state.uploadedFiles,
           },
         });
         if (fnError) throw fnError;

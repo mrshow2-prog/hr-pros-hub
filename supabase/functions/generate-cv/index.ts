@@ -1,51 +1,31 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
+import mammoth from "npm:mammoth@1.8.0";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const LOVABLE_MODEL = "google/gemini-3-flash-preview";
 
-const SYSTEM_PROMPT = `You are an expert CV writer. Using the original CV text, the gap analysis responses, and the candidate's target details, produce a fully rewritten, ATS-optimised CV.
-Rules:
-- Rewrite every bullet point to lead with a strong action verb and include a measurable outcome where possible
-- Calibrate language and depth to the seniority level
-- Tailor the professional summary to the target roles and function
-- For Skills-based or Hybrid CV type, produce competency clusters instead of or alongside chronological experience
-- For each rewritten bullet, include the original text and a one-line explanation of what changed and why
-Return ONLY a JSON object with no markdown, no explanation, no code fences, with this structure:
-{
-  summary: string,
-  experience: [{
-    id: string,
-    jobTitle: string,
-    company: string,
-    location: string,
-    from: string,
-    to: string,
-    bullets: [{
-      id: string,
-      original: string,
-      rewritten: string,
-      explanation: string
-    }]
-  }],
-  skills: string[],
-  education: [{
-    id: string,
-    institution: string,
-    qualification: string,
-    year: string
-  }],
-  competencyClusters: [{
-    id: string,
-    title: string,
-    items: string[]
-  }],
-  languages: [{
-    language: string,
-    proficiency: string
-  }]
-}`;
+const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
+
+What you SHOULD do:
+- Rewrite weak bullet points with stronger verbs and better framing
+- Add metrics only where they already exist in the CV — do not invent numbers
+- Write a summary grounded in the person's actual background
+- Calibrate language to the seniority and target role
+- Extract the actual name, contact details, companies, dates, and locations from the CV
+
+What you must NEVER do:
+- Invent company names
+- Invent metrics or percentages not in the CV
+- Change locations
+- Change dates
+- Add roles that do not exist in the CV
+- Use placeholder names like 'Tech Solutions Inc'
+
+Return ONLY a valid JSON object with no markdown and no code fences.`;
 
 function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
@@ -55,10 +35,16 @@ const CV_TOOL_SCHEMA = {
   type: "function" as const,
   function: {
     name: "return_rewritten_cv",
-    description: "Return the fully rewritten CV in the requested structure.",
+    description: "Return the fully rewritten CV grounded in the provided CV text.",
     parameters: {
       type: "object",
       properties: {
+        name: { type: "string" },
+        jobTitle: { type: "string" },
+        email: { type: "string" },
+        phone: { type: "string" },
+        location: { type: "string" },
+        linkedIn: { type: "string" },
         summary: { type: "string" },
         experience: {
           type: "array",
@@ -131,8 +117,20 @@ const CV_TOOL_SCHEMA = {
           },
         },
       },
-      required: ["summary", "experience", "skills", "education", "competencyClusters", "languages"],
-      additionalProperties: false,
+      required: [
+        "name",
+        "jobTitle",
+        "email",
+        "phone",
+        "location",
+        "linkedIn",
+        "summary",
+        "experience",
+        "skills",
+        "education",
+        "languages",
+      ],
+      additionalProperties: true,
     },
   },
 };
@@ -145,6 +143,89 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 2500
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  try {
+    if (ext === "pdf") {
+      const pdf = await getDocumentProxy(bytes);
+      const { text } = await extractText(pdf, { mergePages: true });
+      return Array.isArray(text) ? text.join("\n") : text;
+    }
+    if (ext === "docx") {
+      const { value } = await mammoth.extractRawText({ buffer: bytes });
+      return value ?? "";
+    }
+    if (ext === "doc") {
+      return new TextDecoder().decode(bytes);
+    }
+  } catch (e) {
+    console.error(`Extract failed for ${name}:`, (e as Error).message);
+  }
+  return "";
+}
+
+function buildUserMessage(parsedText: string, intent: any, gapResponses: any) {
+  const targetRoles = Array.isArray(intent?.targetRoles)
+    ? intent.targetRoles.join(", ")
+    : intent?.targetRoles ?? intent?.targetRole ?? "";
+  const functionArea = intent?.function ?? intent?.functionArea ?? "";
+  const industry = intent?.industry ?? intent?.targetIndustry ?? "Not industry-specific";
+
+  return `CV TEXT (use this as your only source of truth):
+---
+${parsedText}
+---
+
+TARGET ROLES: ${targetRoles}
+FUNCTION: ${functionArea}
+SENIORITY: ${intent?.seniority ?? ""}
+INDUSTRY: ${industry}
+CV TYPE: ${intent?.cvType ?? ""}
+TONE: ${intent?.tone ?? ""}
+GAP RESPONSES: ${JSON.stringify(gapResponses ?? {})}
+
+Return ONLY a valid JSON object, no markdown, no code fences, matching this exact structure:
+{
+  "name": string,
+  "jobTitle": string,
+  "email": string,
+  "phone": string,
+  "location": string,
+  "linkedIn": string,
+  "summary": string,
+  "experience": [{
+    "id": string,
+    "jobTitle": string,
+    "company": string,
+    "location": string,
+    "from": string,
+    "to": string,
+    "bullets": [{
+      "id": string,
+      "original": string,
+      "rewritten": string,
+      "explanation": string
+    }]
+  }],
+  "skills": [string],
+  "education": [{
+    "id": string,
+    "institution": string,
+    "qualification": string,
+    "year": string
+  }],
+  "competencyClusters": [{
+    "id": string,
+    "title": string,
+    "items": [string]
+  }],
+  "languages": [{
+    "language": string,
+    "proficiency": string
+  }]
+}`;
 }
 
 async function generateCVWithLovableAI(userMessage: string) {
@@ -188,7 +269,7 @@ async function generateCVWithLovableAI(userMessage: string) {
 }
 
 function adaptToClientShape(ai: any, intent: any) {
-  const role =
+  const fallbackRole =
     intent?.targetRoles?.[0] || intent?.targetRole || "Professional";
   const experience = (ai.experience ?? []).map((e: any, i: number) => ({
     id: e.id ?? `exp-${i + 1}`,
@@ -224,12 +305,12 @@ function adaptToClientShape(ai: any, intent: any) {
 
   return {
     contact: {
-      name: "",
-      jobTitle: role,
-      email: "",
-      phone: "",
-      location: "",
-      linkedinUrl: "",
+      name: ai.name ?? "",
+      jobTitle: ai.jobTitle ?? fallbackRole,
+      email: ai.email ?? "",
+      phone: ai.phone ?? "",
+      location: ai.location ?? "",
+      linkedinUrl: ai.linkedIn ?? ai.linkedinUrl ?? "",
       photoPath: null,
     },
     summary: ai.summary ?? "",
@@ -255,18 +336,53 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const parsedText: string = body.parsedText ?? "";
+    let parsedText: string = body.parsedText ?? "";
     const intent = body.intentForm ?? {};
     const gapResponses = body.gapResponses ?? body.gapAnalysis?.responses ?? {};
+    const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
 
-    const userMessage = `CV TEXT: ${parsedText}
-TARGET ROLES: ${JSON.stringify(intent.targetRoles ?? intent.targetRole ?? "")}
-FUNCTION: ${intent.function ?? ""}
-SENIORITY: ${intent.seniority ?? ""}
-INDUSTRY: ${intent.industry || "Not industry-specific"}
-CV TYPE: ${intent.cvType ?? ""}
-TONE: ${intent.tone ?? ""}
-GAP RESPONSES: ${JSON.stringify(gapResponses)}`;
+    console.log("generate-cv parsedText length:", parsedText?.length ?? 0);
+    console.log("generate-cv parsedText preview:", parsedText?.slice(0, 300));
+    console.log("generate-cv uploadedFiles:", uploadedFiles.map((f) => f.name));
+
+    const looksPlaceholder =
+      !parsedText ||
+      parsedText.length < 200 ||
+      /Parsed content will be extracted server-side/i.test(parsedText);
+
+    if (looksPlaceholder && uploadedFiles.length > 0) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const admin = createClient(supabaseUrl, serviceKey);
+
+      const chunks: string[] = [];
+      for (const f of uploadedFiles) {
+        const { data, error } = await admin.storage
+          .from("cv-builder-uploads")
+          .download(f.path);
+        if (error || !data) {
+          console.error("Download failed for", f.path, error);
+          continue;
+        }
+        const bytes = new Uint8Array(await data.arrayBuffer());
+        const text = await extractFromFile(bytes, f.name);
+        console.log(`Extracted ${text.length} chars from ${f.name}`);
+        if (text.trim().length > 0) chunks.push(text);
+      }
+      parsedText = chunks.join("\n\n---\n\n");
+      console.log("Server-side parsedText length:", parsedText.length);
+    }
+
+    if (!parsedText || parsedText.trim().length < 100) {
+      return new Response(
+        JSON.stringify({
+          error: "CV text too short or empty — PDF may not have parsed correctly",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+      );
+    }
+
+    const userMessage = buildUserMessage(parsedText, intent, gapResponses);
 
     const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
       method: "POST",
@@ -274,7 +390,7 @@ GAP RESPONSES: ${JSON.stringify(gapResponses)}`;
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
+        generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
       }),
     });
 
