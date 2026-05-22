@@ -190,11 +190,9 @@ Deno.serve(async (req) => {
     const functionArea = intent.function ?? intent.functionArea ?? "";
     const industry = intent.industry ?? intent.targetIndustry ?? "Not industry-specific";
 
-    const userMessage = `You are analyzing THIS SPECIFIC CV TEXT below. Do not generate generic gaps. Every gap you identify must quote an actual phrase or section from the CV text provided. If the CV already addresses something well, do not flag it as a gap.
+    const userMessage = `Analyze THIS SPECIFIC CV TEXT below on two levels as described in the system instructions.
 
-Focus only on what is genuinely missing or weak in THIS CV for THIS target role.
-
-CV TEXT (analyze this exactly):
+CV TEXT:
 ---
 ${parsedText}
 ---
@@ -205,13 +203,14 @@ SENIORITY: ${intent.seniority ?? ""}
 INDUSTRY: ${industry}
 CV TYPE: ${intent.cvType ?? ""}
 
-Return ONLY a JSON array. Each object must have:
+Return ONLY a JSON array of 6-8 gap objects. Each object must have:
 - id: string
 - category: string
-- example: string (must be an actual quote or specific observation from the CV text above — never fabricate a quote)
-- question: string (targeted to what's actually missing from this specific CV)
+- example: string (Level 1: actual quote from CV; Level 2: description of what's absent — never fabricate quotes)
+- question: string (helps the user surface real information to fill the gap)
+- layer: "writing" | "expectation"
 
-Do not wrap in markdown. Do not add explanation.`;
+Aim for a mix: ~3-4 writing gaps and ~3-4 expectation gaps. Do not wrap in markdown. Do not add explanation.`;
 
     const result = await callGeminiWithRetry(apiKey, {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
