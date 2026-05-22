@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import CVRenderer, { SAMPLE_CV } from "./templates/CVRenderer";
 import { ScaledPreview } from "./templates/shared";
 
+const SAMPLE_PHOTO_URL =
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=faces";
+
 interface TemplateMeta {
   id: TemplateId;
   name: string;
@@ -135,7 +138,7 @@ export default function StepTemplate() {
                 aria-label={`Preview ${t.name}`}
               >
                 <ScaledPreview scale={0.38} className="h-[380px] border-b border-ink/10">
-                  <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={null} />
+                  <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={SAMPLE_PHOTO_URL} />
                 </ScaledPreview>
                 {active && (
                   <div className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper shadow">
