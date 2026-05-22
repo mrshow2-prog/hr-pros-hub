@@ -98,11 +98,10 @@ export default function StepGaps() {
             </div>
             <div className="flex-1">
               <p className="font-syne text-lg text-ink">
-                Your rewritten CV is ready to build
+                Select your template, then unlock your full CV for AED 99
               </p>
               <p className="mt-1 font-dm text-sm text-ink/70">
-                Unlock the full CV Builder for AED 99 — one payment, yours to keep. Includes the
-                rewrite, ATS scoring, five templates, and PDF + Word export.
+                One payment, yours to keep. Includes the rewrite, ATS scoring, and PDF + Word export.
               </p>
             </div>
             <button
