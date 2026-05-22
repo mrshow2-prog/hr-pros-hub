@@ -193,30 +193,26 @@ Return ONLY a JSON array. Each object must have:
 
 Do not wrap in markdown. Do not add explanation.`;
 
-    const resp = await fetchWithTimeout(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-      }),
+    const result = await callGeminiWithRetry(apiKey, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
     });
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      console.error("Gemini error:", resp.status, t);
+    if (!(result instanceof Response)) {
       return new Response(
         JSON.stringify({
-          error: `Gemini API error ${resp.status}`,
-          status: resp.status,
-          details: t,
+          error: result.error.status
+            ? `Gemini API error ${result.error.status}`
+            : "Gemini request failed",
+          status: result.error.status,
+          details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    const data = await resp.json();
+    const data = await result.json();
     const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
     let gaps: unknown;
