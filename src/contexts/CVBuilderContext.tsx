@@ -216,6 +216,7 @@ const buildInitialState = (): CVBuilderState => {
     currentStep: 1,
     uploadedFiles: [],
     parsedText: "",
+    photoPath: null,
     intentForm: defaultIntent,
     gapAnalysis: { gaps: [], responses: {} },
     paymentStatus: "unpaid",
