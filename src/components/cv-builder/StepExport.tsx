@@ -1,14 +1,68 @@
-import { FileDown, FileText, Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { FileDown, FileText, Calendar, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
+import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
+import CVRenderer from "./templates/CVRenderer";
+import { exportCVToDocx, exportNodeToPdf, slugify } from "@/lib/cvExport";
 
 export default function StepExport() {
-  const { setStep, resetSession } = useCVBuilder();
+  const { state, setStep, resetSession } = useCVBuilder();
+  const printRef = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState<"pdf" | "docx" | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
-  const handleDownload = (format: "pdf" | "docx") => {
-    // Real export will be wired to a server function. For now, just notify.
-    alert(`${format.toUpperCase()} export will be generated server-side.`);
+  const cv = state.generatedCV;
+  const template = state.selectedTemplate ?? "modern";
+  const baseName = slugify(cv?.contact.name || "cv");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!state.photoPath) {
+        setPhotoUrl(null);
+        return;
+      }
+      const { data } = await supabase.storage
+        .from("cv-builder-uploads")
+        .createSignedUrl(state.photoPath, 60 * 60);
+      if (active) setPhotoUrl(data?.signedUrl ?? null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [state.photoPath]);
+
+  const handlePdf = async () => {
+    if (!cv || !printRef.current) return;
+    setBusy("pdf");
+    try {
+      await exportNodeToPdf(printRef.current, `${baseName}-cv.pdf`);
+      toast.success("PDF downloaded");
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not generate PDF");
+    } finally {
+      setBusy(null);
+    }
   };
+
+  const handleDocx = async () => {
+    if (!cv) return;
+    setBusy("docx");
+    try {
+      await exportCVToDocx(cv, `${baseName}-cv.docx`);
+      toast.success("Word file downloaded");
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not generate Word file");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const disabled = !cv;
 
   return (
     <>
@@ -19,22 +73,38 @@ export default function StepExport() {
       />
 
       <div className="mx-auto max-w-2xl">
+        {disabled && (
+          <div className="mb-6 rounded-md border border-ink/15 bg-clay/40 p-4 font-dm text-sm text-ink/70">
+            No CV draft found. Go back to Step 6 to generate one first.
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <button
             type="button"
-            onClick={() => handleDownload("pdf")}
-            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna"
+            disabled={disabled || busy !== null}
+            onClick={handlePdf}
+            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FileDown className="mb-3 text-sienna" size={36} />
+            {busy === "pdf" ? (
+              <Loader2 className="mb-3 animate-spin text-sienna" size={36} />
+            ) : (
+              <FileDown className="mb-3 text-sienna" size={36} />
+            )}
             <p className="font-syne text-lg text-ink">Download PDF</p>
             <p className="mt-1 font-dm text-sm text-ink/60">For applications and emails</p>
           </button>
           <button
             type="button"
-            onClick={() => handleDownload("docx")}
-            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna"
+            disabled={disabled || busy !== null}
+            onClick={handleDocx}
+            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FileText className="mb-3 text-sienna" size={36} />
+            {busy === "docx" ? (
+              <Loader2 className="mb-3 animate-spin text-sienna" size={36} />
+            ) : (
+              <FileText className="mb-3 text-sienna" size={36} />
+            )}
             <p className="font-syne text-lg text-ink">Download Word</p>
             <p className="mt-1 font-dm text-sm text-ink/60">For recruiters who ask for .docx</p>
           </button>
@@ -75,6 +145,25 @@ export default function StepExport() {
           Start a fresh CV
         </button>
       </div>
+
+      {/* Offscreen full-size render used for PDF capture */}
+      {cv && (
+        <div
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: "-10000px",
+            top: 0,
+            width: "794px", // ~A4 width at 96dpi
+            background: "#ffffff",
+            pointerEvents: "none",
+          }}
+        >
+          <div ref={printRef}>
+            <CVRenderer cv={cv} template={template} photoUrl={photoUrl} />
+          </div>
+        </div>
+      )}
 
       <StepFooter onBack={() => setStep(6)} />
     </>
