@@ -33,10 +33,10 @@ export default function StepExport() {
   }, [state.photoPath]);
 
   const handlePdf = async () => {
-    if (!cv || !printRef.current) return;
+    if (!cv) return;
     setBusy("pdf");
     try {
-      await exportNodeToPdf(printRef.current, `${baseName}-cv.pdf`);
+      await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`);
       toast.success("PDF downloaded");
     } catch (e) {
       console.error(e);
@@ -50,7 +50,7 @@ export default function StepExport() {
     if (!cv) return;
     setBusy("docx");
     try {
-      await exportCVToDocx(cv, `${baseName}-cv.docx`);
+      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl);
       toast.success("Word file downloaded");
     } catch (e) {
       console.error(e);
