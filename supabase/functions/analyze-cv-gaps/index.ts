@@ -3,8 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import mammoth from "npm:mammoth@1.8.0";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are an expert CV consultant. You will be given the EXACT text of one candidate's CV plus their target role context. You must analyse THIS specific CV — never produce generic gaps. Every "example" field you return must be a real quote or specific observation from the CV text provided. If something is already addressed well, do NOT flag it. Return ONLY a JSON array (no markdown, no fences, no prose) of 4–6 objects with fields: id, category, example, question.`;
 
