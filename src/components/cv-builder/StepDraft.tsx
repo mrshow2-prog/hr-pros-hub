@@ -458,6 +458,8 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
       const { data, error } = await supabase.functions.invoke("generate-cv-section", {
         body: {
           roleId: exp.id,
+          jobTitle: exp.role ?? "",
+          company: exp.company ?? "",
           currentBullets: exp.bullets.map((b) => b.rewrite).filter(Boolean),
           originalBullets: exp.bullets.map((b) => b.original).filter(Boolean),
           intentForm: state.intentForm,
