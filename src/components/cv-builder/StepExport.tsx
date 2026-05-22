@@ -1,15 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FileDown, FileText, Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
-import CVRenderer from "./templates/CVRenderer";
-import { exportCVToDocx, exportNodeToPdf, slugify } from "@/lib/cvExport";
+import { exportCVToDocx, exportCVToPdf, slugify } from "@/lib/cvExport";
 
 export default function StepExport() {
   const { state, setStep, resetSession } = useCVBuilder();
-  const printRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<"pdf" | "docx" | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
@@ -35,10 +33,10 @@ export default function StepExport() {
   }, [state.photoPath]);
 
   const handlePdf = async () => {
-    if (!cv || !printRef.current) return;
+    if (!cv) return;
     setBusy("pdf");
     try {
-      await exportNodeToPdf(printRef.current, `${baseName}-cv.pdf`);
+      await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`);
       toast.success("PDF downloaded");
     } catch (e) {
       console.error(e);
@@ -52,7 +50,7 @@ export default function StepExport() {
     if (!cv) return;
     setBusy("docx");
     try {
-      await exportCVToDocx(cv, `${baseName}-cv.docx`);
+      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl);
       toast.success("Word file downloaded");
     } catch (e) {
       console.error(e);
@@ -146,24 +144,6 @@ export default function StepExport() {
         </button>
       </div>
 
-      {/* Offscreen full-size render used for PDF capture */}
-      {cv && (
-        <div
-          aria-hidden
-          style={{
-            position: "fixed",
-            left: "-10000px",
-            top: 0,
-            width: "794px", // ~A4 width at 96dpi
-            background: "#ffffff",
-            pointerEvents: "none",
-          }}
-        >
-          <div ref={printRef}>
-            <CVRenderer cv={cv} template={template} photoUrl={photoUrl} />
-          </div>
-        </div>
-      )}
 
       <StepFooter onBack={() => setStep(6)} />
     </>
