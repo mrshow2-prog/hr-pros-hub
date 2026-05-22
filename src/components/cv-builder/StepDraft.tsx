@@ -24,6 +24,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
+import CVRenderer from "./templates/CVRenderer";
+import { ScaledPreview } from "./templates/shared";
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
