@@ -41,10 +41,18 @@ async function urlToDataUrl(url: string): Promise<string | null> {
   }
 }
 
-async function urlToArrayBuffer(url: string): Promise<ArrayBuffer | null> {
+async function urlToImageData(
+  url: string,
+): Promise<{ buffer: ArrayBuffer; type: "png" | "jpg" | "gif" | "bmp" } | null> {
   try {
     const res = await fetch(url);
-    return await res.arrayBuffer();
+    const blob = await res.blob();
+    const mime = blob.type || "";
+    let type: "png" | "jpg" | "gif" | "bmp" = "png";
+    if (mime.includes("jpeg") || mime.includes("jpg") || /\.jpe?g(\?|$)/i.test(url)) type = "jpg";
+    else if (mime.includes("gif")) type = "gif";
+    else if (mime.includes("bmp")) type = "bmp";
+    return { buffer: await blob.arrayBuffer(), type };
   } catch {
     return null;
   }
