@@ -355,28 +355,25 @@ Deno.serve(async (req) => {
         }),
       });
     } catch (e) {
-      console.error("Gemini fetch threw, falling back to Lovable AI:", (e as Error).message);
-      const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
-      return new Response(JSON.stringify({ generatedCV }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      const msg = (e as Error).message;
+      console.error("Gemini fetch threw:", msg);
+      return new Response(
+        JSON.stringify({ error: `Gemini request failed: ${msg}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     if (!resp.ok) {
       const t = await resp.text();
       console.error("Gemini error:", resp.status, t);
-      if (resp.status === 429 || t.includes("RESOURCE_EXHAUSTED") || t.toLowerCase().includes("quota")) {
-        const generatedCV = adaptToClientShape(await generateCVWithLovableAI(userMessage), intent);
-        return new Response(JSON.stringify({ generatedCV }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-      return new Response(JSON.stringify({ error: "Gemini request failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Gemini API error ${resp.status}`,
+          status: resp.status,
+          details: t,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+      );
     }
 
     const data = await resp.json();
