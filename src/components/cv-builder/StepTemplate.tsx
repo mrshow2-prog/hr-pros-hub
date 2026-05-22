@@ -154,10 +154,10 @@ export default function StepTemplate() {
       </div>
 
       <StepFooter
-        onBack={() => setStep(4)}
-        onNext={() => setStep(6)}
+        onBack={() => setStep(3)}
+        onNext={() => setStep(5)}
         nextDisabled={!selected}
-        nextLabel="Generate my CV"
+        nextLabel="Continue to unlock"
       />
     </>
   );
