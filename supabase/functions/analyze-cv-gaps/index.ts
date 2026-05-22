@@ -75,37 +75,6 @@ async function extractFromFile(bytes: Uint8Array, name: string): Promise<string>
   return "";
 }
 
-async function generateGapsWithLovableAI(userMessage: string) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const resp = await fetchWithTimeout(LOVABLE_AI_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: LOVABLE_MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      tools: [GAPS_TOOL_SCHEMA],
-      tool_choice: { type: "function", function: { name: "return_cv_gaps" } },
-    }),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    console.error("Lovable AI fallback error:", resp.status, text);
-    throw new Error("AI fallback request failed");
-  }
-
-  const data = await resp.json();
-  const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  const content = data?.choices?.[0]?.message?.content;
-  const raw = args ?? content ?? "";
-  const parsed = JSON.parse(stripFences(raw));
-  return parsed.gaps ?? parsed;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
