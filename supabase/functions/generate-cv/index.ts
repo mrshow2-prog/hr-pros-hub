@@ -135,7 +135,7 @@ const CV_TOOL_SCHEMA = {
   },
 };
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 25000) {
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 90000) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
