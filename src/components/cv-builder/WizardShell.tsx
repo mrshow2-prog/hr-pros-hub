@@ -30,19 +30,29 @@ interface Props {
 }
 
 export default function WizardShell({ children, stepKey }: Props) {
-  const { state } = useCVBuilder();
+  const { state, resetSession } = useCVBuilder();
   const paid = state.paymentStatus === "paid";
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-paper text-ink">
       {/* Sticky progress */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/85 backdrop-blur">
         <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <p className="font-syne text-sm tracking-wide text-ink">CV Builder</p>
-            <p className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
-              Step {state.currentStep} of 7
-            </p>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(true)}
+                className="inline-flex items-center gap-1.5 font-dm text-[11px] uppercase tracking-wider2 text-ink/55 transition-colors hover:text-sienna"
+              >
+                <RotateCcw size={11} /> Start over
+              </button>
+              <p className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
+                Step {state.currentStep} of 7
+              </p>
+            </div>
           </div>
 
           <ol className="mt-3 flex items-center gap-1.5 sm:gap-2">
