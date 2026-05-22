@@ -1,70 +1,67 @@
-## Add retry + model fallback to Gemini edge functions
+## Redesign Step 6 bullets + add role-level AI actions
 
-When Gemini returns a transient error (503 UNAVAILABLE, 429, 500, or network/timeout), retry up to 3 attempts total before surfacing the error. On attempts 2 and 3, alternate to `gemini-2.5-flash-lite` so we don't keep hammering an overloaded `gemini-2.5-flash`.
+### 1. New edge function: `supabase/functions/generate-cv-section/index.ts`
 
-### Scope
+- Same Gemini pattern as the other functions: `GEMINI_API_KEY`, `GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]`, `RETRY_STATUSES`, and a local `callGeminiWithRetry` helper (3 attempts, model alternation, 800/1600 ms backoff, 60 s timeout).
+- CORS via `npm:@supabase/supabase-js@2/cors`.
+- Body shape:
+  ```
+  { roleId, currentBullets: string[], originalBullets: string[],
+    intentForm: { targetRoles, functionArea, targetIndustry, seniority, tone },
+    action: "condense" | "expand" | "tailor" }
+  ```
+- Per-action instruction:
+  - `condense` — merge/reduce to highest-impact (3-5 bullets).
+  - `expand` — depth + stronger framing (5-7 bullets), never invent numbers.
+  - `tailor` — optimise for the target role's keywords/seniority/tone.
+- Gemini `responseMimeType: application/json`, parsed to `{ bullets: string[] }`. Errors surfaced as `{ error, status, details }` (same shape as other functions) so the client UI can show a "high demand" message.
 
-Apply identical retry logic to all three Gemini edge functions:
-- `supabase/functions/generate-cv/index.ts`
-- `supabase/functions/analyze-cv-gaps/index.ts`
-- `supabase/functions/calculate-ats-score/index.ts`
+### 2. Context (`src/contexts/CVBuilderContext.tsx`)
 
-No client-side changes. No new Lovable AI fallback (per previous instruction).
+- Add `replaceBullets(experienceId, newRewrites: string[])` that overwrites a role's bullets, pairing by index to reuse existing bullet IDs (preserving the `original` reference where possible) and generating new IDs for extras. New ones get `original: ""` and `status: "edited"`.
+- Expose it through the context value alongside the existing bullet mutators.
 
-### Retry behavior
+### 3. `StepDraft.tsx` — redesign the Experience block
 
-Attempt sequence per request:
-1. Attempt 1 → `gemini-2.5-flash`
-2. Attempt 2 → `gemini-2.5-flash-lite` (wait ~800ms)
-3. Attempt 3 → `gemini-2.5-flash` (wait ~1600ms)
+Delete the current `BulletEditor` (old/new stacked + Accept/Edit/Revert) and rebuild as:
 
-Retry triggers (transient only):
-- HTTP status: 429, 500, 502, 503, 504
-- Fetch threw (timeout/abort/network)
+**Per role (`ExperienceCard`):**
 
-Do NOT retry on:
-- 4xx other than 429 (bad request, auth, etc.) — surface immediately
-- JSON parse failure of model output — surface immediately
+```
+Role fields (unchanged)
 
-After 3 failed attempts, return 502 with the last error's status + details (same shape as today, so `StepGaps.tsx` keeps surfacing the message).
+[▸ Original bullets from your CV]   ← collapsed by default
+   (when expanded: read-only <ul> of muted `bullet.original` strings)
 
-### Technical details
+[Show changes ▢]                    ← toggle, role-local
 
-Add a shared helper inside each function file (kept local — edge functions can't share modules cleanly):
+• Bullets (primary view, always editable):
+    <AutoTextarea> rewrite (autosave to context via updateBullet)
+       [Rewritten | Added | Unchanged]   ← tag pill, shown only if toggle on
+                                          [🗑]   ← subtle delete, right-aligned
 
-```ts
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
-const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+  [+ Add bullet]
 
-async function callGeminiWithRetry(apiKey: string, payload: unknown, timeoutMs: number) {
-  let lastErr: { status?: number; details: string } | null = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const model = GEMINI_MODELS[attempt % GEMINI_MODELS.length];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    try {
-      const resp = await fetchWithTimeout(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }, timeoutMs);
-      if (resp.ok) return resp;
-      const text = await resp.text();
-      lastErr = { status: resp.status, details: text };
-      console.error(`Gemini ${model} attempt ${attempt + 1} failed:`, resp.status, text);
-      if (!RETRY_STATUSES.has(resp.status)) break; // non-transient
-    } catch (e) {
-      lastErr = { details: (e as Error).message };
-      console.error(`Gemini ${model} attempt ${attempt + 1} threw:`, lastErr.details);
-    }
-    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
-  }
-  return { error: lastErr! };
-}
+  ───────────────────────────────
+  [Condense] · [Expand] · [Tailor to role]   ← subtle text buttons
+     (inline spinner + "Rewriting bullets…" while busy)
+     (one-line error under actions on failure)
 ```
 
-Replace the existing single `fetchWithTimeout(GEMINI_URL, …)` block in each function with a call to this helper. The `GEMINI_URL` constant is removed (model is chosen per attempt). The error response path stays the same shape: `{ error: "Gemini API error <status>", status, details }`.
+Tag computation:
+- has `original` and `rewrite !== original` → `Rewritten`
+- no `original` → `Added`
+- `rewrite === original` → `Unchanged`
+
+Implementation notes:
+- Drawer + "Show changes" use local `useState` per role. Smooth open via Tailwind transition (no new dependency).
+- Delete: `Trash2` icon-only, muted, right-aligned.
+- AI action handler invokes `generate-cv-section`, then calls `replaceBullets(exp.id, data.bullets)` on success. Only the active role shows the loading state — the rest of the page stays interactive. Errors render inline with the raw `details` as a `title` tooltip.
+- Remove `RotateCcw` / `Check` / `Pencil` / `ActionBtn` if they become unused after the rewrite.
 
 ### Out of scope
 
-- Streaming, Lovable AI gateway, model changes beyond flash/flash-lite.
-- Client UI changes (the existing error surfacing in `StepGaps.tsx` already shows `details`).
+- No template or renderer changes (rewrites are still what gets rendered/exported).
+- No changes to Step 3 (Gaps), no DB / persistence schema changes (bullet shape unchanged).
+- Toggle is per-role, not a global one across the whole CV.
+- No undo for Condense/Expand/Tailor (originals stay in the drawer; auto-save lets users navigate back).

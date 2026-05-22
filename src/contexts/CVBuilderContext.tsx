@@ -253,6 +253,7 @@ interface CVBuilderContextValue {
   addExperience: () => void;
   removeExperience: (expId: string) => void;
   updateBullet: (experienceId: string, bulletId: string, patch: Partial<CVBullet>) => void;
+  replaceBullets: (experienceId: string, newRewrites: string[]) => void;
   addBullet: (experienceId: string) => void;
   removeBullet: (experienceId: string, bulletId: string) => void;
   setSkills: (skills: string[]) => void;
@@ -428,6 +429,31 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
                   ),
                 },
           ),
+        })),
+      replaceBullets: (experienceId, newRewrites) =>
+        patchCV((cv) => ({
+          ...cv,
+          experience: cv.experience.map((exp) => {
+            if (exp.id !== experienceId) return exp;
+            const next: CVBullet[] = newRewrites.map((rewrite, i) => {
+              const prev = exp.bullets[i];
+              if (prev) {
+                return {
+                  ...prev,
+                  rewrite,
+                  status: prev.original && prev.original === rewrite ? "accepted" : "edited",
+                };
+              }
+              return {
+                id: newId("b"),
+                original: "",
+                rewrite,
+                explanation: "",
+                status: "edited",
+              };
+            });
+            return { ...exp, bullets: next };
+          }),
         })),
       addBullet: (experienceId) =>
         patchCV((cv) => ({
