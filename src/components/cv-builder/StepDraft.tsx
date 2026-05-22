@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, ChangeEvent, KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, ChangeEvent, KeyboardEvent } from "react";
 import {
   Check,
   RotateCcw,
@@ -40,44 +40,52 @@ export default function StepDraft() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (state.generatedCV) return;
-    let active = true;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error: fnError } = await supabase.functions.invoke("generate-cv", {
+  const runGeneration = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-cv", {
+        body: {
+          parsedText: state.parsedText,
+          intentForm: state.intentForm,
+          gapResponses: state.gapAnalysis.responses,
+          template: state.selectedTemplate,
+          typeOption: state.typeOption,
+          uploadedFiles: state.uploadedFiles,
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(`${data.error}${data.details ? ` — ${data.details}` : ""}`);
+      if (data?.generatedCV) {
+        setGeneratedCV(data.generatedCV);
+        const ats = await supabase.functions.invoke("calculate-ats-score", {
           body: {
-            parsedText: state.parsedText,
-            intentForm: state.intentForm,
-            gapResponses: state.gapAnalysis.responses,
-            template: state.selectedTemplate,
-            typeOption: state.typeOption,
-            uploadedFiles: state.uploadedFiles,
+            generatedCV: data.generatedCV,
+            targetRole: state.intentForm.targetRoles.join(", "),
           },
         });
-        if (fnError) throw fnError;
-        if (active && data?.generatedCV) {
-          setGeneratedCV(data.generatedCV);
-          const ats = await supabase.functions.invoke("calculate-ats-score", {
-            body: {
-              generatedCV: data.generatedCV,
-              targetRole: state.intentForm.targetRoles.join(", "),
-            },
-          });
-          if (ats.data?.atsScore) setAts(ats.data.atsScore);
-        }
-      } catch (err) {
-        console.error("CV generation failed", err);
-        if (active) setError("We couldn't generate the CV automatically right now. Please go back and try again in a moment.");
-      } finally {
-        if (active) setLoading(false);
+        if (ats.data?.atsScore) setAts(ats.data.atsScore);
       }
-    })();
-    return () => {
-      active = false;
-    };
+    } catch (err) {
+      console.error("CV generation failed", err);
+      setError((err as Error).message ?? "unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    state.parsedText,
+    state.intentForm,
+    state.gapAnalysis.responses,
+    state.selectedTemplate,
+    state.typeOption,
+    state.uploadedFiles,
+    setGeneratedCV,
+    setAts,
+  ]);
+
+  useEffect(() => {
+    if (state.generatedCV) return;
+    runGeneration();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -91,7 +99,27 @@ export default function StepDraft() {
         />
         {error ? (
           <div className="rounded-md border border-sienna/30 bg-clay/30 p-6 font-dm text-sm text-ink/70">
-            {error}
+            <p className="font-medium text-ink">We're experiencing high demand right now.</p>
+            <p className="mt-2">
+              Our AI couldn't rewrite your CV after several attempts. Please wait a few minutes and try again — your progress is saved.
+            </p>
+            <p className="mt-3 text-xs text-ink/50">Details: {error}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={runGeneration}
+                className="inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
+              >
+                <RefreshCw size={14} /> Retry generation
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep(5)}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                Back to template
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid gap-3">
