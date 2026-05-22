@@ -2,111 +2,104 @@ import { Check, ShieldCheck } from "lucide-react";
 import { useCVBuilder, type TemplateId, type TypeOption } from "@/contexts/CVBuilderContext";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
+import CVRenderer, { SAMPLE_CV } from "./templates/CVRenderer";
+import { ScaledPreview } from "./templates/shared";
 
-const TEMPLATES: { id: TemplateId; name: string; desc: string }[] = [
-  { id: "classic", name: "Classic", desc: "Timeless, serif headings, single column." },
-  { id: "modern", name: "Modern", desc: "Clean sans-serif, generous spacing." },
-  { id: "compact", name: "Compact", desc: "Dense but readable — perfect for 10+ years." },
-  { id: "skills-first", name: "Skills-first", desc: "Capabilities up top, then experience." },
-  { id: "executive", name: "Executive", desc: "Considered, restrained, board-ready." },
-];
-
-function Mock({ tpl, dark }: { tpl: TemplateId; dark: boolean }) {
-  const bg = dark ? "bg-ink" : "bg-paper";
-  const fg = dark ? "bg-paper/80" : "bg-ink/80";
-  const muted = dark ? "bg-paper/30" : "bg-ink/25";
-  const accent = "bg-sienna";
-
-  if (tpl === "skills-first") {
-    return (
-      <div className={cn("h-44 w-full rounded border border-ink/10 p-3", bg)}>
-        <div className={cn("h-2 w-1/2 rounded", fg)} />
-        <div className={cn("mt-1 h-1.5 w-1/3 rounded", muted)} />
-        <div className="mt-3 grid grid-cols-3 gap-1">
-          <div className={cn("h-3 rounded", accent)} />
-          <div className={cn("h-3 rounded", accent)} />
-          <div className={cn("h-3 rounded", accent)} />
-        </div>
-        <div className="mt-3 space-y-1">
-          <div className={cn("h-1.5 w-full rounded", muted)} />
-          <div className={cn("h-1.5 w-5/6 rounded", muted)} />
-          <div className={cn("h-1.5 w-4/6 rounded", muted)} />
-        </div>
-      </div>
-    );
-  }
-  if (tpl === "compact") {
-    return (
-      <div className={cn("h-44 w-full rounded border border-ink/10 p-3", bg)}>
-        <div className={cn("h-2 w-2/3 rounded", fg)} />
-        <div className="mt-2 space-y-0.5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className={cn("h-1 w-full rounded", muted)} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-  if (tpl === "executive") {
-    return (
-      <div className={cn("h-44 w-full rounded border border-ink/10 p-3", bg)}>
-        <div className="mx-auto h-3 w-1/2 rounded bg-sienna" />
-        <div className={cn("mx-auto mt-1 h-1.5 w-1/3 rounded", muted)} />
-        <div className={cn("my-3 h-px w-full", muted)} />
-        <div className="space-y-1">
-          <div className={cn("h-1.5 w-3/4 rounded", fg)} />
-          <div className={cn("h-1.5 w-full rounded", muted)} />
-          <div className={cn("h-1.5 w-5/6 rounded", muted)} />
-        </div>
-      </div>
-    );
-  }
-  if (tpl === "modern") {
-    return (
-      <div className={cn("flex h-44 w-full gap-2 rounded border border-ink/10 p-3", bg)}>
-        <div className="w-1/3 space-y-1">
-          <div className={cn("h-2 rounded", accent)} />
-          <div className={cn("h-1.5 rounded", muted)} />
-          <div className={cn("h-1.5 rounded", muted)} />
-        </div>
-        <div className="flex-1 space-y-1">
-          <div className={cn("h-2 w-2/3 rounded", fg)} />
-          <div className={cn("h-1.5 w-full rounded", muted)} />
-          <div className={cn("h-1.5 w-5/6 rounded", muted)} />
-          <div className={cn("h-1.5 w-4/6 rounded", muted)} />
-        </div>
-      </div>
-    );
-  }
-  // classic
-  return (
-    <div className={cn("h-44 w-full rounded border border-ink/10 p-3", bg)}>
-      <div className={cn("h-2.5 w-1/2 rounded", fg)} />
-      <div className={cn("mt-1 h-1.5 w-1/3 rounded", muted)} />
-      <div className={cn("my-2 h-px w-full", muted)} />
-      <div className="space-y-1">
-        <div className={cn("h-1.5 w-full rounded", muted)} />
-        <div className={cn("h-1.5 w-5/6 rounded", muted)} />
-        <div className={cn("h-1.5 w-2/3 rounded", muted)} />
-      </div>
-    </div>
-  );
+interface TemplateMeta {
+  id: TemplateId;
+  name: string;
+  badge: string;
+  description: string;
+  features: string[];
+  ats: number;
 }
+
+const TEMPLATES: TemplateMeta[] = [
+  {
+    id: "classic",
+    name: "Classic",
+    badge: "Classic",
+    description:
+      "Traditional single-column layout with formal typography. Perfect for conservative industries and senior positions.",
+    features: [
+      "Single column layout",
+      "Large name with circular photo",
+      "Traditional section headers",
+      "Dense, efficient use of space",
+    ],
+    ats: 95,
+  },
+  {
+    id: "modern",
+    name: "Modern",
+    badge: "Modern",
+    description:
+      "Clean contemporary design with generous spacing and accent bars. Ideal for creative and tech roles.",
+    features: [
+      "Left accent bars on sections",
+      "Square photo with rounded corners",
+      "Clean, generous white space",
+      "Contemporary typography",
+    ],
+    ats: 93,
+  },
+  {
+    id: "compact",
+    name: "Compact",
+    badge: "Compact",
+    description:
+      "Two-column layout maximising content visibility. Best for experienced professionals with extensive backgrounds.",
+    features: [
+      "Two-column main layout",
+      "Tighter line spacing",
+      "More content per page",
+      "Efficient use of space",
+    ],
+    ats: 92,
+  },
+  {
+    id: "skills-first",
+    name: "Skills-first",
+    badge: "Skills-First",
+    description:
+      "Highlights competencies before experience with pill-style tags. Perfect for career changers and skills-based roles.",
+    features: [
+      "Skills section prominently placed",
+      "Pill-style competency tags",
+      "Circular profile photo",
+      "Modern, accessible design",
+    ],
+    ats: 94,
+  },
+  {
+    id: "executive",
+    name: "Executive",
+    badge: "Executive",
+    description:
+      "Refined design with generous white space and strong typography. Designed for C-suite and senior leadership.",
+    features: [
+      "Large display typography",
+      "Prominent executive summary",
+      "Generous white space",
+      "Authoritative, refined feel",
+    ],
+    ats: 96,
+  },
+];
 
 export default function StepTemplate() {
   const { state, setTemplate, setTypeOption, setStep } = useCVBuilder();
   const selected = state.selectedTemplate;
-  const dark = state.typeOption === "dark";
 
   return (
     <>
       <StepHeader
         eyebrow="Step 4 · Template"
-        title="Pick a layout that fits the room"
-        subtitle="All five are ATS-friendly. The difference is tone and density — pick the one your reader expects."
+        title="Choose your CV template"
+        subtitle="Each template is ATS-friendly. The difference is tone, density, and the room your CV needs to walk into."
       />
 
-      <div className="mb-6 inline-flex rounded-md border border-ink/15 bg-paper p-1">
+      <div className="mb-8 inline-flex rounded-md border border-ink/15 bg-paper p-1">
         {(["light", "dark"] as TypeOption[]).map((t) => (
           <button
             key={t}
@@ -122,33 +115,73 @@ export default function StepTemplate() {
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {TEMPLATES.map((t) => {
           const active = selected === t.id;
           return (
-            <button
+            <div
               key={t.id}
-              type="button"
-              onClick={() => setTemplate(t.id)}
               className={cn(
-                "group relative rounded-md border bg-paper p-4 text-left transition-colors",
-                active ? "border-sienna ring-2 ring-sienna/20" : "border-ink/15 hover:border-ink/30",
+                "group flex flex-col overflow-hidden rounded-lg border-2 bg-paper transition-all",
+                active
+                  ? "border-sienna shadow-lg"
+                  : "border-transparent shadow-sm hover:-translate-y-1 hover:border-sienna/40 hover:shadow-md",
               )}
             >
-              {active && (
-                <div className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-sienna text-paper">
-                  <Check size={14} />
-                </div>
-              )}
-              <Mock tpl={t.id} dark={dark} />
-              <div className="mt-3 flex items-center justify-between">
-                <p className="font-syne text-base text-ink">{t.name}</p>
-                <span className="inline-flex items-center gap-1 rounded-full bg-olive/10 px-2 py-0.5 font-dm text-[10px] uppercase tracking-wider2 text-olive">
-                  <ShieldCheck size={10} /> ATS
+              <button
+                type="button"
+                onClick={() => setTemplate(t.id)}
+                className="relative block w-full"
+                aria-label={`Preview ${t.name}`}
+              >
+                <ScaledPreview scale={0.38} className="h-[380px] border-b border-ink/10">
+                  <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={null} />
+                </ScaledPreview>
+                {active && (
+                  <div className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper shadow">
+                    <Check size={14} />
+                  </div>
+                )}
+              </button>
+
+              <div className="flex flex-1 flex-col p-5">
+                <span className="mb-3 inline-block w-fit rounded bg-clay px-2.5 py-1 font-dm text-[10px] font-semibold uppercase tracking-wider2 text-sienna">
+                  {t.badge}
                 </span>
+                <h3 className="font-syne text-xl text-ink">{t.name}</h3>
+                <p className="mt-2 font-dm text-sm font-light text-ink/65">{t.description}</p>
+
+                <ul className="mt-4 space-y-1">
+                  {t.features.map((f) => (
+                    <li
+                      key={f}
+                      className="relative pl-5 font-dm text-[13px] font-light text-ink/80"
+                    >
+                      <span className="absolute left-0 font-bold text-sienna">•</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-5 flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTemplate(t.id)}
+                    className={cn(
+                      "w-full rounded px-5 py-3 font-dm text-sm font-semibold uppercase tracking-wider2 transition-colors",
+                      active
+                        ? "bg-ink text-paper"
+                        : "bg-sienna text-paper hover:opacity-90",
+                    )}
+                  >
+                    {active ? "Selected" : "Use this template"}
+                  </button>
+                  <div className="inline-flex items-center gap-1.5 font-dm text-xs font-medium text-olive">
+                    <ShieldCheck size={12} /> ATS Optimised {t.ats}%
+                  </div>
+                </div>
               </div>
-              <p className="mt-1 font-dm text-sm text-ink/60">{t.desc}</p>
-            </button>
+            </div>
           );
         })}
       </div>
