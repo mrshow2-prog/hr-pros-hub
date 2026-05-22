@@ -109,7 +109,7 @@ export default function StepGaps() {
               onClick={() => setStep(4)}
               className="hidden shrink-0 rounded-sm bg-sienna px-5 py-3 font-dm text-sm font-medium text-paper hover:opacity-90 sm:inline-flex"
             >
-              Unlock for AED 99
+              Choose template
             </button>
           </div>
           <button
@@ -117,7 +117,7 @@ export default function StepGaps() {
             onClick={() => setStep(4)}
             className="mt-4 w-full rounded-sm bg-sienna px-5 py-3 font-dm text-sm font-medium text-paper hover:opacity-90 sm:hidden"
           >
-            Unlock for AED 99
+            Choose template
           </button>
         </div>
       )}
