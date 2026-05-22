@@ -1,123 +1,109 @@
-# CV Builder — Architecture Scaffold
+## Goal
 
-Wire up the foundation for the AI-powered CV Builder. No UI yet — just route, state, edge function stubs, storage, and persistence.
+Replace the current schematic template thumbnails and the Step 6 contact-only photo block with a full **template-aware live CV renderer** that mirrors the 5 uploaded HTML references (Classic, Modern, Compact, Skills-First, Executive), and rebuild **Step 4 (Template Selection)** to use real scaled-down previews per the uploaded selector page.
 
-## 1. Route
+The 5 reference templates are A4 single-page CV designs that differ across:
+- Header layout (photo shape/size/position, contact placement)
+- Section header style (uppercase + border, left accent bar, plain, display-serif, two-column)
+- Body layout (single column vs 1.6fr/1fr two-column for Compact)
+- Bullet markers (disc, dot, arrow `→`, dash, square `▪`)
+- Skills rendering (two-col list, pill tags, vertical list, simple grid)
+- Section order (Skills-First puts Skills before Experience)
+- Density (Compact = tight, Executive = generous)
+- Typography mix (Fraunces display headings in Classic/Executive; DM Sans elsewhere)
 
-Add to `src/App.tsx`:
-- `/career-studio/cv-builder` → new `CvBuilder` page
-- `/ar/career-studio/cv-builder` → same page (Arabic mirror, consistent with existing pattern)
+---
 
-## 2. Placeholder page
+## Scope
 
-`src/pages/CvBuilder.tsx` — minimal page wrapped in `CVBuilderProvider`. Shows a confirmation card listing:
-- Current step (from context)
-- Wired sub-systems (context ✓, storage ✓, edge functions ✓, persistence ✓)
-- "UI coming next" note
+### 1. New shared CV renderer
+Create `src/components/cv-builder/templates/CVRenderer.tsx` that takes `{ cv, photoUrl, template, typeOption }` and renders the full CV using template-specific styling. Each of the 5 templates becomes a small layout component:
 
-Uses existing `SEO`, `SiteFooter`, brand tokens (`bg-paper`, `text-ink`, `font-syne`).
-
-## 3. State — `CVBuilderContext`
-
-`src/contexts/CVBuilderContext.tsx` — single provider holding the full wizard state:
-
-```ts
-type CVBuilderState = {
-  sessionId: string;                    // uuid, used for persistence + storage paths
-  currentStep: 1|2|3|4|5|6|7;
-  uploadedFiles: { path: string; name: string; size: number }[];
-  parsedText: string;
-  intentForm: {
-    targetRole: string;
-    targetIndustry: string;
-    seniority: "graduate"|"mid"|"senior"|"director"|"executive" | "";
-    cvType: "chronological"|"skills"|"hybrid" | "";
-    tone: "conservative"|"balanced"|"modern" | "";
-  };
-  gapAnalysis: {
-    gaps: { id: string; category: string; example: string; question: string }[];
-    responses: Record<string, string>;
-  };
-  paymentStatus: "unpaid"|"pending"|"paid";
-  selectedTemplate: "classic"|"modern"|"compact"|"skills-first"|"executive" | null;
-  typeOption: "light"|"dark";
-  generatedCV: {
-    summary: string;
-    experience: { id: string; company: string; role: string; period: string;
-      bullets: { id: string; original: string; rewrite: string; explanation: string; status: "accepted"|"edited"|"reverted" }[] }[];
-    skills: string[];
-    education: { id: string; institution: string; qualification: string; period: string }[];
-    competencyClusters?: { id: string; title: string; items: string[] }[];
-  } | null;
-  atsScore: {
-    overall: number;
-    keywordMatch: number;
-    formatting: { label: string; pass: boolean }[];
-    readability: number;
-  } | null;
-};
+```
+src/components/cv-builder/templates/
+  CVRenderer.tsx          // dispatcher
+  TemplateClassic.tsx
+  TemplateModern.tsx
+  TemplateCompact.tsx
+  TemplateSkillsFirst.tsx
+  TemplateExecutive.tsx
+  shared.tsx              // small subcomponents (Section, Bullet, etc.)
 ```
 
-Exposed actions: `setStep`, `patchIntent`, `setGaps`, `setGapResponse`, `setPayment`, `setTemplate`, `setTypeOption`, `setGeneratedCV`, `updateBullet`, `setAts`, `resetSession`.
+All styling uses Tailwind + the existing semantic tokens (`bg-paper`, `text-ink`, `text-sienna`, `border-ink/...`, `bg-clay`, `font-syne`, `font-dm`). No raw hex.
 
-Persistence: debounced (1s) upsert into `cv_builder_sessions` keyed by `sessionId`. On mount, hydrate from Supabase if a `cv_builder_session_id` is found in `localStorage`; otherwise create a new uuid.
+Mapping from the uploaded `--ps-*` variables → existing tokens:
+```
+--ps-ink         → text-ink
+--ps-sienna      → text-sienna / bg-sienna
+--ps-fg          → text-ink/85
+--ps-fg-muted    → text-ink/60
+--ps-clay        → bg-clay / border-clay
+--ps-stone       → border-stone
+--ps-border      → border-ink/10
+--ps-border-strong → border-ink/25
+--ps-font-display → font-syne (Fraunces-style display)
+--ps-font-body    → font-dm
+```
 
-## 4. Database — persistence table
+The renderer respects `cv.hiddenSections` (existing) and `state.intentForm.cvType` (Skills-First template visually elevates Skills regardless; competency clusters still only show for skills/hybrid).
 
-Migration creating `public.cv_builder_sessions`:
+### 2. Step 4 — Template selector rebuild (`StepTemplate.tsx`)
+Replace the abstract `<Mock />` schematics with **real scaled-down previews** of each template populated with sample data (same Ahmed Al-Mansouri sample from the references). Layout matches the uploaded `cv-template-selector.html`:
 
-| column | type | notes |
-|---|---|---|
-| `id` | uuid PK | matches `sessionId` |
-| `user_id` | uuid nullable | `auth.uid()` when signed in, null for anon |
-| `anon_token` | text nullable | for anonymous resume — random token stored in localStorage |
-| `state` | jsonb | full state blob |
-| `payment_status` | text | mirrored for fast lookup |
-| `stripe_session_id` | text nullable | for webhook reconciliation later |
-| timestamps |  | standard |
+- Page header: "Choose your CV template" + subtitle
+- Responsive 3-up grid of `template-card`s on desktop, 1-up on mobile
+- Each card: 
+  - Preview area (~400px tall, `bg-clay`) containing the real template at `scale(0.5)` and `pointer-events: none`, clipped with overflow hidden
+  - Body: small badge, name (font-syne), short description, 4-item feature list, primary "Use this template" button, ATS-optimised % chip
+- Selected card gets `border-sienna ring-2 ring-sienna/20`
+- Keep the existing light/dark toggle and ATS chip
+- Clicking the card selects; the button also selects + advances
 
-RLS:
-- Anonymous users: select/insert/update rows where `anon_token` matches a header/value sent from client (using a `select_by_token` RPC). Simplest first pass: allow anon select/insert/update with `anon_token IS NOT NULL` and require the client to filter by id. We can tighten later when auth is added.
-- Authenticated users: full access to their own rows (`user_id = auth.uid()`).
+Per-template metadata (badge, description, features, ATS %) is lifted verbatim from `cv-template-selector.html`.
 
-## 5. Storage
+### 3. Step 6 (Draft) — wire renderer into preview
+- Keep all existing edit controls (SectionShell, Field, AutoTextarea, add/remove rows, ATS panel, autosave).
+- Replace the current `ContactBlock` photo+contact card and the inline preview blocks with a **two-pane layout**:
+  - **Left:** the form editors (unchanged behaviour, slightly slimmed)
+  - **Right (sticky on lg):** ATS panel + a **live `<CVRenderer />` preview** that renders the actual selected template (scaled to fit), so users see their edits in the chosen template in real time.
+- Photo: continue using existing `state.photoPath` + signed URL; pass the resolved `photoUrl` into `CVRenderer`. The renderer applies template-specific photo shape/size/position (per reference). Remove the duplicate `TEMPLATE_PHOTO` styling logic from `StepDraft` since the renderer owns it.
 
-Create bucket `cv-builder-uploads` (private). RLS policy: anyone can insert into a folder named after their `sessionId`; reads restricted to owners / edge functions (service role).
+### 4. No backend / context changes
+- `CVBuilderContext`, edge functions, routes, and DB schema stay as-is. `GeneratedCV` already covers every section the templates render.
+- `TemplateId` and the 5 template ids (`classic | modern | compact | skills-first | executive`) are already defined and match the uploaded files.
 
-## 6. Edge function stubs
-
-All three follow the existing `supabase/functions/*` pattern (Deno, CORS headers, JWT-optional). Each returns a typed mock payload now, real logic later.
-
-- `analyze-cv-gaps/index.ts` — input: `{ parsedText, intentForm }`. Output: `{ gaps: Gap[] }`. Stub returns 3–4 hardcoded gaps.
-- `generate-cv/index.ts` — input: `{ parsedText, intentForm, gapResponses, template, typeOption }`. Output: structured `generatedCV` shape above. Stub returns a small mock CV.
-- `calculate-ats-score/index.ts` — input: `{ generatedCV, targetRole }`. Output: `atsScore` shape. Stub returns a fixed 78/100 sample.
-
-`supabase/config.toml`: add `verify_jwt = false` blocks for the three new functions (consistent with other public-facing functions in this project).
-
-## 7. Out of scope (this task)
-
-- Any wizard UI / step components
-- Real Claude/Gemini calls (functions are stubs)
-- Stripe integration (payment gate)
-- PDF parsing (`parsedText` left empty for now — Step 1 UI will fill it)
-- Export to PDF/DOCX
+---
 
 ## Technical notes
 
-- Edge functions use `npm:@supabase/supabase-js@2/cors` for `corsHeaders` per project convention.
-- Context split into reducer + provider to keep re-renders narrow; selectors via small hooks (`useCvStep`, `useCvIntent`, etc.).
-- All new files use brand tokens only — no raw colors.
+- Templates render at a fixed A4-ish max-width (`max-w-[794px]`); in the Step 4 selector grid and the Step 6 preview pane they're wrapped in `overflow-hidden` containers using CSS `transform: scale(...)` + `transform-origin: top left` for thumbnailing. Width compensation via `w-[200%] h-[200%]` (matches reference pattern).
+- The Compact template uses CSS grid `grid-cols-[1.6fr_1fr]`; everything else is single column.
+- Skills-First uses `flex flex-wrap` pills (`bg-clay border border-ink/10 rounded-full px-3.5 py-1.5`); Classic / Executive / Modern use a 2-col grid with sienna bullets; Compact uses a vertical list in the right rail.
+- Email decode cruft (`__cf_email__`) and external images from the uploaded HTML are dropped — we read live data from `cv` and `photoUrl`.
+- All section labels are sourced from `cv` (and existing constants), not hardcoded.
 
-## Files to create
+---
 
-- `src/contexts/CVBuilderContext.tsx`
-- `src/pages/CvBuilder.tsx`
-- `supabase/functions/analyze-cv-gaps/index.ts`
-- `supabase/functions/generate-cv/index.ts`
-- `supabase/functions/calculate-ats-score/index.ts`
-- Migration: `cv_builder_sessions` table + `cv-builder-uploads` bucket + RLS
+## Out of scope
 
-## Files to edit
+- Changing PDF/Word export (Step 7) — that will need its own pass to render via these templates.
+- Editing the existing context, edge functions, or migrations.
+- Drag-to-reorder sections (already noted as MVP-optional, not in this change).
 
-- `src/App.tsx` — add route (EN + AR)
-- `supabase/config.toml` — add function blocks
+---
+
+## Files
+
+Created:
+- `src/components/cv-builder/templates/CVRenderer.tsx`
+- `src/components/cv-builder/templates/TemplateClassic.tsx`
+- `src/components/cv-builder/templates/TemplateModern.tsx`
+- `src/components/cv-builder/templates/TemplateCompact.tsx`
+- `src/components/cv-builder/templates/TemplateSkillsFirst.tsx`
+- `src/components/cv-builder/templates/TemplateExecutive.tsx`
+- `src/components/cv-builder/templates/shared.tsx`
+
+Edited:
+- `src/components/cv-builder/StepTemplate.tsx` — rebuild selector with real previews + reference copy
+- `src/components/cv-builder/StepDraft.tsx` — add live `<CVRenderer />` preview pane; remove duplicated photo-layout logic
