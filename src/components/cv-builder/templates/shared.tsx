@@ -91,14 +91,15 @@ export function ScaledPreview({
   className?: string;
 }) {
   const scaledWidth = pageWidth * scale;
-  const cropHeight = visibleHeight ?? Math.round(scaledWidth * 1.15);
+  const hasExplicitHeight = typeof visibleHeight === "number";
+  const cropHeight = hasExplicitHeight ? visibleHeight : Math.round(scaledWidth * 1.15);
   return (
     <div
       className={cn(
         "relative w-full overflow-hidden bg-clay/40 flex justify-center",
         className,
       )}
-      style={{ height: cropHeight }}
+      style={hasExplicitHeight ? { height: cropHeight } : undefined}
     >
       <div
         className="relative"
