@@ -1,8 +1,18 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Lock } from "lucide-react";
+import { Check, Lock, RotateCcw } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const STEPS = [
   { n: 1, label: "Upload", tier: "Free" },
