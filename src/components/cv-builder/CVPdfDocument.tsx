@@ -333,9 +333,9 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
 
   const showPhoto = !!photoDataUrl && cfg.photoStyle !== "none";
 
-  /* ---------- Sidebar (page 1) ---------- */
-  const Sidebar = (
-    <View style={styles.sidebar}>
+  /* ---------- Sidebar items (rendered inside a fixed-positioned wrapper) ---------- */
+  const SidebarItems = (
+    <>
       {showPhoto && (
         // eslint-disable-next-line jsx-a11y/alt-text
         <Image
@@ -400,8 +400,9 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
           ))}
         </View>
       )}
-    </View>
+    </>
   );
+
 
   /* ---------- Header band ---------- */
   const HeaderBand = !hidden.has("contact") && (
