@@ -35,7 +35,7 @@ export default function StepGaps() {
 
   useEffect(() => {
     if (state.gapAnalysis.gaps.length > 0) return;
-    runAnalysis();
+    runAnalysis("gemini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
