@@ -6,22 +6,27 @@ import mammoth from "npm:mammoth@1.8.0";
 const GEMINI_MODELS = ["gemini-2.5-flash-lite"];
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
-const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text.
+const SYSTEM_PROMPT = `You are rewriting a real person's CV. You must use ONLY the information provided in the CV TEXT below. Do not invent companies, job titles, dates, locations, metrics, names, or any other details. Every piece of information in your output must be traceable to the original CV text or the user's gap responses.
 
 What you SHOULD do:
 - Rewrite weak bullet points with stronger verbs and better framing
-- Add metrics only where they already exist in the CV — do not invent numbers
-- Write a summary grounded in the person's actual background
+- Add metrics only where they already exist in the CV or gap responses — do not invent numbers
+- Write a substantive professional summary (4–6 sentences, 80–130 words) grounded in the person's actual background, target role, seniority, and industry. Do NOT write a 1–2 sentence summary.
+- For EACH role, produce DETAILED bullet points covering responsibilities AND achievements present in the source CV. Default to EXPANDING content rather than condensing it. If a role mentions 6 responsibilities, write 6 bullets — do not collapse them into 1–2.
+- If the user provided gap responses confirming additional responsibilities ("Yes" answers), INCORPORATE those into the relevant role's bullets as new bullets.
 - Calibrate language to the seniority and target role
 - Extract the actual name, contact details, companies, dates, and locations from the CV
 
+PAGE LIMIT CALIBRATION:
+- If pageLimit is null/"unlimited": expand fully. Aim for 5–8 detailed bullets per role. Do not omit responsibilities.
+- If pageLimit is 1: aim for 2–3 high-impact bullets per role and a 2–3 sentence summary.
+- If pageLimit is 2: aim for 4–5 bullets per role and a 4-sentence summary.
+- If pageLimit is 3+: aim for 6–8 bullets per role with full responsibility coverage.
+
 What you must NEVER do:
-- Invent company names
-- Invent metrics or percentages not in the CV
-- Change locations
-- Change dates
-- Add roles that do not exist in the CV
+- Invent company names, metrics, percentages, locations, dates, or roles
 - Use placeholder names like 'Tech Solutions Inc'
+- Truncate a role to fewer bullets than the source CV provides unless pageLimit forces it
 
 Return ONLY a valid JSON object with no markdown and no code fences.`;
 
@@ -273,12 +278,26 @@ async function extractFromFile(bytes: Uint8Array, name: string): Promise<string>
   return "";
 }
 
-function buildUserMessage(parsedText: string, intent: any, gapResponses: any) {
+function buildUserMessage(parsedText: string, intent: any, gapResponses: any, pageLimit: number | null) {
   const targetRoles = Array.isArray(intent?.targetRoles)
     ? intent.targetRoles.join(", ")
     : intent?.targetRoles ?? intent?.targetRole ?? "";
   const functionArea = intent?.function ?? intent?.functionArea ?? "";
   const industry = intent?.industry ?? intent?.targetIndustry ?? "Not industry-specific";
+
+  const gapsPretty = (() => {
+    if (!gapResponses || typeof gapResponses !== "object") return "(none)";
+    const lines: string[] = [];
+    for (const [k, v] of Object.entries(gapResponses)) {
+      if (v && typeof v === "object") {
+        const o = v as any;
+        lines.push(`- ${k}: confirm=${o.confirm ?? ""}${o.details ? ` | details: ${o.details}` : ""}`);
+      } else if (v) {
+        lines.push(`- ${k}: ${v}`);
+      }
+    }
+    return lines.length ? lines.join("\n") : "(none)";
+  })();
 
   return `CV TEXT (use this as your only source of truth):
 ---
@@ -291,7 +310,10 @@ SENIORITY: ${intent?.seniority ?? ""}
 INDUSTRY: ${industry}
 CV TYPE: ${intent?.cvType ?? ""}
 TONE: ${intent?.tone ?? ""}
-GAP RESPONSES: ${JSON.stringify(gapResponses ?? {})}
+PAGE LIMIT: ${pageLimit === null || pageLimit === undefined ? "unlimited (expand fully)" : `${pageLimit} page(s)`}
+
+GAP RESPONSES (incorporate confirmed responsibilities into the appropriate role bullets; ignore "no" answers):
+${gapsPretty}
 
 Return ONLY a valid JSON object, no markdown, no code fences, matching this exact structure:
 {
@@ -302,36 +324,11 @@ Return ONLY a valid JSON object, no markdown, no code fences, matching this exac
   "location": string,
   "linkedIn": string,
   "summary": string,
-  "experience": [{
-    "id": string,
-    "jobTitle": string,
-    "company": string,
-    "location": string,
-    "from": string,
-    "to": string,
-    "bullets": [{
-      "id": string,
-      "original": string,
-      "rewritten": string,
-      "explanation": string
-    }]
-  }],
+  "experience": [{ "id": string, "jobTitle": string, "company": string, "location": string, "from": string, "to": string, "bullets": [{ "id": string, "original": string, "rewritten": string, "explanation": string }] }],
   "skills": [string],
-  "education": [{
-    "id": string,
-    "institution": string,
-    "qualification": string,
-    "year": string
-  }],
-  "competencyClusters": [{
-    "id": string,
-    "title": string,
-    "items": [string]
-  }],
-  "languages": [{
-    "language": string,
-    "proficiency": string
-  }]
+  "education": [{ "id": string, "institution": string, "qualification": string, "year": string }],
+  "competencyClusters": [{ "id": string, "title": string, "items": [string] }],
+  "languages": [{ "language": string, "proficiency": string }]
 }`;
 }
 
@@ -445,7 +442,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const userMessage = buildUserMessage(parsedText, intent, gapResponses);
+    const pageLimit: number | null =
+      typeof body.pageLimit === "number" ? body.pageLimit
+        : (intent?.pageLimit ?? null);
+    const userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
 
     const provider: string = body.provider ?? "gemini";
     console.log("generate-cv provider:", provider);
