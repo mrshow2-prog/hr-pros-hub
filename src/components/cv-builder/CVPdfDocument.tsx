@@ -470,23 +470,19 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
           }
         />
 
-        {/* Page-1 header band (only on page 1; main column flows from here) */}
-        {HeaderBand}
-
-        {/* Sidebar — fixed to page 1 only */}
+        {/* Sidebar — fixed to page 1 only (content blank on later pages, but page padding stays reserved for visual consistency) */}
         <View
           fixed
           render={({ pageNumber }) => (pageNumber === 1 ? Sidebar : <View />)}
         />
 
-        {/* Main column — page 1 leaves room for sidebar, continuation pages full width */}
-        <View
-          render={({ pageNumber }) => (
-            <View style={pageNumber === 1 ? styles.mainColPage1 : styles.mainColCont}>
-              {MainContent}
-            </View>
-          )}
-        />
+        {/* Page-1 header band */}
+        {HeaderBand}
+
+        {/* Main content — flows naturally across pages with the page-level
+            paddingLeft already reserving room for the sidebar */}
+        {MainContent}
+
 
 
         {/* Footer page number on every page */}
