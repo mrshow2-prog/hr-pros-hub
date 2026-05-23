@@ -68,7 +68,7 @@ function makeStyles(cfg: TemplateConfig) {
       fontFamily: cfg.headingFont,
       fontSize: 26,
       color: "#ffffff",
-      letterSpacing: cfg.headingUppercase ? 1.2 : 0,
+      letterSpacing: cfg.headingUppercase ? 0.4 : 0,
       textTransform: headingTransform,
       lineHeight: 1.15,
     },
@@ -78,7 +78,6 @@ function makeStyles(cfg: TemplateConfig) {
       color: "#ffffff",
       opacity: 0.92,
       marginTop: 6,
-      letterSpacing: 0.4,
     },
     contactLine: {
       fontFamily: cfg.bodyFont,
@@ -106,23 +105,29 @@ function makeStyles(cfg: TemplateConfig) {
     },
 
     /* ---------- two-column body (page 1) ---------- */
-    bodyRow: {
-      flexDirection: "row",
-      paddingTop: BODY_PAD_TOP,
-      paddingBottom: BODY_PAD_BOTTOM,
-    },
+    /* Sidebar is page-1-only (fixed). Main column flows naturally
+       across pages with a left margin reserved on page 1 only. */
     sidebar: {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      bottom: 0,
       width: SIDEBAR_WIDTH,
       backgroundColor: SIDEBAR_BG,
       paddingHorizontal: 18,
       paddingTop: 20,
       paddingBottom: 24,
-      minHeight: 600,
     },
-    mainCol: {
-      flex: 1,
-      paddingLeft: GUTTER,
+    mainColPage1: {
+      marginLeft: SIDEBAR_WIDTH + GUTTER,
+      paddingTop: BODY_PAD_TOP,
       paddingRight: BODY_PAD_X,
+      paddingBottom: BODY_PAD_BOTTOM,
+    },
+    mainColCont: {
+      paddingTop: 10,
+      paddingHorizontal: BODY_PAD_X,
+      paddingBottom: BODY_PAD_BOTTOM,
     },
 
     /* ---------- continuation pages ---------- */
@@ -248,14 +253,9 @@ function makeStyles(cfg: TemplateConfig) {
       alignSelf: "center",
     },
     sideContact: { fontSize: 9, color: SUBINK, marginBottom: 4, lineHeight: 1.5 },
-    sideSkill: {
-      fontSize: 9, color: SUBINK, marginBottom: 3.5, lineHeight: 1.45,
-      paddingLeft: 8, position: "relative",
-    },
-    sideSkillDot: {
-      position: "absolute", left: 0, top: 0,
-      fontSize: 9, color: cfg.primaryColor,
-    },
+    sideSkillRow: { flexDirection: "row", marginBottom: 3, alignItems: "flex-start" },
+    sideSkillDot: { fontSize: 9, color: cfg.primaryColor, width: 9 },
+    sideSkillText: { flex: 1, fontSize: 9, color: SUBINK, lineHeight: 1.45 },
     sideLangRow: {
       flexDirection: "row", justifyContent: "space-between",
       marginBottom: 3, fontSize: 9,
