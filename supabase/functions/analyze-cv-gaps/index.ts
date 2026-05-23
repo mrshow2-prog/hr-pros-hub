@@ -210,13 +210,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
-    }
+    // Provider key validation happens inside runProvider
+
 
     const body = await req.json().catch(() => ({}));
     let parsedText: string = body.parsedText ?? "";
