@@ -45,7 +45,7 @@ function makeStyles(cfg: TemplateConfig) {
       fontSize: 10,
       color: INK,
       lineHeight: 1.45,
-      paddingTop: 0,
+      paddingTop: 44,
       paddingBottom: BODY_PAD_BOTTOM,
       paddingLeft: SIDEBAR_WIDTH + GUTTER,
       paddingRight: BODY_PAD_X,
@@ -54,7 +54,8 @@ function makeStyles(cfg: TemplateConfig) {
     /* ---------- header band (page 1) ---------- */
     headerBand: {
       backgroundColor: cfg.primaryColor,
-      marginLeft: -(GUTTER),
+      marginTop: -44,
+      marginLeft: -GUTTER,
       marginRight: -BODY_PAD_X,
       paddingHorizontal: BODY_PAD_X,
       paddingTop: 26,
