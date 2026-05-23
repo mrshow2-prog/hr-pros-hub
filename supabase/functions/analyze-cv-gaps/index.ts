@@ -293,27 +293,26 @@ Return ONLY a JSON array of 6-8 gap objects. Each object must have:
 
 Aim for a mix: ~3-4 writing gaps and ~3-4 expectation gaps. Do not wrap in markdown. Do not add explanation.`;
 
-    const result = await callGeminiWithRetry(apiKey, {
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: "user", parts: [{ text: userMessage }] }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-    });
+    const provider: string = body.provider ?? "gemini";
+    console.log("analyze-cv-gaps provider:", provider);
 
-    if (!(result instanceof Response)) {
+    const result = await runProvider(provider, SYSTEM_PROMPT, userMessage, 25000);
+
+    if ("error" in result) {
       return new Response(
         JSON.stringify({
           error: result.error.status
-            ? `Gemini API error ${result.error.status}`
-            : "Gemini request failed",
+            ? `${provider} API error ${result.error.status}`
+            : `${provider} request failed`,
           status: result.error.status,
+          provider,
           details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    const data = await result.json();
-    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const raw: string = result.text;
 
     let gaps: unknown;
     try {
