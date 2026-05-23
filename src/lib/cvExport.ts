@@ -20,7 +20,7 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
-import CVPdfDocument from "@/components/cv-builder/CVPdfDocument";
+import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { getTemplateConfig } from "@/lib/cvTemplateConfig";
 import React from "react";
 
