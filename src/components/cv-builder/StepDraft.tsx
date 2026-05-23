@@ -108,10 +108,24 @@ export default function StepDraft() {
             <div className="mt-4 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={runGeneration}
+                onClick={() => runGeneration("gemini")}
                 className="inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
               >
-                <RefreshCw size={14} /> Retry generation
+                <RefreshCw size={14} /> Retry with Gemini
+              </button>
+              <button
+                type="button"
+                onClick={() => runGeneration("nvidia")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Nvidia
+              </button>
+              <button
+                type="button"
+                onClick={() => runGeneration("lovable")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Lovable AI
               </button>
               <button
                 type="button"
