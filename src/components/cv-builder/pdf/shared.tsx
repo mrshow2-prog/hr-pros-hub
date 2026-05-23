@@ -1,5 +1,5 @@
 import { Text, View, Image, StyleSheet } from "@react-pdf/renderer";
-import type { GeneratedCV, CVExperience } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, CVExperience, SectionKey } from "@/contexts/CVBuilderContext";
 import type { TemplateConfig } from "@/lib/cvTemplateConfig";
 
 export const INK = "#111827";
