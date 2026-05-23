@@ -1062,13 +1062,18 @@ function AtsPanel() {
 
   const rescore = async () => {
     setRescoring(true);
-    const { data } = await supabase.functions.invoke("calculate-ats-score", {
-      body: {
-        generatedCV: state.generatedCV,
-        targetRole: state.intentForm.targetRoles.join(", "),
-      },
-    });
-    if (data?.atsScore) setAts(data.atsScore);
+    const providers: Array<"gemini" | "lovable" | "nvidia"> = ["gemini", "lovable", "nvidia"];
+    for (const p of providers) {
+      const { data } = await supabase.functions.invoke("calculate-ats-score", {
+        body: {
+          generatedCV: state.generatedCV,
+          intentForm: state.intentForm,
+          targetRole: state.intentForm.targetRoles.join(", "),
+          provider: p,
+        },
+      });
+      if (data?.atsScore) { setAts(data.atsScore); break; }
+    }
     setRescoring(false);
   };
 
