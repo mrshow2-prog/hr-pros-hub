@@ -447,24 +447,36 @@ Deno.serve(async (req) => {
         : (intent?.pageLimit ?? null);
     const userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
 
-    const provider: string = body.provider ?? "gemini";
-    console.log("generate-cv provider:", provider);
+    const requestedProvider: string = body.provider ?? "gemini";
+    const all = ["gemini", "lovable", "nvidia"];
+    const chain = [requestedProvider, ...all.filter((p) => p !== requestedProvider)];
+    console.log("generate-cv provider chain:", chain.join(" -> "));
 
-    const result = await runProvider(provider, SYSTEM_PROMPT, userMessage, 90000);
+    let result: { text: string } | { error: { status?: number; details: string } } | null = null;
+    let usedProvider = requestedProvider;
+    const attempts: Record<string, string> = {};
+    for (const p of chain) {
+      usedProvider = p;
+      const timeoutMs = p === "nvidia" ? 180000 : 90000;
+      const r = await runProvider(p, SYSTEM_PROMPT, userMessage, timeoutMs);
+      if (!("error" in r)) { result = r; break; }
+      attempts[p] = `${r.error.status ?? ""} ${(r.error.details ?? "").slice(0, 300)}`;
+      console.error(`Provider ${p} failed, falling back:`, attempts[p]);
+      result = r;
+    }
 
-    if ("error" in result) {
+    if (!result || "error" in result) {
       return new Response(
         JSON.stringify({
-          error: result.error.status
-            ? `${provider} API error ${result.error.status}`
-            : `${provider} request failed`,
-          status: result.error.status,
-          provider,
-          details: result.error.details,
+          error: "All AI providers failed",
+          provider: usedProvider,
+          attempts,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
+    console.log("generate-cv succeeded with provider:", usedProvider);
+
 
     const raw: string = result.text;
 
