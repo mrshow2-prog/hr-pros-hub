@@ -13,6 +13,9 @@ import Profile from "./pages/Profile";
 import Tools from "./pages/Tools";
 import Career from "./pages/Career";
 import CvBuilder from "./pages/CvBuilder";
+import CvBuilderLogin from "./pages/cv-builder/CvBuilderLogin";
+import MyCvs from "./pages/cv-builder/MyCvs";
+import RequireCvAuth from "./components/cv-builder/RequireCvAuth";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 import ProfileRouter from "./pages/ProfileRouter";
@@ -52,8 +55,19 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/career" element={<Career />} />
-          <Route path="/career-studio/cv-builder" element={<CvBuilder />} />
-          <Route path="/ar/career-studio/cv-builder" element={<CvBuilder />} />
+          <Route path="/career-studio/cv-builder/login" element={<CvBuilderLogin />} />
+          <Route
+            path="/career-studio/cv-builder/my-cvs"
+            element={<RequireCvAuth><MyCvs /></RequireCvAuth>}
+          />
+          <Route
+            path="/career-studio/cv-builder"
+            element={<RequireCvAuth><CvBuilder /></RequireCvAuth>}
+          />
+          <Route
+            path="/ar/career-studio/cv-builder"
+            element={<RequireCvAuth><CvBuilder /></RequireCvAuth>}
+          />
           <Route path="/legal" element={<Legal />} />
           {/* Arabic mirrors — same components, language flipped via <LanguageSync> */}
           <Route path="/ar" element={<Index />} />
