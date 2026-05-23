@@ -472,11 +472,14 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
           }
         />
 
-        {/* Sidebar — fixed to page 1 only (content blank on later pages, but page padding stays reserved for visual consistency) */}
+        {/* Sidebar — fixed positioned panel; content only on page 1, panel only drawn on page 1.
+            Page-level paddingLeft reserves the column on all pages so the main column stays aligned. */}
         <View
           fixed
-          render={({ pageNumber }) => (pageNumber === 1 ? Sidebar : <View />)}
+          style={styles.sidebar}
+          render={({ pageNumber }) => (pageNumber === 1 ? SidebarItems : null)}
         />
+
 
         {/* Page-1 header band */}
         {HeaderBand}
