@@ -303,7 +303,12 @@ export async function exportCVToDocx(
   if (!hidden.has("languages") && cv.languages.length) {
     children.push(heading("Languages"));
     children.push(
-      para(cv.languages.map((l) => `${l.name} (${l.level})`).join(" · "), { size: 22 }),
+      para(
+        cv.languages
+          .map((l) => (l.level && l.level.trim() ? `${l.name} (${l.level})` : l.name))
+          .join(" · "),
+        { size: 22 },
+      ),
     );
   }
 
