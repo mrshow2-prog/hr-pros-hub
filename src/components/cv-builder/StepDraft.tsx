@@ -52,6 +52,7 @@ export default function StepDraft() {
           template: state.selectedTemplate,
           typeOption: state.typeOption,
           uploadedFiles: state.uploadedFiles,
+          pageLimit: state.intentForm.pageLimit ?? null,
           provider,
         },
       });
@@ -59,13 +60,19 @@ export default function StepDraft() {
       if (data?.error) throw new Error(`${data.error}${data.details ? ` — ${data.details}` : ""}`);
       if (data?.generatedCV) {
         setGeneratedCV(data.generatedCV);
-        const ats = await supabase.functions.invoke("calculate-ats-score", {
-          body: {
-            generatedCV: data.generatedCV,
-            targetRole: state.intentForm.targetRoles.join(", "),
-          },
-        });
-        if (ats.data?.atsScore) setAts(ats.data.atsScore);
+        // Try ATS with fallback chain: gemini → lovable → nvidia
+        const providers: Array<"gemini" | "lovable" | "nvidia"> = ["gemini", "lovable", "nvidia"];
+        for (const p of providers) {
+          const ats = await supabase.functions.invoke("calculate-ats-score", {
+            body: {
+              generatedCV: data.generatedCV,
+              intentForm: state.intentForm,
+              targetRole: state.intentForm.targetRoles.join(", "),
+              provider: p,
+            },
+          });
+          if (ats.data?.atsScore) { setAts(ats.data.atsScore); break; }
+        }
       }
     } catch (err) {
       console.error("CV generation failed", err);
@@ -74,14 +81,9 @@ export default function StepDraft() {
       setLoading(false);
     }
   }, [
-    state.parsedText,
-    state.intentForm,
-    state.gapAnalysis.responses,
-    state.selectedTemplate,
-    state.typeOption,
-    state.uploadedFiles,
-    setGeneratedCV,
-    setAts,
+    state.parsedText, state.intentForm, state.gapAnalysis.responses,
+    state.selectedTemplate, state.typeOption, state.uploadedFiles,
+    setGeneratedCV, setAts,
   ]);
 
   useEffect(() => {
@@ -424,14 +426,44 @@ function LivePreview() {
 /* ---------------- Summary ---------------- */
 
 function SummaryBlock({ summary }: { summary: string }) {
-  const { patchSummary } = useCVBuilder();
+  const { patchSummary, state } = useCVBuilder();
+  const [busy, setBusy] = useState<null | "expand" | "condense" | "rewrite">(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const run = async (action: "expand" | "condense" | "rewrite") => {
+    setBusy(action); setErr(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-cv-section", {
+        body: {
+          action,
+          kind: "summary",
+          currentSummary: summary,
+          intentForm: state.intentForm,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) { setErr(data.error); return; }
+      if (typeof data?.summary === "string" && data.summary.trim()) patchSummary(data.summary.trim());
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
-    <AutoTextarea
-      value={summary}
-      onChange={patchSummary}
-      placeholder="A short paragraph that frames your value to the roles you're targeting."
-      className="min-h-32"
-    />
+    <div className="space-y-3">
+      <AutoTextarea value={summary} onChange={patchSummary} placeholder="A short paragraph that frames your value to the roles you're targeting." className="min-h-32" />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-dm text-xs">
+        <AiActionBtn label="Expand" busy={busy === "expand"} disabled={!!busy} onClick={() => run("expand")} />
+        <span className="text-ink/25">·</span>
+        <AiActionBtn label="Condense" busy={busy === "condense"} disabled={!!busy} onClick={() => run("condense")} />
+        <span className="text-ink/25">·</span>
+        <AiActionBtn label="Rewrite" busy={busy === "rewrite"} disabled={!!busy} onClick={() => run("rewrite")} />
+        {busy && <span className="ml-2 inline-flex items-center gap-1.5 text-ink/55"><Loader2 size={12} className="animate-spin" /> Working…</span>}
+      </div>
+      {err && <p className="font-dm text-[11px] text-amber-700">{err}</p>}
+    </div>
   );
 }
 
