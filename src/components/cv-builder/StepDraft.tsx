@@ -40,7 +40,7 @@ export default function StepDraft() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runGeneration = useCallback(async () => {
+  const runGeneration = useCallback(async (provider: "gemini" | "nvidia" | "lovable" = "gemini") => {
     setLoading(true);
     setError(null);
     try {
@@ -52,6 +52,7 @@ export default function StepDraft() {
           template: state.selectedTemplate,
           typeOption: state.typeOption,
           uploadedFiles: state.uploadedFiles,
+          provider,
         },
       });
       if (fnError) throw fnError;
