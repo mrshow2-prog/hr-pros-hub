@@ -10,7 +10,7 @@ export default function StepGaps() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runAnalysis = useCallback(async () => {
+  const runAnalysis = useCallback(async (provider: "gemini" | "nvidia" | "lovable" = "gemini") => {
     setLoading(true);
     setError(null);
     try {
@@ -19,6 +19,7 @@ export default function StepGaps() {
           parsedText: state.parsedText,
           intentForm: state.intentForm,
           uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
+          provider,
         },
       });
       if (fnError) throw fnError;
