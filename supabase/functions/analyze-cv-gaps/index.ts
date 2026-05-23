@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import mammoth from "npm:mammoth@1.8.0";
 
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GEMINI_MODELS = ["gemini-2.5-flash-lite"];
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are a senior executive recruiter with deep knowledge of hiring standards across industries.

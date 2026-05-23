@@ -1,6 +1,6 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const GEMINI_MODELS = ["gemini-2.5-flash-lite"];
 const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 const SYSTEM_PROMPT = `You are an ATS (Applicant Tracking System) expert.
