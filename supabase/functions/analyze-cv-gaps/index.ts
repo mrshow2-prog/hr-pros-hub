@@ -102,6 +102,87 @@ async function callGeminiWithRetry(
   return { error: lastErr };
 }
 
+async function callOpenAICompat(
+  url: string,
+  apiKey: string,
+  model: string,
+  system: string,
+  user: string,
+  timeoutMs: number,
+): Promise<{ text: string } | { error: { status?: number; details: string } }> {
+  try {
+    const resp = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        temperature: 0.4,
+      }),
+    }, timeoutMs);
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error(`${model} call failed:`, resp.status, text);
+      return { error: { status: resp.status, details: text } };
+    }
+    const data = await resp.json();
+    const text: string = data?.choices?.[0]?.message?.content ?? "";
+    return { text };
+  } catch (e) {
+    return { error: { details: (e as Error).message } };
+  }
+}
+
+async function runProvider(
+  provider: string,
+  system: string,
+  user: string,
+  timeoutMs: number,
+): Promise<{ text: string } | { error: { status?: number; details: string } }> {
+  if (provider === "nvidia") {
+    const key = Deno.env.get("Nvidia_API");
+    if (!key) return { error: { details: "Nvidia_API not configured" } };
+    return await callOpenAICompat(
+      "https://integrate.api.nvidia.com/v1/chat/completions",
+      key,
+      "meta/llama-3.3-70b-instruct",
+      system,
+      user,
+      timeoutMs,
+    );
+  }
+  if (provider === "lovable") {
+    const key = Deno.env.get("LOVABLE_API_KEY");
+    if (!key) return { error: { details: "LOVABLE_API_KEY not configured" } };
+    return await callOpenAICompat(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      key,
+      "google/gemini-3-flash-preview",
+      system,
+      user,
+      timeoutMs,
+    );
+  }
+  // default: gemini
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!apiKey) return { error: { details: "GEMINI_API_KEY not configured" } };
+  const result = await callGeminiWithRetry(apiKey, {
+    systemInstruction: { parts: [{ text: system }] },
+    contents: [{ role: "user", parts: [{ text: user }] }],
+    generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
+  }, timeoutMs);
+  if (!(result instanceof Response)) return { error: result.error };
+  const data = await result.json();
+  const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  return { text };
+}
+
 async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   try {
@@ -129,13 +210,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
-    }
+    // Provider key validation happens inside runProvider
+
 
     const body = await req.json().catch(() => ({}));
     let parsedText: string = body.parsedText ?? "";
@@ -212,27 +288,26 @@ Return ONLY a JSON array of 6-8 gap objects. Each object must have:
 
 Aim for a mix: ~3-4 writing gaps and ~3-4 expectation gaps. Do not wrap in markdown. Do not add explanation.`;
 
-    const result = await callGeminiWithRetry(apiKey, {
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: "user", parts: [{ text: userMessage }] }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
-    });
+    const provider: string = body.provider ?? "gemini";
+    console.log("analyze-cv-gaps provider:", provider);
 
-    if (!(result instanceof Response)) {
+    const result = await runProvider(provider, SYSTEM_PROMPT, userMessage, 25000);
+
+    if ("error" in result) {
       return new Response(
         JSON.stringify({
           error: result.error.status
-            ? `Gemini API error ${result.error.status}`
-            : "Gemini request failed",
+            ? `${provider} API error ${result.error.status}`
+            : `${provider} request failed`,
           status: result.error.status,
+          provider,
           details: result.error.details,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
       );
     }
 
-    const data = await result.json();
-    const raw: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const raw: string = result.text;
 
     let gaps: unknown;
     try {

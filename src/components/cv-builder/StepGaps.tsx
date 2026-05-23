@@ -10,7 +10,7 @@ export default function StepGaps() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runAnalysis = useCallback(async () => {
+  const runAnalysis = useCallback(async (provider: "gemini" | "nvidia" | "lovable" = "gemini") => {
     setLoading(true);
     setError(null);
     try {
@@ -19,6 +19,7 @@ export default function StepGaps() {
           parsedText: state.parsedText,
           intentForm: state.intentForm,
           uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
+          provider,
         },
       });
       if (fnError) throw fnError;
@@ -34,7 +35,7 @@ export default function StepGaps() {
 
   useEffect(() => {
     if (state.gapAnalysis.gaps.length > 0) return;
-    runAnalysis();
+    runAnalysis("gemini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -77,13 +78,29 @@ export default function StepGaps() {
               Our AI couldn't analyse your CV after several attempts. Please wait a few minutes and try again — your progress is saved.
             </p>
             <p className="mt-3 text-xs text-ink/50">Details: {error}</p>
-            <button
-              type="button"
-              onClick={runAnalysis}
-              className="mt-4 inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
-            >
-              <RefreshCw size={14} /> Retry analysis
-            </button>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => runAnalysis("gemini")}
+                className="inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
+              >
+                <RefreshCw size={14} /> Retry with Gemini
+              </button>
+              <button
+                type="button"
+                onClick={() => runAnalysis("nvidia")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Nvidia
+              </button>
+              <button
+                type="button"
+                onClick={() => runAnalysis("lovable")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Lovable AI
+              </button>
+            </div>
           </div>
         )}
         {gaps.length > 0 && (() => {

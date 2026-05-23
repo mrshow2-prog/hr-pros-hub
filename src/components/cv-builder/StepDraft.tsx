@@ -40,7 +40,7 @@ export default function StepDraft() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runGeneration = useCallback(async () => {
+  const runGeneration = useCallback(async (provider: "gemini" | "nvidia" | "lovable" = "gemini") => {
     setLoading(true);
     setError(null);
     try {
@@ -52,6 +52,7 @@ export default function StepDraft() {
           template: state.selectedTemplate,
           typeOption: state.typeOption,
           uploadedFiles: state.uploadedFiles,
+          provider,
         },
       });
       if (fnError) throw fnError;
@@ -85,7 +86,7 @@ export default function StepDraft() {
 
   useEffect(() => {
     if (state.generatedCV) return;
-    runGeneration();
+    runGeneration("gemini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,10 +108,24 @@ export default function StepDraft() {
             <div className="mt-4 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={runGeneration}
+                onClick={() => runGeneration("gemini")}
                 className="inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
               >
-                <RefreshCw size={14} /> Retry generation
+                <RefreshCw size={14} /> Retry with Gemini
+              </button>
+              <button
+                type="button"
+                onClick={() => runGeneration("nvidia")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Nvidia
+              </button>
+              <button
+                type="button"
+                onClick={() => runGeneration("lovable")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Lovable AI
               </button>
               <button
                 type="button"
