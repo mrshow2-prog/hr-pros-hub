@@ -78,13 +78,29 @@ export default function StepGaps() {
               Our AI couldn't analyse your CV after several attempts. Please wait a few minutes and try again — your progress is saved.
             </p>
             <p className="mt-3 text-xs text-ink/50">Details: {error}</p>
-            <button
-              type="button"
-              onClick={runAnalysis}
-              className="mt-4 inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
-            >
-              <RefreshCw size={14} /> Retry analysis
-            </button>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => runAnalysis("gemini")}
+                className="inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
+              >
+                <RefreshCw size={14} /> Retry with Gemini
+              </button>
+              <button
+                type="button"
+                onClick={() => runAnalysis("nvidia")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Nvidia
+              </button>
+              <button
+                type="button"
+                onClick={() => runAnalysis("lovable")}
+                className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
+              >
+                <RefreshCw size={14} /> Try with Lovable AI
+              </button>
+            </div>
           </div>
         )}
         {gaps.length > 0 && (() => {
