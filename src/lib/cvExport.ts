@@ -20,7 +20,7 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
-import CVPdfDocument from "@/components/cv-builder/CVPdfDocument";
+import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { getTemplateConfig } from "@/lib/cvTemplateConfig";
 import React from "react";
 
@@ -76,7 +76,7 @@ export async function exportCVToPdf(
   fileName: string,
 ) {
   const photoDataUrl = photoUrl ? await urlToDataUrl(photoUrl) : null;
-  const doc = React.createElement(CVPdfDocument, { cv, template, photoDataUrl });
+  const doc = React.createElement(PdfRouter, { cv, template, photoDataUrl });
   // @ts-expect-error - pdf() accepts a Document element
   const blob = await pdf(doc).toBlob();
   saveAs(blob, fileName);
