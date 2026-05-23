@@ -352,9 +352,10 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
         <View style={styles.section}>
           <Text style={styles.sidebarSectionTitle}>Skills</Text>
           {cv.skills.map((s) => (
-            <Text key={s} style={styles.sideSkill}>
-              <Text style={styles.sideSkillDot}>▪ </Text>{s}
-            </Text>
+            <View key={s} style={styles.sideSkillRow}>
+              <Text style={styles.sideSkillDot}>▪</Text>
+              <Text style={styles.sideSkillText}>{s}</Text>
+            </View>
           ))}
         </View>
       )}
@@ -465,14 +466,24 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
           }
         />
 
-        {/* Page-1 header band */}
+        {/* Page-1 header band (only on page 1; main column flows from here) */}
         {HeaderBand}
 
-        {/* Two-column body (sidebar continues only on page 1, main flows) */}
-        <View style={styles.bodyRow}>
-          {Sidebar}
-          <View style={styles.mainCol}>{MainContent}</View>
-        </View>
+        {/* Sidebar — fixed to page 1 only */}
+        <View
+          fixed
+          render={({ pageNumber }) => (pageNumber === 1 ? Sidebar : <View />)}
+        />
+
+        {/* Main column — page 1 leaves room for sidebar, continuation pages full width */}
+        <View
+          render={({ pageNumber }) => (
+            <View style={pageNumber === 1 ? styles.mainColPage1 : styles.mainColCont}>
+              {MainContent}
+            </View>
+          )}
+        />
+
 
         {/* Footer page number on every page */}
         <Text
