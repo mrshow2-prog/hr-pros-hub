@@ -33,6 +33,8 @@ export interface IntentForm {
   seniority: Seniority;
   cvType: CVType;
   tone: Tone;
+  /** null = unlimited pages */
+  pageLimit: number | null;
 }
 
 export interface Gap {
@@ -43,9 +45,12 @@ export interface Gap {
   layer?: "writing" | "expectation";
 }
 
+/** Free text for writing-layer gaps, structured yes/no for expectation gaps */
+export type GapResponse = string | { confirm: "yes" | "no"; details?: string };
+
 export interface GapAnalysis {
   gaps: Gap[];
-  responses: Record<string, string>;
+  responses: Record<string, GapResponse>;
 }
 
 export interface CVBullet {
@@ -149,6 +154,7 @@ const defaultIntent: IntentForm = {
   seniority: "",
   cvType: "",
   tone: "",
+  pageLimit: null,
 };
 
 const emptyContact: ContactInfo = {
@@ -241,7 +247,7 @@ interface CVBuilderContextValue {
   setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
-  setGapResponse: (id: string, value: string) => void;
+  setGapResponse: (id: string, value: GapResponse) => void;
   setPayment: (status: PaymentStatus) => void;
   setTemplate: (id: TemplateId) => void;
   setTypeOption: (opt: TypeOption) => void;

@@ -450,6 +450,51 @@ export default function CVPdfDocument({ cv, template, photoDataUrl }: Props) {
           {experience.map((exp) => renderRole(exp, styles))}
         </View>
       )}
+
+      {/* Repeat key sections in the main column so they always show up with
+          their headlines, even after the page-1 sidebar ends. */}
+      {!hidden.has("skills") && cv.skills.length > 0 && (
+        <View style={styles.section} wrap>
+          <MainSectionTitle title="Skills" cfg={cfg} styles={styles} />
+          <Text style={styles.summary}>{cv.skills.join(" · ")}</Text>
+        </View>
+      )}
+
+      {!hidden.has("education") && cv.education.length > 0 && (
+        <View style={styles.section} wrap>
+          <MainSectionTitle title="Education" cfg={cfg} styles={styles} />
+          {cv.education.map((ed) => (
+            <View key={ed.id} style={styles.eduItem}>
+              <Text style={styles.eduTitle}>{ed.qualification}</Text>
+              {ed.institution ? <Text style={styles.eduSub}>{ed.institution}</Text> : null}
+              {ed.period ? <Text style={styles.eduPeriod}>{ed.period}</Text> : null}
+            </View>
+          ))}
+        </View>
+      )}
+
+      {cv.competencyClusters && cv.competencyClusters.length > 0 && !hidden.has("competencies") && (
+        <View style={styles.section} wrap>
+          <MainSectionTitle title="Core Competencies" cfg={cfg} styles={styles} />
+          {cv.competencyClusters.map((cl) => (
+            <View key={cl.id} style={{ marginBottom: 6 }}>
+              <Text style={{ fontFamily: cfg.headingFont, fontSize: 10.5, color: INK }}>{cl.title}</Text>
+              <Text style={styles.summary}>{(cl.items ?? []).join(" · ")}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {!hidden.has("languages") && cv.languages.length > 0 && (
+        <View style={styles.section} wrap>
+          <MainSectionTitle title="Languages" cfg={cfg} styles={styles} />
+          <Text style={styles.summary}>
+            {cv.languages
+              .map((l) => (l.level && l.level.trim() ? `${l.name} (${l.level.trim()})` : l.name))
+              .join(" · ")}
+          </Text>
+        </View>
+      )}
     </>
   );
 

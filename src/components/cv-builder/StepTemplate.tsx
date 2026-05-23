@@ -91,8 +91,9 @@ const TEMPLATES: TemplateMeta[] = [
 ];
 
 export default function StepTemplate() {
-  const { state, setTemplate, setTypeOption, setStep } = useCVBuilder();
+  const { state, setTemplate, setTypeOption, patchIntent, setStep } = useCVBuilder();
   const selected = state.selectedTemplate;
+  const pageLimit = state.intentForm.pageLimit;
 
   return (
     <>
@@ -102,20 +103,42 @@ export default function StepTemplate() {
         subtitle="Each template is ATS-friendly. The difference is tone, density, and the room your CV needs to walk into."
       />
 
-      <div className="mb-8 inline-flex rounded-md border border-ink/15 bg-paper p-1">
-        {(["light", "dark"] as TypeOption[]).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTypeOption(t)}
-            className={cn(
-              "rounded px-4 py-2 font-dm text-xs uppercase tracking-wider2 capitalize",
-              state.typeOption === t ? "bg-sienna text-paper" : "text-ink/65",
-            )}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="mb-6 flex flex-wrap items-center gap-6">
+        <div className="inline-flex rounded-md border border-ink/15 bg-paper p-1">
+          {(["light", "dark"] as TypeOption[]).map((t) => (
+            <button key={t} type="button" onClick={() => setTypeOption(t)}
+              className={cn("rounded px-4 py-2 font-dm text-xs uppercase tracking-wider2 capitalize",
+                state.typeOption === t ? "bg-sienna text-paper" : "text-ink/65")}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <span className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">Page limit</span>
+          <div className="inline-flex rounded-md border border-ink/15 bg-paper p-1">
+            {([
+              { v: 1, label: "1 page" },
+              { v: 2, label: "2 pages" },
+              { v: 3, label: "3 pages" },
+              { v: null, label: "No limit" },
+            ] as const).map((opt) => {
+              const active = pageLimit === opt.v;
+              return (
+                <button
+                  key={String(opt.v)}
+                  type="button"
+                  onClick={() => patchIntent({ pageLimit: opt.v })}
+                  className={cn("rounded px-3 py-2 font-dm text-xs",
+                    active ? "bg-sienna text-paper" : "text-ink/65 hover:text-ink")}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          <span className="font-dm text-[11px] text-ink/50">No limit = AI expands every responsibility into a full bullet</span>
+        </div>
       </div>
 
       <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
