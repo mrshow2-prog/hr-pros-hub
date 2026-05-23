@@ -102,6 +102,87 @@ async function callGeminiWithRetry(
   return { error: lastErr };
 }
 
+async function callOpenAICompat(
+  url: string,
+  apiKey: string,
+  model: string,
+  system: string,
+  user: string,
+  timeoutMs: number,
+): Promise<{ text: string } | { error: { status?: number; details: string } }> {
+  try {
+    const resp = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        temperature: 0.4,
+      }),
+    }, timeoutMs);
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error(`${model} call failed:`, resp.status, text);
+      return { error: { status: resp.status, details: text } };
+    }
+    const data = await resp.json();
+    const text: string = data?.choices?.[0]?.message?.content ?? "";
+    return { text };
+  } catch (e) {
+    return { error: { details: (e as Error).message } };
+  }
+}
+
+async function runProvider(
+  provider: string,
+  system: string,
+  user: string,
+  timeoutMs: number,
+): Promise<{ text: string } | { error: { status?: number; details: string } }> {
+  if (provider === "nvidia") {
+    const key = Deno.env.get("Nvidia_API");
+    if (!key) return { error: { details: "Nvidia_API not configured" } };
+    return await callOpenAICompat(
+      "https://integrate.api.nvidia.com/v1/chat/completions",
+      key,
+      "meta/llama-3.3-70b-instruct",
+      system,
+      user,
+      timeoutMs,
+    );
+  }
+  if (provider === "lovable") {
+    const key = Deno.env.get("LOVABLE_API_KEY");
+    if (!key) return { error: { details: "LOVABLE_API_KEY not configured" } };
+    return await callOpenAICompat(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      key,
+      "google/gemini-3-flash-preview",
+      system,
+      user,
+      timeoutMs,
+    );
+  }
+  // default: gemini
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  if (!apiKey) return { error: { details: "GEMINI_API_KEY not configured" } };
+  const result = await callGeminiWithRetry(apiKey, {
+    systemInstruction: { parts: [{ text: system }] },
+    contents: [{ role: "user", parts: [{ text: user }] }],
+    generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
+  }, timeoutMs);
+  if (!(result instanceof Response)) return { error: result.error };
+  const data = await result.json();
+  const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  return { text };
+}
+
 async function extractFromFile(bytes: Uint8Array, name: string): Promise<string> {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   try {
