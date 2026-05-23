@@ -22,8 +22,8 @@ export function contactItems(cv: GeneratedCV): string[] {
   ].filter(Boolean) as string[];
 }
 
-export function isHidden(cv: GeneratedCV, key: string) {
-  return new Set(cv.hiddenSections).has(key);
+export function isHidden(cv: GeneratedCV, key: SectionKey) {
+  return new Set<SectionKey>(cv.hiddenSections).has(key);
 }
 
 export function periodOf(exp: CVExperience) {
