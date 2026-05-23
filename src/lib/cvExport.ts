@@ -404,10 +404,21 @@ export async function exportCVToDocx(
     });
   }
 
-  /* ---------- Two-column table: sidebar + main ---------- */
-  const totalWidth = 9360; // 1" margins on US Letter
-  const sideW = 3000;
+  /* ---------- Page-1 layout table: sidebar + (header band + summary) ----------
+     After the table we render Experience as full-width paragraphs so page 2+
+     never shows an empty sidebar column. */
+  // A4: 11906 x 16838 DXA. With 1cm (567) margins → content width 10772.
+  const totalWidth = 10772;
+  const sideW = 3200;
   const mainW = totalWidth - sideW;
+
+  // Only put the header band + summary in the right cell of the table so the
+  // table stays short. Experience and additional sections go BELOW as full-width.
+  const tableMainChildren: Paragraph[] = [...headerParas];
+  if (!hidden.has("summary") && cv.summary) {
+    tableMainChildren.push(mainHeading("Professional Summary"));
+    tableMainChildren.push(para(cv.summary, { size: 20 }));
+  }
 
   const layoutTable = new Table({
     width: { size: totalWidth, type: WidthType.DXA },
@@ -428,14 +439,88 @@ export async function exportCVToDocx(
           new TableCell({
             width: { size: mainW, type: WidthType.DXA },
             borders: noBorders,
-            margins: { top: 80, bottom: 240, left: 280, right: 200 },
+            margins: { top: 80, bottom: 240, left: 280, right: 120 },
             verticalAlign: VerticalAlign.TOP,
-            children: mainChildren.length ? mainChildren : [blankLine()],
+            children: tableMainChildren.length ? tableMainChildren : [blankLine()],
           }),
         ],
       }),
     ],
   });
+
+  /* ---------- Full-width content below the table (Experience + extras) ---------- */
+  const belowTable: Paragraph[] = [];
+
+  if (!hidden.has("experience") && cv.experience.length) {
+    belowTable.push(mainHeading("Work Experience"));
+    cv.experience.forEach((exp, i) => {
+      const period = [exp.startDate, exp.endDate].filter(Boolean).join(" – ") || exp.period || "";
+      belowTable.push(
+        new Paragraph({
+          spacing: { before: i === 0 ? 120 : 220, after: 20 },
+          tabStops: [{ type: "right" as any, position: 10200 }],
+          children: [
+            new TextRun({ text: exp.role || "", bold: true, size: 22, font: headingFont }),
+            ...(period ? [new TextRun({ text: `\t${period}`, size: 18, color: "6B7280", font: bodyFont })] : []),
+          ],
+        }),
+      );
+      const sub = [exp.company, exp.location].filter(Boolean).join(" · ");
+      if (sub) {
+        belowTable.push(
+          new Paragraph({
+            spacing: { after: 60 },
+            children: [new TextRun({ text: sub, size: 19, color: primary, font: bodyFont, bold: true })],
+          }),
+        );
+      }
+      exp.bullets.forEach((b) => {
+        const text = b.rewrite || b.original;
+        if (!text || b.status === "reverted") return;
+        belowTable.push(
+          new Paragraph({
+            numbering: { reference: "cv-bullets", level: 0 },
+            spacing: { after: 40 },
+            children: [new TextRun({ text, size: 19, font: bodyFont })],
+          }),
+        );
+      });
+    });
+  }
+
+  // Education repeated in main flow with proper headline (also in sidebar)
+  if (!hidden.has("education") && cv.education.length) {
+    belowTable.push(mainHeading("Education"));
+    cv.education.forEach((ed) => {
+      belowTable.push(new Paragraph({
+        spacing: { before: 80, after: 20 },
+        children: [new TextRun({ text: ed.qualification, bold: true, size: 21, font: headingFont })],
+      }));
+      if (ed.institution) {
+        belowTable.push(new Paragraph({
+          spacing: { after: 20 },
+          children: [new TextRun({ text: ed.institution, size: 19, color: primary, font: bodyFont })],
+        }));
+      }
+      if (ed.period) {
+        belowTable.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: ed.period, size: 17, color: "6B7280", font: bodyFont })],
+        }));
+      }
+    });
+  }
+
+  if (cv.competencyClusters?.length) {
+    belowTable.push(mainHeading("Core Competencies"));
+    cv.competencyClusters.forEach((cl) => {
+      belowTable.push(new Paragraph({
+        spacing: { before: 80, after: 20 },
+        children: [new TextRun({ text: cl.title, bold: true, size: 20, font: headingFont })],
+      }));
+      belowTable.push(para((cl.items ?? []).join(" · "), { size: 19 }));
+    });
+  }
 
   const doc = new Document({
     creator: cv.contact.name || "CV Builder",
@@ -456,8 +541,9 @@ export async function exportCVToDocx(
       {
         properties: {
           page: {
-            size: { width: 12240, height: 15840 },
-            margin: { top: 720, bottom: 720, left: 720, right: 720 },
+            // A4: 11906 x 16838 DXA, ~1cm margins (567 DXA)
+            size: { width: 11906, height: 16838 },
+            margin: { top: 567, bottom: 567, left: 567, right: 567 },
           },
         },
         footers: {
@@ -466,20 +552,14 @@ export async function exportCVToDocx(
               new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
-                  new TextRun({
-                    text: `${cv.contact.name || ""}  ·  `,
-                    size: 16, color: "9CA3AF", font: bodyFont,
-                  }),
-                  new TextRun({
-                    children: ["Page ", PageNumber.CURRENT, " of ", PageNumber.TOTAL_PAGES],
-                    size: 16, color: "9CA3AF", font: bodyFont,
-                  }),
+                  new TextRun({ text: `${cv.contact.name || ""}  ·  `, size: 16, color: "9CA3AF", font: bodyFont }),
+                  new TextRun({ children: ["Page ", PageNumber.CURRENT, " of ", PageNumber.TOTAL_PAGES], size: 16, color: "9CA3AF", font: bodyFont }),
                 ],
               }),
             ],
           }),
         },
-        children: [layoutTable],
+        children: [layoutTable, ...belowTable],
       },
     ],
   });
