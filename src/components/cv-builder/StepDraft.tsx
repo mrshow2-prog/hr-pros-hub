@@ -86,7 +86,7 @@ export default function StepDraft() {
 
   useEffect(() => {
     if (state.generatedCV) return;
-    runGeneration();
+    runGeneration("gemini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
