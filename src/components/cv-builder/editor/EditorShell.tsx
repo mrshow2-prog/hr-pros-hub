@@ -18,6 +18,9 @@ import {
   Moon,
   Loader2,
   X,
+  PanelRightOpen,
+  PanelRightClose,
+  Sparkles,
 } from "lucide-react";
 import {
   ResizableHandle,
