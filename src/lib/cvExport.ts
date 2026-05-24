@@ -6,7 +6,7 @@ import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { buildDocxByTemplate } from "@/lib/docx/router";
 import { exportCompactPdf } from "@/lib/cv/exportCompactPdf";
 import { exportCompactDocx } from "@/lib/cv/exportCompactDocx";
-import { exportModernPdfme } from "@/lib/cv/pdfme/exportModernPdfme";
+import { exportCvPdfme } from "@/lib/cv/pdfme/exportModernPdfme";
 import React from "react";
 
 export function slugify(name: string, fallback = "cv") {
@@ -46,14 +46,7 @@ export async function exportCVToPdf(
   if (template === "compact") {
     return exportCompactPdf(cv, photoUrl, fileName);
   }
-  if (template === "modern") {
-    return exportModernPdfme(cv, photoUrl, fileName);
-  }
-  const photoDataUrl = photoUrl ? await urlToDataUrl(photoUrl) : null;
-  const doc = React.createElement(PdfRouter, { cv, template, photoDataUrl });
-  // @ts-expect-error - pdf() accepts a Document element
-  const blob = await pdf(doc).toBlob();
-  saveAs(blob, fileName);
+  return exportCvPdfme(cv, photoUrl, template, fileName);
 }
 
 /** Back-compat shim — no longer used by Step 7 export flow. */
