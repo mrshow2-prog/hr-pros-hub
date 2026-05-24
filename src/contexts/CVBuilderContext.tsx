@@ -123,12 +123,17 @@ export interface AtsJumpTarget {
   field?: string;
 }
 
+export type AtsAutoFix =
+  | { kind: "summary"; action: "expand" | "condense" | "rewrite" }
+  | { kind: "bullets"; expId: string; action: "rewrite" | "expand" | "condense" };
+
 export interface AtsFinding {
   id: string;
   severity: AtsSeverity;
   label: string;
   fix: string;
   jumpTo?: AtsJumpTarget;
+  autoFix?: AtsAutoFix;
 }
 
 export interface AtsScore {
