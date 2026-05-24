@@ -237,7 +237,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   if (keywords.length && rawMatch < 0.2) {
     const missing = keywords.filter((k) => !matched.includes(k)).slice(0, 8);
     findings.push({
-      id: id("kw"), severity: "warning",
+      id: "keywords:low", severity: "warning",
       label: `Low keyword coverage`,
       fix: `Weave in role-relevant terms where genuine. Consider: ${missing.join(", ")}.`,
       jumpTo: { section: "skills" },
@@ -249,7 +249,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   const readability = Math.round(Math.max(0, Math.min(100, 100 - Math.abs(readingEase - 55) * 1.1)));
   if (readingEase < 30) {
     findings.push({
-      id: id("read"), severity: "info", label: "Dense, hard-to-read prose",
+      id: "readability:dense", severity: "info", label: "Dense, hard-to-read prose",
       fix: "Shorten sentences and prefer active voice.",
       jumpTo: { section: "summary" },
       autoFix: { kind: "summary", action: "rewrite" },
@@ -262,7 +262,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   const limit = intent.pageLimit;
   if (limit && estPages > limit) {
     findings.push({
-      id: id("pages"), severity: "warning",
+      id: "pages:over", severity: "warning",
       label: `Estimated ${estPages} pages — over ${limit}-page limit`,
       fix: "Tighten older roles to 2–3 bullets and condense the summary.",
       autoFix: { kind: "summary", action: "condense" },
@@ -273,8 +273,9 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   // ── Aggregate (lifted baselines) ─────────────────────────────────
   const summaryScore = hasSummary ? 100 : Math.min(70, Math.round((cv.summary?.length ?? 0) / 80 * 70));
   const experienceScore = hasExperience
-    ? Math.round(60 + (lenPct * 0.25 + verbPct * 0.4 + quantPct * 0.35) * 40)
+    ? Math.round(65 + (lenPct * 0.35 + verbPct * 0.65) * 35)
     : 0;
+
   const skillsScore = hasSkills ? 100 : Math.min(85, cv.skills.length * 17);
   const educationScore = hasEducation ? 100 : 50;
 
