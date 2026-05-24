@@ -146,7 +146,7 @@ export async function exportModernPdfme(
         verticalAlignment: "top",
         lineHeight: lh,
         characterSpacing: opts.letterSpacing ?? 0,
-        fontName: opts.bold ? "Helvetica-Bold" : (opts.italic ? "Helvetica-Oblique" : "Helvetica"),
+
       } as Schema & { name: string },
       value,
     );
@@ -220,7 +220,7 @@ export async function exportModernPdfme(
         verticalAlignment: "top",
         lineHeight: 1.1,
         characterSpacing: 0.2,
-        fontName: "Helvetica-Bold",
+
       } as Schema & { name: string },
       cv.contact.name || "Your name",
     );
@@ -241,7 +241,7 @@ export async function exportModernPdfme(
           verticalAlignment: "top",
           lineHeight: 1.2,
           characterSpacing: 0,
-          fontName: "Helvetica",
+  
         } as Schema & { name: string },
         cv.contact.jobTitle,
       );
@@ -265,7 +265,7 @@ export async function exportModernPdfme(
           verticalAlignment: "top",
           lineHeight: 1.4,
           characterSpacing: 0,
-          fontName: "Helvetica",
+  
         } as Schema & { name: string },
         cText,
       );
@@ -309,7 +309,7 @@ export async function exportModernPdfme(
           verticalAlignment: "top",
           lineHeight: 1.25,
           characterSpacing: 0,
-          fontName: "Helvetica-Bold",
+  
         } as Schema & { name: string },
         exp.role || "",
       );
@@ -327,7 +327,7 @@ export async function exportModernPdfme(
             verticalAlignment: "top",
             lineHeight: 1.25,
             characterSpacing: 0,
-            fontName: "Helvetica",
+    
           } as Schema & { name: string },
           period,
         );
@@ -363,7 +363,7 @@ export async function exportModernPdfme(
             verticalAlignment: "top",
             lineHeight: lh,
             characterSpacing: 0,
-            fontName: "Helvetica",
+    
           } as Schema & { name: string },
           "•",
         );
@@ -380,7 +380,7 @@ export async function exportModernPdfme(
             verticalAlignment: "top",
             lineHeight: lh,
             characterSpacing: 0,
-            fontName: "Helvetica",
+    
           } as Schema & { name: string },
           txt,
         );
@@ -409,7 +409,7 @@ export async function exportModernPdfme(
           verticalAlignment: "top",
           lineHeight: 1.25,
           characterSpacing: 0,
-          fontName: "Helvetica-Bold",
+  
         } as Schema & { name: string },
         ed.qualification,
       );
@@ -427,7 +427,7 @@ export async function exportModernPdfme(
             verticalAlignment: "top",
             lineHeight: 1.25,
             characterSpacing: 0,
-            fontName: "Helvetica",
+    
           } as Schema & { name: string },
           ed.period,
         );
