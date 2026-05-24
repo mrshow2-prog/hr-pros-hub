@@ -14,90 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles_content: {
+      cv_builder_sessions: {
         Row: {
-          assistant_context: string
-          assistant_enabled: boolean
-          content: Json
           created_at: string
           id: string
-          og_image_url: string | null
-          owner_user_id: string | null
-          published: boolean
-          seo_description: string
-          seo_title: string
-          slug: string
+          payment_status: string
+          state: Json
           updated_at: string
+          user_id: string
         }
         Insert: {
-          assistant_context?: string
-          assistant_enabled?: boolean
-          content?: Json
           created_at?: string
           id?: string
-          og_image_url?: string | null
-          owner_user_id?: string | null
-          published?: boolean
-          seo_description?: string
-          seo_title?: string
-          slug: string
+          payment_status?: string
+          state?: Json
           updated_at?: string
+          user_id: string
         }
         Update: {
-          assistant_context?: string
-          assistant_enabled?: boolean
-          content?: Json
           created_at?: string
           id?: string
-          og_image_url?: string | null
-          owner_user_id?: string | null
-          published?: boolean
-          seo_description?: string
-          seo_title?: string
-          slug?: string
+          payment_status?: string
+          state?: Json
           updated_at?: string
-        }
-        Relationships: []
-      }
-      tools_leads: {
-        Row: {
-          created_at: string
-          id: string
-          output_text: string | null
-          tool_name: string
-          user_email: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          output_text?: string | null
-          tool_name: string
-          user_email?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          output_text?: string | null
-          tool_name?: string
-          user_email?: string | null
-        }
-        Relationships: []
-      }
-      tools_usage: {
-        Row: {
-          created_at: string
-          id: string
-          tool_name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          tool_name: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          tool_name?: string
+          user_id?: string
         }
         Relationships: []
       }
