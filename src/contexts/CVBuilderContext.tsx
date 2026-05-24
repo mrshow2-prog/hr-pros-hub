@@ -324,14 +324,14 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     saveTimer.current = window.setTimeout(async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id ?? null;
-      const { sessionId, anonToken, lastSavedAt, ...persisted } = state;
+      const { sessionId, anonToken: _anonToken, lastSavedAt, ...persisted } = state;
+      if (!userId) return; // auth required
       const { error } = await supabase.from("cv_builder_sessions").upsert(
         [
           {
             id: sessionId,
             user_id: userId,
-            anon_token: userId ? null : anonToken,
-            state: persisted as unknown as Record<string, unknown>,
+            state: persisted as unknown as any,
             payment_status: state.paymentStatus,
           },
         ],
