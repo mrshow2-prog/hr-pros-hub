@@ -436,9 +436,13 @@ function PreviewPane() {
 function AtsDrawer({
   onClose,
   onJump,
+  onAutoFix,
+  fixingId,
 }: {
   onClose: () => void;
   onJump: (f: AtsFinding) => void;
+  onAutoFix: (f: AtsFinding) => void;
+  fixingId: string | null;
 }) {
   const { state, setAts } = useCVBuilder();
   const score = state.atsScore;
