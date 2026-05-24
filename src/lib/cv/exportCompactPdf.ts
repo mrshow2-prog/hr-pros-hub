@@ -46,9 +46,10 @@ export async function exportCompactPdf(
   // Wait for fonts + images
   const doc = iframe.contentDocument!;
   try {
-    // @ts-expect-error - FontFaceSet may not be in lib types
-    await doc.fonts?.ready;
-  } catch {}
+    await (doc as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready;
+  } catch {
+    /* ignore */
+  }
   const imgs = Array.from(doc.images);
   await Promise.all(
     imgs.map((img) =>
