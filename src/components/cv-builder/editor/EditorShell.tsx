@@ -163,6 +163,7 @@ export default function EditorShell() {
     const af = finding.autoFix;
     if (!af || !state.generatedCV) return;
     setFixingId(finding.id);
+    let success = false;
     try {
       if (af.kind === "summary") {
         const { data, error } = await supabase.functions.invoke("generate-cv-section", {
@@ -176,6 +177,7 @@ export default function EditorShell() {
         if (error) throw error;
         if (typeof data?.summary === "string" && data.summary.trim()) {
           patchSummary(data.summary.trim());
+          success = true;
         }
       } else if (af.kind === "bullets") {
         const exp = state.generatedCV.experience.find((e) => e.id === af.expId);
@@ -196,14 +198,30 @@ export default function EditorShell() {
         if (error) throw error;
         if (Array.isArray(data?.bullets) && data.bullets.length) {
           replaceBullets(af.expId, data.bullets);
+          success = true;
         }
       }
     } catch (e) {
       console.error("Auto-fix failed", e);
     } finally {
       setFixingId(null);
+      if (success) {
+        setSuppressedIds((s) => {
+          const next = new Set(s);
+          next.add(finding.id);
+          return next;
+        });
+      }
     }
   }, [state.generatedCV, state.intentForm, patchSummary, replaceBullets]);
+
+  const handleRefresh = useCallback(() => {
+    if (!state.generatedCV) return;
+    setRefreshing(true);
+    setSuppressedIds(new Set());
+    setAts(scoreCv(state.generatedCV, state.intentForm));
+    setTimeout(() => setRefreshing(false), 500);
+  }, [state.generatedCV, state.intentForm, setAts]);
 
   // ── Loading / generation gate ────────────────────────────────
   if (loading || !state.generatedCV) {
