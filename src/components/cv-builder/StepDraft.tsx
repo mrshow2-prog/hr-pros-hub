@@ -742,7 +742,7 @@ function BulletRow({
   }
 
   return (
-    <li className="group flex items-start gap-2">
+    <li data-bullet-id={bullet.id} className="group flex items-start gap-2">
       <div className="flex-1">
         <AutoTextarea
           value={bullet.rewrite}
