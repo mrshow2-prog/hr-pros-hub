@@ -27,7 +27,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useCVBuilder, type SectionKey, type TemplateId, type AtsFinding } from "@/contexts/CVBuilderContext";
+import { useCVBuilder, type SectionKey, type TemplateId, type AtsFinding, type AtsAutoFix } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ContactBlock,
