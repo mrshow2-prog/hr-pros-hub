@@ -1,13 +1,9 @@
-import { pdf } from "@react-pdf/renderer";
 import { Packer } from "docx";
 import { saveAs } from "file-saver";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
-import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { buildDocxByTemplate } from "@/lib/docx/router";
-import { exportCompactPdf } from "@/lib/cv/exportCompactPdf";
 import { exportCompactDocx } from "@/lib/cv/exportCompactDocx";
 import { exportCvPdfme } from "@/lib/cv/pdfme/exportModernPdfme";
-import React from "react";
 
 export function slugify(name: string, fallback = "cv") {
   const s = (name || "")
@@ -17,21 +13,6 @@ export function slugify(name: string, fallback = "cv") {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return s || fallback;
-}
-
-async function urlToDataUrl(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
 }
 
 /* =========================================================

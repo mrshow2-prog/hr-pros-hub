@@ -1,0 +1,249 @@
+import { generate } from "@pdfme/generator";
+import { text, image, line, rectangle } from "@pdfme/schemas";
+import type { Template, Schema } from "@pdfme/common";
+import { saveAs } from "file-saver";
+
+/* ============================================================
+ * Shared pdfme builder utilities.
+ * All units are millimetres. Defaults sized for A4.
+ * ============================================================ */
+
+export const PAGE_W = 210;
+export const PAGE_H = 297;
+export const PT_PER_MM = 2.8346;
+export const ptToMm = (pt: number) => pt / PT_PER_MM;
+
+// Helvetica-ish average char width.
+const charWidthMm = (fontSizePt: number) => (fontSizePt * 0.50) / PT_PER_MM;
+
+export function wrapLines(text: string, widthMm: number, fontSizePt: number): string[] {
+  const lines: string[] = [];
+  const cw = charWidthMm(fontSizePt);
+  const maxChars = Math.max(6, Math.floor(widthMm / cw));
+  for (const para of (text || "").split(/\n/)) {
+    if (!para) { lines.push(""); continue; }
+    const words = para.split(/\s+/);
+    let cur = "";
+    for (const w of words) {
+      const next = cur ? cur + " " + w : w;
+      if (next.length <= maxChars) cur = next;
+      else {
+        if (cur) lines.push(cur);
+        if (w.length > maxChars) {
+          let rest = w;
+          while (rest.length > maxChars) {
+            lines.push(rest.slice(0, maxChars));
+            rest = rest.slice(maxChars);
+          }
+          cur = rest;
+        } else cur = w;
+      }
+    }
+    if (cur) lines.push(cur);
+  }
+  return lines.length ? lines : [""];
+}
+
+export function textHeightMm(text: string, widthMm: number, fontSizePt: number, lineHeight = 1.25) {
+  const n = wrapLines(text, widthMm, fontSizePt).length;
+  return n * ptToMm(fontSizePt) * lineHeight;
+}
+
+export async function urlToDataUrl(url: string): Promise<string | null> {
+  try {
+    const r = await fetch(url);
+    const b = await r.blob();
+    return await new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onloadend = () => res(fr.result as string);
+      fr.onerror = rej;
+      fr.readAsDataURL(b);
+    });
+  } catch { return null; }
+}
+
+export interface BuilderOpts {
+  margin?: number;
+  top?: number;
+  bottom?: number;
+}
+
+export interface TextOpts {
+  value: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  fontSize: number;
+  color?: string;
+  align?: "left" | "right" | "center";
+  lineHeight?: number;
+  spaceAfter?: number;
+  uppercase?: boolean;
+  letterSpacing?: number;
+  bgColor?: string;
+}
+
+export interface LineOpts {
+  x: number;
+  y: number;
+  width: number;
+  height?: number;
+  color: string;
+}
+
+export interface RectOpts {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  borderColor?: string;
+  borderWidth?: number;
+  radius?: number;
+}
+
+export interface PdfmeBuilder {
+  PAGE_W: number;
+  PAGE_H: number;
+  margin: number;
+  contentW: number;
+  top: number;
+  bottom: number;
+  get cursorY(): number;
+  set cursorY(v: number);
+  pageBottom: number;
+  newPage(): void;
+  ensure(h: number): void;
+  /** Add a text block at the current cursor (or absolute pos); auto-advances cursor when y omitted. */
+  addText(o: TextOpts): number;
+  addLine(o: LineOpts): void;
+  addRect(o: RectOpts): void;
+  addImage(o: { x: number; y: number; w: number; h: number; data: string }): void;
+  finalize(fileName: string): Promise<void>;
+}
+
+const INK_DEFAULT = "#111827";
+
+export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
+  const margin = opts.margin ?? 16;
+  const top = opts.top ?? 16;
+  const bottom = opts.bottom ?? 16;
+  const contentW = PAGE_W - margin * 2;
+
+  const pages: Array<Array<Schema & { name: string }>> = [[]];
+  const inputs: Record<string, string> = {};
+  let pageIdx = 0;
+  let y = top;
+  let counter = 0;
+  const uid = (p: string) => `${p}_${counter++}`;
+
+  const push = (s: Schema & { name: string }, value = "") => {
+    pages[pageIdx].push(s);
+    inputs[s.name] = value;
+  };
+
+  const builder: PdfmeBuilder = {
+    PAGE_W, PAGE_H, margin, contentW, top, bottom,
+    pageBottom: PAGE_H - bottom,
+    get cursorY() { return y; },
+    set cursorY(v: number) { y = v; },
+    newPage() {
+      pages.push([]);
+      pageIdx++;
+      y = top;
+    },
+    ensure(h: number) {
+      if (y + h > PAGE_H - bottom) this.newPage();
+    },
+    addText(o: TextOpts) {
+      const value = o.uppercase ? o.value.toUpperCase() : o.value;
+      const width = o.width ?? contentW;
+      const x = o.x ?? margin;
+      const lh = o.lineHeight ?? 1.25;
+      const h = Math.max(ptToMm(o.fontSize) * lh, textHeightMm(value, width, o.fontSize, lh));
+      const useCursor = o.y === undefined;
+      if (useCursor) this.ensure(h);
+      const py = o.y ?? y;
+      push(
+        {
+          name: uid("t"),
+          type: "text",
+          position: { x, y: py },
+          width,
+          height: h + 0.5,
+          fontSize: o.fontSize,
+          fontColor: o.color ?? INK_DEFAULT,
+          alignment: o.align ?? "left",
+          verticalAlignment: "top",
+          lineHeight: lh,
+          characterSpacing: o.letterSpacing ?? 0,
+          backgroundColor: o.bgColor ?? "",
+        } as Schema & { name: string },
+        value,
+      );
+      if (useCursor) y += h + (o.spaceAfter ?? 1);
+      return h;
+    },
+    addLine(o: LineOpts) {
+      push(
+        {
+          name: uid("ln"),
+          type: "line",
+          position: { x: o.x, y: o.y },
+          width: o.width,
+          height: o.height ?? 0.4,
+          color: o.color,
+        } as Schema & { name: string },
+        "",
+      );
+    },
+    addRect(o: RectOpts) {
+      push(
+        {
+          name: uid("rc"),
+          type: "rectangle",
+          position: { x: o.x, y: o.y },
+          width: o.width,
+          height: o.height,
+          color: o.color,
+          borderColor: o.borderColor ?? "",
+          borderWidth: o.borderWidth ?? 0,
+          radius: o.radius ?? 0,
+        } as Schema & { name: string },
+        "",
+      );
+    },
+    addImage(o) {
+      push(
+        {
+          name: uid("img"),
+          type: "image",
+          position: { x: o.x, y: o.y },
+          width: o.w,
+          height: o.h,
+        } as Schema & { name: string },
+        o.data,
+      );
+    },
+    async finalize(fileName: string) {
+      const template: Template = {
+        basePdf: { width: PAGE_W, height: PAGE_H, padding: [0, 0, 0, 0] },
+        schemas: pages,
+      };
+      const pdf = await generate({
+        template,
+        inputs: [inputs],
+        plugins: { text, image, line, rectangle },
+      });
+      const blob = new Blob([pdf as unknown as BlobPart], { type: "application/pdf" });
+      saveAs(blob, fileName);
+    },
+  };
+  return builder;
+}
+
+/* ---------- domain helpers ---------- */
+export const INK = "#111827";
+export const SUBINK = "#374151";
+export const MUTED = "#6b7280";
+export const HAIRLINE = "#e5e7eb";
