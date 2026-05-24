@@ -240,7 +240,7 @@ export function SectionShell({
 
 /* ---------------- Contact ---------------- */
 
-function ContactBlock({ contact }: { contact: ContactInfo }) {
+export function ContactBlock({ contact }: { contact: ContactInfo }) {
   const { patchContact, state, setPhotoPath } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -391,7 +391,7 @@ function ContactBlock({ contact }: { contact: ContactInfo }) {
 
 /* ---------------- Live preview pane ---------------- */
 
-function LivePreview() {
+export function LivePreview() {
   const { state } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
@@ -432,7 +432,7 @@ function LivePreview() {
 
 /* ---------------- Summary ---------------- */
 
-function SummaryBlock({ summary }: { summary: string }) {
+export function SummaryBlock({ summary }: { summary: string }) {
   const { patchSummary, state } = useCVBuilder();
   const [busy, setBusy] = useState<null | "expand" | "condense" | "rewrite">(null);
   const [err, setErr] = useState<string | null>(null);
@@ -476,7 +476,7 @@ function SummaryBlock({ summary }: { summary: string }) {
 
 /* ---------------- Experience ---------------- */
 
-function ExperienceList({ experience }: { experience: CVExperience[] }) {
+export function ExperienceList({ experience }: { experience: CVExperience[] }) {
   const { addExperience } = useCVBuilder();
   return (
     <div className="space-y-5">
@@ -759,14 +759,14 @@ function BulletRow({
 
 /* ---------------- Skills ---------------- */
 
-function SkillsBlock({ skills }: { skills: string[] }) {
+export function SkillsBlock({ skills }: { skills: string[] }) {
   const { setSkills } = useCVBuilder();
   return <PillInput values={skills} onChange={setSkills} placeholder="Add a skill and press Enter" />;
 }
 
 /* ---------------- Education ---------------- */
 
-function EducationBlock({ education }: { education: CVEducation[] }) {
+export function EducationBlock({ education }: { education: CVEducation[] }) {
   const { addEducation, removeEducation, patchEducation } = useCVBuilder();
   return (
     <div className="space-y-3">
@@ -811,7 +811,7 @@ function EducationBlock({ education }: { education: CVEducation[] }) {
 
 /* ---------------- Competency clusters ---------------- */
 
-function ClustersBlock({ clusters }: { clusters: CompetencyCluster[] }) {
+export function ClustersBlock({ clusters }: { clusters: CompetencyCluster[] }) {
   const { addCluster, removeCluster, patchCluster } = useCVBuilder();
   return (
     <div className="space-y-3">
@@ -851,7 +851,7 @@ function ClustersBlock({ clusters }: { clusters: CompetencyCluster[] }) {
 
 /* ---------------- Languages ---------------- */
 
-function LanguagesBlock({ languages }: { languages: LanguageEntry[] }) {
+export function LanguagesBlock({ languages }: { languages: LanguageEntry[] }) {
   const { setLanguages } = useCVBuilder();
   const [name, setName] = useState("");
 
@@ -1173,7 +1173,7 @@ function ScoreRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SavedIndicator() {
+export function SavedIndicator() {
   const { state } = useCVBuilder();
   const [, force] = useState(0);
   useEffect(() => {
