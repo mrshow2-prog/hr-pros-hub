@@ -1,9 +1,5 @@
-// Stub browser globals before any imports
-import { generate } from "@pdfme/generator";
-import { text, image, line, rectangle } from "@pdfme/schemas";
 import fs from "node:fs";
 
-// Minimal sample CV matching GeneratedCV shape
 const sampleCV = {
   contact: {
     name: "ABANOUB NABIL",
@@ -13,7 +9,7 @@ const sampleCV = {
     location: "Dubai, United Arab Emirates",
     linkedinUrl: "www.linkedin.com/in/abanoub-nabil-g",
   },
-  summary: "Strategic hospitality leader with over 13 years of progressive experience, specializing in revenue growth and market optimization within the MICE and negotiated sales segments. Proven track record of exceeding ambitious targets, achieving 130% of goals in 2024 and 170% in 2025 through expert management of corporate, government, and DMC accounts. Recognized for leadership excellence with a Leader of the Year nomination.",
+  summary: "Strategic hospitality leader with over 13 years of progressive experience, specializing in revenue growth and market optimization within the MICE and negotiated sales segments. Proven track record of exceeding ambitious targets, achieving 130% of goals in 2024 and 170% in 2025 through expert management of corporate, government, and DMC accounts. Recognized for leadership excellence with a Leader of the Year nomination, demonstrating a high capacity for motivating teams and enhancing account profitability.",
   experience: [
     {
       id: "1", role: "Senior Sales Manager", company: "FAIRMONT THE PALM", location: "Dubai, UAE",
@@ -50,43 +46,25 @@ const sampleCV = {
   hiddenSections: [],
 };
 
-// Stub file-saver
-process.env.NODE_ENV = "production";
-const Module = await import("node:module");
-const origResolve = Module.default.createRequire(import.meta.url);
+// Mock file-saver via module override using bun's require cache
+import { mock } from "bun:test";
+mock.module("file-saver", () => ({
+  saveAs: (blob: any, name: string) => {
+    const part = blob.parts?.[0] ?? blob;
+    const buf = part instanceof Uint8Array ? part : new Uint8Array(part);
+    fs.writeFileSync(`/tmp/${name}`, buf);
+    console.log("wrote /tmp/" + name, buf.length);
+  },
+  default: { saveAs: () => {} },
+}));
 
-// Patch global to satisfy file-saver
-globalThis.Blob = class { constructor(parts, opts) { this.parts = parts; this.opts = opts; } };
-globalThis.window = {
-  document: { createElement: () => ({ click: () => {}, setAttribute: () => {} }) },
-  URL: { createObjectURL: () => "blob:x", revokeObjectURL: () => {} },
-};
+// @ts-ignore Blob polyfill (collects parts)
+globalThis.Blob = class { parts: any[]; opts: any; constructor(parts: any[], opts: any) { this.parts = parts; this.opts = opts; } } as any;
 
-// We need to override the finalize to write to disk.
-// Easiest path: import the core, monkey-patch generate, then call the builders.
-// But cleaner: import the builder module and let it call generate; intercept the
-// PDF output by stubbing saveAs.
+const { exportCvPdfme } = await import("./src/lib/cv/pdfme/exportModernPdfme.ts");
 
-const fileSaver = await import("file-saver");
-let lastPdf = null;
-let lastName = null;
-fileSaver.saveAs = (blob, name) => {
-  // Blob parts contain a Uint8Array
-  const part = blob.parts?.[0];
-  lastPdf = part instanceof Uint8Array ? part : new Uint8Array(part);
-  lastName = name;
-};
-// Make default export point at our stub too
-fileSaver.default = fileSaver;
-
-const { exportCvPdfme } = await import("/dev-server/src/lib/cv/pdfme/exportModernPdfme.ts");
-
-const templates = ["modern", "classic", "executive", "compact", "skills-first"];
+const templates: any[] = ["modern", "classic", "executive", "compact", "skills-first"];
 for (const t of templates) {
-  lastPdf = null;
-  await exportCvPdfme(sampleCV, null, t, `qa-${t}.pdf`);
-  if (!lastPdf) { console.error("no pdf for", t); continue; }
-  const out = `/tmp/qa-${t}.pdf`;
-  fs.writeFileSync(out, lastPdf);
-  console.log("wrote", out, lastPdf.length);
+  await exportCvPdfme(sampleCV as any, null, t, `qa-${t}.pdf`);
 }
+console.log("done");
