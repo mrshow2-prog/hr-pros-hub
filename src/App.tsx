@@ -31,7 +31,7 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
-            <Route path="/" element={<Navigate to="/my-cvs" replace />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<CvBuilderLogin />} />
             <Route path="/my-cvs" element={<RequireCvAuth><MyCvs /></RequireCvAuth>} />
             <Route path="/builder" element={<RequireCvAuth><CvBuilder /></RequireCvAuth>} />
