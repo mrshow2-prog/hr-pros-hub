@@ -63,12 +63,14 @@ const SECTIONS: SectionDef[] = [
 ];
 
 export default function EditorShell() {
-  const { state, setGeneratedCV, setAts, setStep, setTemplate, setTypeOption } =
+  const { state, setGeneratedCV, setAts, setStep, setTemplate, setTypeOption, patchSummary, replaceBullets } =
     useCVBuilder();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [atsOpen, setAtsOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(true);
   const [activeSection, setActiveSection] = useState<SectionKey>("contact");
+  const [fixingId, setFixingId] = useState<string | null>(null);
   const leftRef = useRef<HTMLDivElement>(null);
 
   // ── Auto-generate on first mount if we don't have a CV yet ────
