@@ -67,7 +67,7 @@ export default function MyCvs() {
 
   return (
     <div className="min-h-screen bg-paper text-ink font-dm">
-      <SEO title="My CVs · CV Builder" description="Your saved CV drafts." path="/my-cvs" />
+      <SEO title="My CVs · People.Studio CV Builder" description="Manage your saved CV drafts, track payment status, and continue building or tailoring your professional CV for your next role." path="/my-cvs" />
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>

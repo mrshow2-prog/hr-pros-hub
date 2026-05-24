@@ -12,7 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /admin/
 
-Sitemap: https://www.peoplestudiohr.com/sitemap.xml
+Sitemap: https://cv.peoplestudiohr.com/sitemap.xml
