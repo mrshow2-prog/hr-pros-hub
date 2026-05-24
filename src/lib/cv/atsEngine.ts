@@ -15,20 +15,23 @@ import type {
 import { FUNCTION_KEYWORDS, GENERIC_KEYWORDS } from "./atsDictionary";
 
 const ACTION_VERBS = new Set([
+  "administered","advised","aligned","analysed","analyzed",
   "achieved","accelerated","architected","authored","automated","boosted","built",
+  "balanced",
   "captured","championed","closed","coached","co-led","consolidated","converted",
-  "created","cut","decreased","delivered","designed","developed","directed","drove",
+  "collaborated","coordinated","consulted","created","cultivated","cut","decreased","delivered","designed","developed","directed","drove",
   "doubled","earned","engineered","enabled","established","executed","expanded",
-  "facilitated","generated","grew","guided","halved","handled","headed","hired",
+  "ensured","facilitated","generated","grew","guided","halved","handled","headed","hired",
   "implemented","improved","increased","initiated","instituted","introduced",
+  "identified","influenced",
   "launched","led","leveraged","managed","mentored","migrated","modernised",
-  "modernized","negotiated","onboarded","optimised","optimized","orchestrated",
+  "modernized","monitored","maintained","maximized","minimized","negotiated","onboarded","optimised","optimized","orchestrated",
   "organised","organized","overhauled","oversaw","owned","partnered","pioneered",
-  "planned","presented","produced","quadrupled","ran","rebuilt","reduced",
+  "planned","prepared","presented","produced","provided","quadrupled","ran","rebuilt","reduced",
   "redesigned","refactored","resolved","restructured","retained","revamped",
-  "rolled","saved","scaled","secured","shaped","shipped","slashed","sourced",
+  "reported","rolled","saved","scaled","secured","shaped","shipped","slashed","sourced",
   "spearheaded","standardised","standardized","steered","streamlined",
-  "structured","supervised","supported","tripled","trained","transformed",
+  "strengthened","structured","supervised","supported","tripled","trained","transformed",
   "translated","unified","upgraded","won",
 ]);
 
@@ -56,6 +59,22 @@ function fleschReadingEase(text: string): number {
 
 function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9+#./\s-]/g, " ").split(/\s+/).filter((t) => t.length > 1);
+}
+
+function firstActionWord(text: string): string | null {
+  const cleaned = text
+    .trim()
+    .replace(/^(?:[\s•*–—-]+|\(?\d+[).:\-]\s*)+/g, "")
+    .replace(/^["'“”‘’`]+/g, "");
+  const match = cleaned.match(/[a-z]+(?:-[a-z]+)?/i);
+  return match ? match[0].toLowerCase() : null;
+}
+
+function startsWithActionVerb(text: string): boolean {
+  const word = firstActionWord(text);
+  if (!word) return false;
+  if (ACTION_VERBS.has(word)) return true;
+  return ACTION_VERBS.has(word.replace(/-/g, ""));
 }
 
 function cvToFullText(cv: GeneratedCV): string {
@@ -198,12 +217,11 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
       bulletTotal++; expBullets++;
       const wc = wordCount(text);
       if (wc >= 8 && wc <= 32) bulletInRange++;
-      const firstWord = text.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "");
-      if (firstWord && ACTION_VERBS.has(firstWord)) { bulletActionVerb++; expVerbs++; }
+      if (startsWithActionVerb(text)) { bulletActionVerb++; expVerbs++; }
     }
     if (expBullets >= 2) {
       const v = expVerbs / expBullets;
-      if (v < 0.6) {
+      if (v < 0.5) {
         expWithWeakBullets.push({ expId: exp.id, role: exp.role || exp.company, verbPct: v });
       }
     }
@@ -211,7 +229,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
 
   const verbPct = bulletTotal ? bulletActionVerb / bulletTotal : 1;
   const lenPct = bulletTotal ? bulletInRange / bulletTotal : 1;
-  formatting.push({ label: "≥70% bullets start with action verb", pass: verbPct >= 0.7 });
+  formatting.push({ label: "Most bullets start with action verbs", pass: verbPct >= 0.5 });
 
   // Consolidated: one finding per weak experience, with auto-fix
   for (const w of expWithWeakBullets) {

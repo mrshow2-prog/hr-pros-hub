@@ -96,9 +96,10 @@ function buildBulletsMessage(action: string, jobTitle: string, company: string, 
 
   const common = `Current bullets:\n${cur}\n\nOriginal bullets for reference:\n${orig}\n\nSeniority: ${seniority} | Tone: ${tone}\nReturn JSON: { "bullets": [string, ...] }`;
 
-  if (action === "condense") return `Condense these bullet points for ${jobTitle} at ${company}. Merge related points; keep 3-4 strongest bullets focused on outcomes.\n\n${common}`;
-  if (action === "expand") return `EXPAND these bullet points for ${jobTitle} at ${company}. Add depth, context, and scope. Aim for 6-8 detailed bullets covering every responsibility hinted in the source.\n\n${common}`;
-  return `Rewrite to be optimised for ${targetRoles} in ${industry}. Function: ${functionArea}. Retain factual content but reframe emphasis and vocabulary.\n\n${common}`;
+  const actionVerbRule = "Every returned bullet must start directly with a strong past-tense action verb, with no bullet symbol, numbering, or lead-in phrase.";
+  if (action === "condense") return `Condense these bullet points for ${jobTitle} at ${company}. Merge related points; keep 3-4 strongest bullets focused on outcomes. ${actionVerbRule}\n\n${common}`;
+  if (action === "expand") return `EXPAND these bullet points for ${jobTitle} at ${company}. Add depth, context, and scope. Aim for 6-8 detailed bullets covering every responsibility hinted in the source. ${actionVerbRule}\n\n${common}`;
+  return `Rewrite to be optimised for ${targetRoles} in ${industry}. Function: ${functionArea}. Retain factual content but reframe emphasis and vocabulary. ${actionVerbRule}\n\n${common}`;
 }
 
 function buildSummaryMessage(action: string, currentSummary: string, intent: any) {
