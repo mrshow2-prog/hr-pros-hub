@@ -132,14 +132,25 @@ export default function EditorShell() {
     scrollToSection(t.section);
     // Defer focus until after scroll
     setTimeout(() => {
-      const sel = t.bulletId
-        ? `[data-bullet-id="${t.bulletId}"] textarea, [data-bullet-id="${t.bulletId}"] input`
-        : t.expId
-          ? `[data-exp-id="${t.expId}"] input`
-          : t.field
-            ? `[data-field="${t.field}"]`
-            : `[data-section="${t.section}"]`;
-      const node = leftRef.current?.querySelector(sel) as HTMLElement | null;
+      const tryFind = (sel: string) =>
+        leftRef.current?.querySelector(sel) as HTMLElement | null;
+      let node: HTMLElement | null = null;
+      if (t.bulletId) {
+        node = tryFind(`[data-bullet-id="${t.bulletId}"] textarea`)
+          || tryFind(`[data-bullet-id="${t.bulletId}"] input`);
+      } else if (t.expId && t.field) {
+        node = tryFind(`[data-exp-id="${t.expId}"] [data-field="${t.field}"] input, [data-exp-id="${t.expId}"] [data-field="${t.field}"] textarea`);
+      } else if (t.expId) {
+        // For bullet findings, jump to the first bullet textarea inside that role
+        node = tryFind(`[data-exp-id="${t.expId}"] li[data-bullet-id] textarea`)
+          || tryFind(`[data-exp-id="${t.expId}"] textarea`)
+          || tryFind(`[data-exp-id="${t.expId}"] input`);
+      } else if (t.field) {
+        node = tryFind(`[data-field="${t.field}"] input, [data-field="${t.field}"] textarea`)
+          || tryFind(`[data-field="${t.field}"]`);
+      } else {
+        node = tryFind(`[data-section="${t.section}"]`);
+      }
       if (node) {
         node.focus?.();
         node.scrollIntoView?.({ behavior: "smooth", block: "center" });
