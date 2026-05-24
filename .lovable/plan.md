@@ -1,71 +1,97 @@
-## What I see in your files
-
-**PDF (Compact template, page 1)**
-- Left column: Summary + Work Experience render correctly.
-- Right column: only the `SKILLS` heading appears — the list items themselves are missing. Root cause: the sidebar is rendered inside a `<View fixed render={pageNumber===1 ? Sidebar : null}>`. In `@react-pdf/renderer`, `fixed` views are re-evaluated on every page but their **height is unbounded and not part of normal flow**, and conditional `render` returning `null` on later pages still reserves no flow space — but more importantly the children inside a fixed view don't measure properly here, so the list collapses.
-- Pages 2+ correctly fall to single-column. That part works.
-
-**DOCX (any template)**
-- Always renders the **same** sidebar-table layout (photo + contact + skills + education + languages on the left, header band + summary + experience on the right) regardless of whether the user picked Modern / Classic / Compact / Executive / Skills-First.
-- Education is duplicated (sidebar **and** below the table). Header band uses colored shading that doesn't match any of the on-screen templates.
-- Net effect: PDF ≠ DOCX ≠ on-screen preview.
-
 ## Goal
-One template choice → two files (PDF + DOCX) that look the same as the on-screen preview.
 
-## Plan
+Replace the three drifting Compact renderers (Tailwind preview + react-pdf + docx-js) with **one HTML template** that produces:
+1. The on-screen preview (iframe)
+2. The PDF (browser-native print — pixel-perfect, no infra)
+3. The DOCX (html-to-docx with a slightly simplified variant)
 
-### 1. Fix Compact PDF's empty right column (root fix, not a workaround)
-Replace the `fixed` sidebar trick with a real two-column layout on page 1:
+The uploaded `cv-template-compact-print_2.html` becomes the canonical layout.
 
-```text
-Page 1                                        Pages 2+
-┌──────────── header ────────────┐            ┌──────────── header (running) ──────────┐
-│ Summary │ Skills               │            │                                         │
-│ Experi- │ Languages            │            │ Work Experience overflow (full width)   │
-│ ence    │                      │            │                                         │
-│ (start) │                      │            │ Education                               │
-└─────────┴──────────────────────┘            └─────────────────────────────────────────┘
-```
+---
 
-Implementation:
-- Page 1 wrapped in a non-breaking `<View wrap={false}>` containing **two real columns** side-by-side (`flexDirection: "row"`). Left = Summary + as much Experience as fits. Right = Skills + Languages (rendered inline, not fixed).
-- Remaining Experience emitted as siblings after a `<View break />`, full-width with no reserved padding.
-- Education rendered once, full-width after Experience.
-- Running header on pages 2+ stays in its own band with top padding so it never collides with body text.
-- No `fixed` view with conditional render — this is the source of the empty column.
-
-### 2. Build per-template DOCX renderers (mirror the PDF router)
-Create `src/lib/docx/` with the same 5 templates:
+## Architecture
 
 ```text
-src/lib/docx/
-  docxRouter.ts        // template → docx Document
-  docxModern.ts        // single column, accent-bar headings (mirrors PdfModern)
-  docxClassic.ts       // single column, serif, underline headings
-  docxExecutive.ts     // single column, large display headings, optional top-right photo
-  docxCompact.ts       // 2-col page-1 table (Summary+Exp | Skills+Languages), then full-width overflow — mirrors PdfCompact
-  docxSkillsFirst.ts   // skills band on top, then experience
-  shared.ts            // shared font map, color, helpers (bullets, period line, contact line)
+GeneratedCV  ──►  renderCompactHtml(cv, photoDataUrl, mode)
+                         │
+        ┌────────────────┼────────────────┐
+        ▼                ▼                ▼
+   mode='preview'    mode='pdf'      mode='docx'
+   (iframe in       (hidden iframe   (fed to
+    StepTemplate)    → window.print)  html-to-docx)
 ```
 
-- Each renderer **only** includes the sections that template shows, in the order it shows them, with the typography mapped from `cvTemplateConfig` (Times → Georgia, Helvetica → Calibri, primary color → heading color/accent).
-- No section appears twice. Contact info shown once (in the header), not also in a sidebar.
-- For Compact specifically: use a single docx `Table` with two cells for page-1 content (mirroring the PDF), then full-width paragraphs for experience overflow + education below.
-- `exportCVToDocx(cv, fileName, template, photoUrl)` becomes a thin wrapper that calls `docxRouter`.
-- Delete the existing monolithic DOCX builder in `cvExport.ts`.
+One file owns the layout. Three thin adapters consume it.
 
-### 3. Acceptance checklist
-- Picking **Compact** and exporting → PDF page 1 has Skills + Languages populated on the right column (not just the heading). DOCX page 1 looks the same as that PDF page 1 (two-column header on top, Summary + Experience left, Skills + Languages right). Experience overflows full-width on pages 2+ in both.
-- Picking **Modern / Classic / Executive / Skills-First** → both PDF and DOCX are single-column (no sidebar artifact anywhere), with the same section order and same headline styling as the on-screen preview.
-- No section appears twice in either file. Contact info appears once. Headings always present where the preview shows them.
+---
 
-### Out of scope (will follow up if you ask)
-- AI/content prompt changes (summary length, ATS scoring, gap questions) — already discussed earlier; this pass is strictly about the export pipeline.
-- Adding new templates.
+## Files to create
 
-## Files
-- **Edit**: `src/components/cv-builder/pdf/PdfCompact.tsx` (rewrite right-column logic).
-- **Add**: `src/lib/docx/{docxRouter,docxModern,docxClassic,docxExecutive,docxCompact,docxSkillsFirst,shared}.ts`.
-- **Edit**: `src/lib/cvExport.ts` — replace inline DOCX builder with `docxRouter`.
-- No DB / no edge function changes.
+1. **`src/lib/cv/templates/compact.ts`** — pure renderer
+   - `renderCompactHtml(cv, photoDataUrl, mode: 'preview' | 'pdf' | 'docx'): string`
+   - Returns a complete `<!DOCTYPE html>` document.
+   - Maps `GeneratedCV` fields into the uploaded HTML structure:
+     - `contact` → header (name, jobTitle, location, phone, email, linkedinUrl, photo)
+     - `summary` → `.cv-summary`
+     - `experience[]` → `.cv-job` blocks (role, period, company · location, first bullet as `.cv-job-description` optional, rest as `<ul>`)
+     - `skills[]` → `.cv-skill-item` list
+     - `languages[]` → `.cv-language-item` list
+     - `education[]` → `.cv-edu-item` blocks
+   - Honors `hiddenSections` (skip the section entirely).
+   - **Two-column split heuristic**: estimate sidebar height from `skills.length * 18 + languages.length * 28 + ~140` pts; fill left cell with Summary + experiences until estimated height matches. Remainder goes into `.continuation`.
+   - **Mode differences**:
+     - `'pdf'` / `'preview'`: original CSS (flex header, `::before` bullets, rgba border).
+     - `'docx'`: header becomes a 2-cell `<table>`, `::before` bullets replaced with inline `"• "` in HTML, all `rgba(...)` replaced with solid hex (`#C8C0B8`), `display:flex` everywhere replaced with table cells, image `width`/`height` attributes set explicitly.
+   - Self-hosted font stack: `Calibri, "Carlito", Arial, sans-serif` (Carlito is the metric-compatible open replacement; no external font fetch needed — fallback to Arial is acceptable since the document is metric-stable).
+   - Certifications: not in `GeneratedCV` schema yet — omit for this pilot.
+
+2. **`src/lib/cv/exportCompactPdf.ts`** — browser-print PDF
+   - Creates hidden `<iframe>`, writes the `'pdf'` HTML into it, waits for `load` + photo image `decode()`, calls `iframe.contentWindow.print()`.
+   - User sees the browser print dialog → "Save as PDF" (Chrome default destination).
+   - This is the lowest-friction high-fidelity path; no Puppeteer infra, no API key. (Trade-off documented below.)
+
+3. **`src/lib/cv/exportCompactDocx.ts`** — DOCX via html-to-docx
+   - `bun add html-to-docx-js-typed` (active TS-friendly fork) — or `html-to-docx` (Node) called from browser via its UMD build.
+   - Feeds the `'docx'`-mode HTML, returns a Blob, `saveAs(...)`.
+
+## Files to edit
+
+4. **`src/components/cv-builder/templates/TemplateCompact.tsx`**
+   - Replace current JSX with a sandboxed `<iframe srcDoc={renderCompactHtml(cv, photoDataUrl, 'preview')} />` scaled to fit the preview pane (`transform: scale(...)`).
+   - This guarantees preview == export.
+
+5. **`src/lib/cvExport.ts`**
+   - When `template === 'compact'`, route `exportCVToPdf` → `exportCompactPdf`, `exportCVToDocx` → `exportCompactDocx`.
+   - Other templates continue using existing react-pdf + docx-js paths untouched.
+
+6. **`src/components/cv-builder/pdf/PdfRouter.tsx`** — unchanged for non-compact; compact branch becomes unused but kept for fallback (no deletions in this pass).
+
+---
+
+## PDF approach trade-off (please confirm)
+
+| Option | Fidelity | Friction | Infra |
+|---|---|---|---|
+| **A. Browser print (proposed)** | Pixel-perfect, real selectable text, ATS-friendly | User clicks "Save" in print dialog | None |
+| B. Server-side Puppeteer edge fn | Pixel-perfect, silent download | Need to ship Puppeteer to Deno edge runtime — fragile | Heavy |
+| C. External HTML→PDF API (PDFShift, Doppio) | Pixel-perfect, silent download | Need API key + secret | Paid service |
+| D. Client-side `html2pdf.js` (rasterized) | Blurry, not ATS-friendly | Silent download | None |
+
+**Recommendation: A** for this pilot. If you later want silent downloads, we add C as a second step (5 min change once the key is in).
+
+---
+
+## Out of scope (intentionally)
+
+- Other 4 templates — they stay on the current react-pdf + docx-js renderers until the Compact pilot is validated.
+- Certifications field — needs a context/schema change; can come after.
+- Adding a "Compact (continued)" section title automatically — current renderer just continues the section header naturally.
+
+---
+
+## Validation checklist after build
+
+1. Preview iframe in Step 6 renders identically to the uploaded screenshot for the seeded Abanoub CV.
+2. "Download PDF" → print dialog → resulting PDF matches preview exactly (header flex layout, sidebar border, sienna accents, two-column page 1, full-width continuation).
+3. "Download Word" → DOCX opens in Word with: 2-column header table, full-width body table for page 1 (Summary+jobs left, Skills+Languages right), single-column continuation, solid hex colors, inline bullets, no missing elements.
+4. Hiding sections in earlier steps removes them from all three outputs.
