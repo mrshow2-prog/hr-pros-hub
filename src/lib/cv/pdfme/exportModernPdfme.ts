@@ -227,9 +227,11 @@ export async function exportCvPdfme(
         {
           name: uid("photo"),
           type: "image",
-          position: { x: MARGIN, y: headerStart },
+          position: { x: photoX, y: headerStart },
           width: photoSize,
           height: photoSize,
+          rotate: 0,
+          ...(photoShape === "circle" ? { radius: photoSize / 2 } : {}),
         } as Schema & { name: string },
         photoData!,
       );
