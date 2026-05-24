@@ -27,7 +27,7 @@ export default function RequireCvAuth({ children }: { children: ReactNode }) {
   }
 
   if (!state.session) {
-    return <Navigate to="/career-studio/cv-builder/login" replace state={{ from: loc.pathname + loc.search }} />;
+    return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
   }
 
   return <>{children}</>;

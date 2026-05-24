@@ -10,7 +10,7 @@ import SEO from "@/components/seo/SEO";
 export default function CvBuilderLogin() {
   const nav = useNavigate();
   const loc = useLocation();
-  const redirectTo = (loc.state as { from?: string } | null)?.from ?? "/career-studio/cv-builder/my-cvs";
+  const redirectTo = (loc.state as { from?: string } | null)?.from ?? "/my-cvs";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +30,7 @@ export default function CvBuilderLogin() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/career-studio/cv-builder/my-cvs` },
+          options: { emailRedirectTo: `${window.location.origin}/my-cvs` },
         });
         if (error) throw error;
         toast.success("Account created. Check your inbox to verify, then sign in.");
@@ -52,7 +52,7 @@ export default function CvBuilderLogin() {
       <SEO
         title="CV Builder · Sign in"
         description="Sign in to save and revisit your CV drafts."
-        path="/career-studio/cv-builder/login"
+        path="/login"
       />
       <form onSubmit={submit} className="w-full max-w-sm space-y-4 border border-ink/10 rounded-lg p-6 bg-white">
         <div>
