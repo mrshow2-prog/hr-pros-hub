@@ -2,7 +2,7 @@ import { generate } from "@pdfme/generator";
 import { text, image, line } from "@pdfme/schemas";
 import type { Template, Schema } from "@pdfme/common";
 import { saveAs } from "file-saver";
-import type { GeneratedCV } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { contactItems, isHidden, periodOf, visibleBullets } from "@/components/cv-builder/pdf/shared";
 import { getTemplateConfig } from "@/lib/cvTemplateConfig";
 
@@ -80,16 +80,21 @@ async function urlToDataUrl(url: string): Promise<string | null> {
   } catch { return null; }
 }
 
-export async function exportModernPdfme(
+export async function exportCvPdfme(
   cv: GeneratedCV,
   photoUrl: string | null,
+  templateId: TemplateId,
   fileName: string,
 ) {
-  const cfg = getTemplateConfig("modern");
+  const cfg = getTemplateConfig(templateId);
   const primary = cfg.primaryColor;
   const ink = "#111827";
   const sub = "#374151";
   const muted = "#6b7280";
+  const dividerStyle = cfg.sectionDividerStyle; // "underline" | "bar" | "none"
+  const titleUpper = cfg.headingUppercase;
+  const photoShape = cfg.photoStyle; // "circle" | "square" | "none"
+  const photoOnRight = cfg.photoPosition === "top-right";
 
   // We'll build a list of pages, each as an array of schemas.
   const pages: Array<Array<Schema & { name: string }>> = [[]];
