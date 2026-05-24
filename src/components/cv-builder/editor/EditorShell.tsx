@@ -71,6 +71,8 @@ export default function EditorShell() {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [activeSection, setActiveSection] = useState<SectionKey>("contact");
   const [fixingId, setFixingId] = useState<string | null>(null);
+  const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
   const leftRef = useRef<HTMLDivElement>(null);
 
   // ── Auto-generate on first mount if we don't have a CV yet ────
