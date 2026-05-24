@@ -500,6 +500,6 @@ export async function exportModernPdfme(
     plugins: { text, image, line },
   });
 
-  const blob = new Blob([pdf.buffer as ArrayBuffer], { type: "application/pdf" });
+  const blob = new Blob([pdf as unknown as BlobPart], { type: "application/pdf" });
   saveAs(blob, fileName);
 }
