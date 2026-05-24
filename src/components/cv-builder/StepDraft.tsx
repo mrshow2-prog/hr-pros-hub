@@ -354,31 +354,43 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           onChange={handlePhoto}
         />
 
-        <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
-        <Field
-          label="Job title"
-          value={contact.jobTitle}
-          onChange={(v) => patchContact({ jobTitle: v })}
-        />
+        <div data-field="name">
+          <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
+        </div>
+        <div data-field="jobTitle">
+          <Field
+            label="Job title"
+            value={contact.jobTitle}
+            onChange={(v) => patchContact({ jobTitle: v })}
+          />
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field
-            label="Email"
-            type="email"
-            value={contact.email}
-            onChange={(v) => patchContact({ email: v })}
-          />
-          <Field label="Phone" value={contact.phone} onChange={(v) => patchContact({ phone: v })} />
-          <Field
-            label="Location"
-            value={contact.location}
-            onChange={(v) => patchContact({ location: v })}
-          />
-          <Field
-            label="LinkedIn URL"
-            value={contact.linkedinUrl}
-            onChange={(v) => patchContact({ linkedinUrl: v })}
-          />
+          <div data-field="email">
+            <Field
+              label="Email"
+              type="email"
+              value={contact.email}
+              onChange={(v) => patchContact({ email: v })}
+            />
+          </div>
+          <div data-field="phone">
+            <Field label="Phone" value={contact.phone} onChange={(v) => patchContact({ phone: v })} />
+          </div>
+          <div data-field="location">
+            <Field
+              label="Location"
+              value={contact.location}
+              onChange={(v) => patchContact({ location: v })}
+            />
+          </div>
+          <div data-field="linkedinUrl">
+            <Field
+              label="LinkedIn URL"
+              value={contact.linkedinUrl}
+              onChange={(v) => patchContact({ linkedinUrl: v })}
+            />
+          </div>
         </div>
       </div>
       {err && (
