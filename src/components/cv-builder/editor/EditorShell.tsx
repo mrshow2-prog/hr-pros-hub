@@ -266,6 +266,16 @@ export default function EditorShell() {
           </button>
 
           <button
+            onClick={() => setPreviewOpen((o) => !o)}
+            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2 py-1 font-dm text-xs text-ink/70 hover:border-ink/40"
+            aria-label={previewOpen ? "Hide preview" : "Show preview"}
+            title={previewOpen ? "Hide preview" : "Show preview"}
+          >
+            {previewOpen ? <PanelRightClose size={12} /> : <PanelRightOpen size={12} />}
+            {previewOpen ? "Hide preview" : "Show preview"}
+          </button>
+
+          <button
             onClick={() => setAtsOpen((o) => !o)}
             className={cn(
               "inline-flex items-center gap-2 rounded-sm border px-3 py-1 font-dm text-xs transition",
@@ -275,13 +285,17 @@ export default function EditorShell() {
                   ? "border-amber-600 bg-amber-50 text-amber-800"
                   : "border-sienna/40 bg-sienna/10 text-sienna",
             )}
-            aria-label="ATS score"
+            aria-label="Open ATS analysis"
+            title="Open ATS analysis"
           >
             <CheckCircle2 size={12} />
             ATS {score?.overall ?? "—"}
             {score?.findings && score.findings.length > 0 && (
-              <span className="ml-1 rounded-full bg-ink/10 px-1.5 text-[10px] text-ink/70">
-                {score.findings.length}
+              <span
+                className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-ink/10 px-1.5 text-[10px] text-ink/70"
+                title={`${score.findings.length} issue${score.findings.length === 1 ? "" : "s"} to review`}
+              >
+                <AlertTriangle size={9} /> {score.findings.length}
               </span>
             )}
           </button>
