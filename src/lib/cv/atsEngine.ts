@@ -15,20 +15,23 @@ import type {
 import { FUNCTION_KEYWORDS, GENERIC_KEYWORDS } from "./atsDictionary";
 
 const ACTION_VERBS = new Set([
+  "administered","advised","aligned","analysed","analyzed",
   "achieved","accelerated","architected","authored","automated","boosted","built",
+  "balanced",
   "captured","championed","closed","coached","co-led","consolidated","converted",
-  "created","cut","decreased","delivered","designed","developed","directed","drove",
+  "collaborated","coordinated","consulted","created","cultivated","cut","decreased","delivered","designed","developed","directed","drove",
   "doubled","earned","engineered","enabled","established","executed","expanded",
-  "facilitated","generated","grew","guided","halved","handled","headed","hired",
+  "ensured","facilitated","generated","grew","guided","halved","handled","headed","hired",
   "implemented","improved","increased","initiated","instituted","introduced",
+  "identified","influenced",
   "launched","led","leveraged","managed","mentored","migrated","modernised",
-  "modernized","negotiated","onboarded","optimised","optimized","orchestrated",
+  "modernized","monitored","maintained","maximized","minimized","negotiated","onboarded","optimised","optimized","orchestrated",
   "organised","organized","overhauled","oversaw","owned","partnered","pioneered",
-  "planned","presented","produced","quadrupled","ran","rebuilt","reduced",
+  "planned","prepared","presented","produced","provided","quadrupled","ran","rebuilt","reduced",
   "redesigned","refactored","resolved","restructured","retained","revamped",
-  "rolled","saved","scaled","secured","shaped","shipped","slashed","sourced",
+  "reported","rolled","saved","scaled","secured","shaped","shipped","slashed","sourced",
   "spearheaded","standardised","standardized","steered","streamlined",
-  "structured","supervised","supported","tripled","trained","transformed",
+  "strengthened","structured","supervised","supported","tripled","trained","transformed",
   "translated","unified","upgraded","won",
 ]);
 
@@ -56,6 +59,22 @@ function fleschReadingEase(text: string): number {
 
 function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9+#./\s-]/g, " ").split(/\s+/).filter((t) => t.length > 1);
+}
+
+function firstActionWord(text: string): string | null {
+  const cleaned = text
+    .trim()
+    .replace(/^(?:[\s•*–—-]+|\(?\d+[).:\-]\s*)+/g, "")
+    .replace(/^["'“”‘’`]+/g, "");
+  const match = cleaned.match(/[a-z]+(?:-[a-z]+)?/i);
+  return match ? match[0].toLowerCase() : null;
+}
+
+function startsWithActionVerb(text: string): boolean {
+  const word = firstActionWord(text);
+  if (!word) return false;
+  if (ACTION_VERBS.has(word)) return true;
+  return ACTION_VERBS.has(word.replace(/-/g, ""));
 }
 
 function cvToFullText(cv: GeneratedCV): string {
