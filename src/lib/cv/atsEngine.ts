@@ -87,9 +87,6 @@ function parseDateYear(s: string | undefined | null): number | null {
   return m ? Number(m[0]) : null;
 }
 
-function id(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 export interface AtsResult extends AtsScore {
   findings: AtsFinding[];
