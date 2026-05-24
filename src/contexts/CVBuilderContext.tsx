@@ -113,11 +113,31 @@ export interface GeneratedCV {
   hiddenSections: SectionKey[];
 }
 
+export type AtsSeverity = "critical" | "warning" | "info";
+
+export interface AtsJumpTarget {
+  section: SectionKey;
+  expId?: string;
+  bulletId?: string;
+  edId?: string;
+  field?: string;
+}
+
+export interface AtsFinding {
+  id: string;
+  severity: AtsSeverity;
+  label: string;
+  fix: string;
+  jumpTo?: AtsJumpTarget;
+}
+
 export interface AtsScore {
   overall: number;
   keywordMatch: number;
   formatting: { label: string; pass: boolean }[];
   readability: number;
+  findings?: AtsFinding[];
+  sectionScores?: { label: string; score: number }[];
 }
 
 export interface CVBuilderState {
