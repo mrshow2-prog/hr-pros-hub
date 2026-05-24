@@ -299,53 +299,53 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
     setPhotoPath(path);
   };
 
-  const photoNode = photoUrl ? (
-    <div className="shrink-0">
-      <div className="relative h-24 w-24 overflow-hidden rounded-full border border-ink/10">
-        <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-      </div>
-      <div className="mt-2 flex flex-col items-center gap-1">
+  const photoRow = (
+    <div className="flex items-center gap-4">
+      {photoUrl ? (
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-ink/10">
+          <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+        </div>
+      ) : (
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="font-dm text-[10px] text-ink/55 hover:text-ink"
+          className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-dashed border-ink/25 bg-clay/30 hover:border-sienna"
         >
-          Replace
+          {uploading ? (
+            <span className="font-dm text-[10px] text-ink/65">Uploading…</span>
+          ) : (
+            <div className="flex flex-col items-center text-ink/55 group-hover:text-sienna">
+              <Camera size={16} />
+              <span className="mt-0.5 font-dm text-[9px]">Add</span>
+            </div>
+          )}
         </button>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => setPhotoPath(null)}
-          className="font-dm text-[10px] text-ink/55 hover:text-amber-700"
+          onClick={() => fileRef.current?.click()}
+          className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
         >
-          Remove
+          <Camera size={11} /> {photoUrl ? "Replace photo" : "Upload photo"}
         </button>
-      </div>
-    </div>
-  ) : (
-    <div className="shrink-0">
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        className="group relative flex h-24 w-24 items-center justify-center rounded-full border border-dashed border-ink/25 bg-clay/30 hover:border-sienna"
-      >
-        {uploading ? (
-          <span className="font-dm text-[10px] text-ink/65">Uploading…</span>
-        ) : (
-          <div className="flex flex-col items-center text-ink/55 group-hover:text-sienna">
-            <Camera size={16} />
-            <span className="mt-1 px-2 text-center font-dm text-[9px] leading-tight">
-              Add photo
-            </span>
-          </div>
+        {photoUrl && (
+          <button
+            type="button"
+            onClick={() => setPhotoPath(null)}
+            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
+          >
+            <Trash2 size={11} /> Remove
+          </button>
         )}
-      </button>
+      </div>
     </div>
   );
 
   return (
     <div className="rounded-md border border-ink/10 bg-paper p-5">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        {photoNode}
+      <div className="space-y-4">
+        {photoRow}
         <input
           ref={fileRef}
           type="file"
@@ -354,13 +354,14 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           onChange={handlePhoto}
         />
 
-        <div className="grid flex-1 gap-3 sm:grid-cols-2">
-          <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
-          <Field
-            label="Job title"
-            value={contact.jobTitle}
-            onChange={(v) => patchContact({ jobTitle: v })}
-          />
+        <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
+        <Field
+          label="Job title"
+          value={contact.jobTitle}
+          onChange={(v) => patchContact({ jobTitle: v })}
+        />
+
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field
             label="Email"
             type="email"
