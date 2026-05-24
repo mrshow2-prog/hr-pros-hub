@@ -403,7 +403,15 @@ export default function EditorShell() {
 
         {/* ATS drawer */}
         {atsOpen && (
-          <AtsDrawer onClose={() => setAtsOpen(false)} onJump={jumpTo} onAutoFix={runAutoFix} fixingId={fixingId} />
+          <AtsDrawer
+            onClose={() => setAtsOpen(false)}
+            onJump={jumpTo}
+            onAutoFix={runAutoFix}
+            fixingId={fixingId}
+            suppressedIds={suppressedIds}
+            onRefresh={handleRefresh}
+            refreshing={refreshing}
+          />
         )}
       </div>
     </div>
