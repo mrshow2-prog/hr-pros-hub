@@ -63,7 +63,13 @@ export default function StepUpload() {
         continue;
       }
       setProgress(Math.round(((i + 0.3) / list.length) * 100));
-      const path = `${state.sessionId}/${Date.now()}-${f.name}`;
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user.id;
+      if (!uid) {
+        setError("Please sign in to upload files.");
+        continue;
+      }
+      const path = `${uid}/${state.sessionId}/${Date.now()}-${f.name}`;
       const { error: upErr } = await supabase.storage
         .from("cv-builder-uploads")
         .upload(path, f, { upsert: false });
@@ -102,7 +108,14 @@ export default function StepUpload() {
       return;
     }
     setPhotoUploading(true);
-    const path = `${state.sessionId}/photo-${Date.now()}-${f.name}`;
+    const { data: sess } = await supabase.auth.getSession();
+    const uid = sess.session?.user.id;
+    if (!uid) {
+      setPhotoUploading(false);
+      setPhotoError("Please sign in to upload a photo.");
+      return;
+    }
+    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${f.name}`;
     const { error: upErr } = await supabase.storage
       .from("cv-builder-uploads")
       .upload(path, f, { upsert: true });
