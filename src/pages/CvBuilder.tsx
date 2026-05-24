@@ -48,6 +48,10 @@ function Wizard() {
   }
 
   const step = state.currentStep;
+  if (step === 6) {
+    return <EditorShell />;
+  }
+
   return (
     <WizardShell stepKey={step}>
       {step === 1 && <StepUpload />}
@@ -55,7 +59,6 @@ function Wizard() {
       {step === 3 && <StepGaps />}
       {step === 4 && <StepTemplate />}
       {step === 5 && <StepPayment />}
-      {step === 6 && <StepDraft />}
       {step === 7 && <StepExport />}
     </WizardShell>
   );
