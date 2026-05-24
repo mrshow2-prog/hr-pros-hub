@@ -145,6 +145,53 @@ export default function EditorShell() {
     }, 350);
   }, [scrollToSection]);
 
+  // ── AI auto-fix: invoke generate-cv-section based on finding.autoFix ──
+  const runAutoFix = useCallback(async (finding: AtsFinding) => {
+    const af = finding.autoFix;
+    if (!af || !state.generatedCV) return;
+    setFixingId(finding.id);
+    try {
+      if (af.kind === "summary") {
+        const { data, error } = await supabase.functions.invoke("generate-cv-section", {
+          body: {
+            action: af.action,
+            kind: "summary",
+            currentSummary: state.generatedCV.summary,
+            intentForm: state.intentForm,
+          },
+        });
+        if (error) throw error;
+        if (typeof data?.summary === "string" && data.summary.trim()) {
+          patchSummary(data.summary.trim());
+        }
+      } else if (af.kind === "bullets") {
+        const exp = state.generatedCV.experience.find((e) => e.id === af.expId);
+        if (!exp) return;
+        const current = exp.bullets.map((b) => b.rewrite);
+        const original = exp.bullets.map((b) => b.original || b.rewrite);
+        const { data, error } = await supabase.functions.invoke("generate-cv-section", {
+          body: {
+            action: af.action,
+            kind: "bullets",
+            jobTitle: exp.role,
+            company: exp.company,
+            currentBullets: current,
+            originalBullets: original,
+            intentForm: state.intentForm,
+          },
+        });
+        if (error) throw error;
+        if (Array.isArray(data?.bullets) && data.bullets.length) {
+          replaceBullets(af.expId, data.bullets);
+        }
+      }
+    } catch (e) {
+      console.error("Auto-fix failed", e);
+    } finally {
+      setFixingId(null);
+    }
+  }, [state.generatedCV, state.intentForm, patchSummary, replaceBullets]);
+
   // ── Loading / generation gate ────────────────────────────────
   if (loading || !state.generatedCV) {
     return (
