@@ -312,7 +312,7 @@ export default function EditorShell() {
       {/* Split body */}
       <div className="flex flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-1">
-          <ResizablePanel defaultSize={50} minSize={30}>
+          <ResizablePanel defaultSize={previewOpen ? 50 : 100} minSize={30}>
             <div
               ref={leftRef}
               className="h-full overflow-y-auto px-5 py-6 lg:px-8"
@@ -360,16 +360,19 @@ export default function EditorShell() {
             </div>
           </ResizablePanel>
 
-          <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <PreviewPane />
-          </ResizablePanel>
+          {previewOpen && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={50} minSize={25}>
+                <PreviewPane />
+              </ResizablePanel>
+            </>
+          )}
         </ResizablePanelGroup>
 
         {/* ATS drawer */}
         {atsOpen && (
-          <AtsDrawer onClose={() => setAtsOpen(false)} onJump={jumpTo} />
+          <AtsDrawer onClose={() => setAtsOpen(false)} onJump={jumpTo} onAutoFix={runAutoFix} fixingId={fixingId} />
         )}
       </div>
     </div>
