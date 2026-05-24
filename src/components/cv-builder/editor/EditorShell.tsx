@@ -477,26 +477,32 @@ function AtsDrawer({
   onJump,
   onAutoFix,
   fixingId,
+  suppressedIds,
+  onRefresh,
+  refreshing,
 }: {
   onClose: () => void;
   onJump: (f: AtsFinding) => void;
   onAutoFix: (f: AtsFinding) => void;
   fixingId: string | null;
+  suppressedIds: Set<string>;
+  onRefresh: () => void;
+  refreshing: boolean;
 }) {
-  const { state, setAts } = useCVBuilder();
+  const { state } = useCVBuilder();
   const score = state.atsScore;
 
-  const rescore = () => {
-    if (!state.generatedCV) return;
-    setAts(scoreCv(state.generatedCV, state.intentForm));
-  };
-
-  const findings = useMemo(() => score?.findings ?? [], [score]);
+  const findings = useMemo(
+    () => (score?.findings ?? []).filter((f) => !suppressedIds.has(f.id)),
+    [score, suppressedIds],
+  );
   const grouped = useMemo(() => ({
     critical: findings.filter((f) => f.severity === "critical"),
     warning: findings.filter((f) => f.severity === "warning"),
     info: findings.filter((f) => f.severity === "info"),
   }), [findings]);
+
+  const warningHasAutoFix = grouped.warning.some((f) => f.autoFix);
 
   return (
     <aside className="flex h-full w-[340px] flex-col border-l border-ink/10 bg-paper">
@@ -504,11 +510,13 @@ function AtsDrawer({
         <p className="font-syne text-sm text-ink">ATS analysis</p>
         <div className="flex items-center gap-1">
           <button
-            onClick={rescore}
-            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink disabled:opacity-60"
             aria-label="Re-score"
+            title="Re-score"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={14} className={cn(refreshing && "animate-spin")} />
           </button>
           <button
             onClick={onClose}
@@ -562,6 +570,7 @@ function AtsDrawer({
             onJump={onJump}
             onAutoFix={onAutoFix}
             fixingId={fixingId}
+            note={warningHasAutoFix ? "Click ‘Fix with AI’ to rewrite automatically, or ‘Edit manually’ to jump to the field." : undefined}
           />
           <FindingGroup
             title="Suggestions"
