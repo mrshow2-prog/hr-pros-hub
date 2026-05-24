@@ -43,9 +43,6 @@ export async function exportCVToPdf(
   photoUrl: string | null,
   fileName: string,
 ) {
-  if (template === "compact") {
-    return exportCompactPdf(cv, photoUrl, fileName);
-  }
   return exportCvPdfme(cv, photoUrl, template, fileName);
 }
 
