@@ -208,7 +208,7 @@ export default function StepDraft() {
 
 /* ---------------- Section shell with hide toggle ---------------- */
 
-function SectionShell({
+export function SectionShell({
   sectionKey,
   title,
   children,
