@@ -1,11 +1,10 @@
 /**
  * Deterministic ATS scoring engine — pure client-side, no LLM calls.
  *
- * Runs the structured `GeneratedCV` through a battery of checks designed to
- * mirror what real ATS systems (Workday, Greenhouse, Lever, iCIMS) extract:
- * parseable contact block, dated experience, keyword coverage, bullet hygiene,
- * reading level, and page-count fit. Returns an `AtsScore` with severity-tagged
- * findings the editor can deep-link to via `jumpTo`.
+ * Tuned for AI-generated CVs: high baseline (a fully-drafted CV with
+ * reasonable bullets should land in the 80s), findings are consolidated
+ * rather than emitted per-bullet, and each issue carries either a
+ * deep-link (`jumpTo`) or an automated fix hook (`autoFix`).
  */
 import type {
   GeneratedCV,
@@ -16,53 +15,47 @@ import type {
 import { FUNCTION_KEYWORDS, GENERIC_KEYWORDS } from "./atsDictionary";
 
 const ACTION_VERBS = new Set([
-  "achieved", "accelerated", "architected", "automated", "boosted", "built",
-  "captured", "championed", "closed", "coached", "consolidated", "converted",
-  "created", "cut", "delivered", "designed", "developed", "directed", "drove",
-  "doubled", "earned", "engineered", "established", "executed", "expanded",
-  "generated", "grew", "halved", "headed", "implemented", "improved",
-  "increased", "initiated", "introduced", "launched", "led", "managed",
-  "mentored", "migrated", "negotiated", "optimized", "orchestrated",
-  "organized", "overhauled", "owned", "pioneered", "produced", "rebuilt",
-  "reduced", "redesigned", "refactored", "restructured", "saved", "scaled",
-  "secured", "shipped", "spearheaded", "standardized", "streamlined",
-  "structured", "supervised", "tripled", "trained", "transformed",
-  "translated", "unified", "upgraded",
+  "achieved","accelerated","architected","authored","automated","boosted","built",
+  "captured","championed","closed","coached","co-led","consolidated","converted",
+  "created","cut","decreased","delivered","designed","developed","directed","drove",
+  "doubled","earned","engineered","enabled","established","executed","expanded",
+  "facilitated","generated","grew","guided","halved","handled","headed","hired",
+  "implemented","improved","increased","initiated","instituted","introduced",
+  "launched","led","leveraged","managed","mentored","migrated","modernised",
+  "modernized","negotiated","onboarded","optimised","optimized","orchestrated",
+  "organised","organized","overhauled","oversaw","owned","partnered","pioneered",
+  "planned","presented","produced","quadrupled","ran","rebuilt","reduced",
+  "redesigned","refactored","resolved","restructured","retained","revamped",
+  "rolled","saved","scaled","secured","shaped","shipped","slashed","sourced",
+  "spearheaded","standardised","standardized","steered","streamlined",
+  "structured","supervised","supported","tripled","trained","transformed",
+  "translated","unified","upgraded","won",
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[+()\-\s\d./]{7,}$/;
-// Accept e.g. "Jan 2020", "January 2020", "2020", "Present"
-const DATE_RE = /^(present|now|current|\d{4}|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4})$/i;
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 const syllableCount = (word: string): number => {
   const w = word.toLowerCase().replace(/[^a-z]/g, "");
   if (w.length <= 3) return 1;
-  const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "")
-                   .replace(/^y/, "");
+  const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "");
   const m = cleaned.match(/[aeiouy]{1,2}/g);
   return Math.max(1, m ? m.length : 1);
 };
 
-/** Flesch reading ease — higher is more readable. 60-70 ≈ plain English. */
 function fleschReadingEase(text: string): number {
   const sentences = (text.match(/[.!?]+/g) ?? []).length || 1;
   const words = text.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return 100;
   const syllables = words.reduce((s, w) => s + syllableCount(w), 0);
-  return Math.max(
-    0,
-    Math.min(100, 206.835 - 1.015 * (words.length / sentences) - 84.6 * (syllables / words.length)),
-  );
+  return Math.max(0, Math.min(100,
+    206.835 - 1.015 * (words.length / sentences) - 84.6 * (syllables / words.length),
+  ));
 }
 
 function tokenize(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9+#./\s-]/g, " ")
-    .split(/\s+/)
-    .filter((t) => t.length > 1);
+  return text.toLowerCase().replace(/[^a-z0-9+#./\s-]/g, " ").split(/\s+/).filter((t) => t.length > 1);
 }
 
 function cvToFullText(cv: GeneratedCV): string {
@@ -81,9 +74,7 @@ function cvToFullText(cv: GeneratedCV): string {
 function pickKeywords(intent: IntentForm): string[] {
   const fa = (intent.functionArea ?? "").toLowerCase().trim();
   const fromDict = FUNCTION_KEYWORDS[fa] ?? [];
-  const fromRoles = intent.targetRoles.flatMap((r) =>
-    tokenize(r).filter((t) => t.length > 2),
-  );
+  const fromRoles = intent.targetRoles.flatMap((r) => tokenize(r).filter((t) => t.length > 2));
   const merged = [...fromDict, ...fromRoles, ...GENERIC_KEYWORDS];
   return Array.from(new Set(merged.map((k) => k.toLowerCase())));
 }
@@ -91,7 +82,7 @@ function pickKeywords(intent: IntentForm): string[] {
 function parseDateYear(s: string | undefined | null): number | null {
   if (!s) return null;
   const t = s.trim().toLowerCase();
-  if (/^(present|now|current)$/.test(t)) return new Date().getFullYear();
+  if (/^(present|now|current|ongoing)$/.test(t)) return new Date().getFullYear();
   const m = t.match(/(19|20)\d{2}/);
   return m ? Number(m[0]) : null;
 }
@@ -105,10 +96,6 @@ export interface AtsResult extends AtsScore {
   sectionScores: { label: string; score: number }[];
 }
 
-/**
- * Score a CV against the user's intent. Pure function — call freely on every
- * edit if you want live scoring.
- */
 export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   const findings: AtsFinding[] = [];
   const formatting: { label: string; pass: boolean }[] = [];
@@ -117,44 +104,35 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   const tokenSet = new Set(tokens);
 
   // ── 1. Contact block ──────────────────────────────────────────────
-  const contactChecks: Array<[keyof typeof cv.contact, RegExp, string]> = [
-    ["email", EMAIL_RE, "Add a parseable email (name@domain.tld)."],
-    ["phone", PHONE_RE, "Add a phone number with country code."],
-  ];
   let contactPass = 0;
-  for (const [field, re, fix] of contactChecks) {
-    const v = cv.contact[field] as string;
-    const ok = !!v && re.test(v.trim());
-    if (ok) contactPass++;
-    else
-      findings.push({
-        id: id("contact"),
-        severity: "critical",
-        label: `Missing or unparseable ${field}`,
-        fix,
-        jumpTo: { section: "contact", field },
-      });
-  }
-  if (!cv.contact.name?.trim()) {
-    findings.push({
-      id: id("contact"),
-      severity: "critical",
-      label: "Name is missing",
-      fix: "Add your full name in the contact block.",
-      jumpTo: { section: "contact", field: "name" },
-    });
-  } else contactPass++;
+  const total = 3;
+  if (cv.contact.name?.trim()) contactPass++;
+  else findings.push({
+    id: id("contact"), severity: "critical", label: "Name is missing",
+    fix: "Add your full name in the contact block.",
+    jumpTo: { section: "contact", field: "name" },
+  });
+  if (cv.contact.email?.trim() && EMAIL_RE.test(cv.contact.email.trim())) contactPass++;
+  else findings.push({
+    id: id("contact"), severity: "critical", label: "Email missing or unparseable",
+    fix: "Use a clean name@domain.tld format — ATS systems reject malformed emails.",
+    jumpTo: { section: "contact", field: "email" },
+  });
+  if (cv.contact.phone?.trim() && PHONE_RE.test(cv.contact.phone.trim())) contactPass++;
+  else findings.push({
+    id: id("contact"), severity: "warning", label: "Phone number missing",
+    fix: "Add a phone number including country code so recruiters can reach you.",
+    jumpTo: { section: "contact", field: "phone" },
+  });
   if (!cv.contact.location?.trim()) {
     findings.push({
-      id: id("contact"),
-      severity: "warning",
-      label: "Location missing",
-      fix: "Recruiters filter on location — add at least city, country.",
+      id: id("contact"), severity: "info", label: "Location missing",
+      fix: "Add at least city, country — many ATS pipelines filter on location.",
       jumpTo: { section: "contact", field: "location" },
     });
   }
-  const contactScore = Math.round((contactPass / 3) * 100);
-  formatting.push({ label: "Contact block parseable", pass: contactPass === 3 });
+  const contactScore = Math.round((contactPass / total) * 100);
+  formatting.push({ label: "Contact block parseable", pass: contactPass === total });
 
   // ── 2. Section presence ──────────────────────────────────────────
   const hasSummary = (cv.summary?.trim().length ?? 0) >= 80;
@@ -166,43 +144,33 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
   formatting.push({ label: "Skills (≥5) present", pass: hasSkills });
   formatting.push({ label: "Education present", pass: hasEducation });
 
-  if (!hasSummary)
-    findings.push({
-      id: id("summary"),
-      severity: "warning",
-      label: "Summary too short or missing",
-      fix: "Aim for 3–5 sentences (80+ chars) that frame your value to the target role.",
-      jumpTo: { section: "summary" },
-    });
-  if (!hasSkills)
-    findings.push({
-      id: id("skills"),
-      severity: "warning",
-      label: "Add at least 5 skills",
-      fix: "ATS keyword filters lean heavily on the Skills section. List role-relevant hard skills.",
-      jumpTo: { section: "skills" },
-    });
-  if (!hasEducation)
-    findings.push({
-      id: id("education"),
-      severity: "info",
-      label: "No education entries",
-      fix: "Add at least one qualification, even short courses count.",
-      jumpTo: { section: "education" },
-    });
+  if (!hasSummary) findings.push({
+    id: id("summary"), severity: "warning", label: "Summary too short",
+    fix: "Aim for 3–5 sentences (80+ chars) framing your value to the target role.",
+    jumpTo: { section: "summary" },
+    autoFix: { kind: "summary", action: "expand" },
+  });
+  if (!hasSkills) findings.push({
+    id: id("skills"), severity: "warning",
+    label: "Add at least 5 skills",
+    fix: "ATS keyword filters lean heavily on the Skills section.",
+    jumpTo: { section: "skills" },
+  });
+  if (!hasEducation) findings.push({
+    id: id("education"), severity: "info", label: "No education entries",
+    fix: "Add at least one qualification — even short courses count.",
+    jumpTo: { section: "education" },
+  });
 
-  // ── 3. Experience: dates + bullet hygiene ────────────────────────
-  let bulletTotal = 0;
-  let bulletQuantified = 0;
-  let bulletActionVerb = 0;
-  let bulletInRange = 0;
+  // ── 3. Experience: dates + bullet hygiene (consolidated) ─────────
+  let bulletTotal = 0, bulletQuantified = 0, bulletActionVerb = 0, bulletInRange = 0;
+  const expWithWeakBullets: { expId: string; role: string; quantPct: number; verbPct: number }[] = [];
 
   for (const exp of cv.experience) {
     if (!exp.role?.trim() || !exp.company?.trim()) {
       findings.push({
-        id: id("exp"),
-        severity: "critical",
-        label: `Experience entry missing role or company`,
+        id: id("exp"), severity: "critical",
+        label: "Experience entry missing role or company",
         fix: "Every experience row needs a clear job title and employer.",
         jumpTo: { section: "experience", expId: exp.id },
       });
@@ -212,166 +180,135 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
     const yearNow = new Date().getFullYear();
     if (!sy || !ey) {
       findings.push({
-        id: id("exp"),
-        severity: "warning",
+        id: id("exp"), severity: "info",
         label: `Dates unclear for ${exp.role || exp.company || "role"}`,
-        fix: "Use a format like ‘Jan 2020 – Present’ so ATS parsers can extract tenure.",
+        fix: "Use a format like ‘Jan 2020 – Present’ so parsers can extract tenure.",
         jumpTo: { section: "experience", expId: exp.id, field: "startDate" },
       });
     } else if (sy > ey || ey > yearNow + 1) {
       findings.push({
-        id: id("exp"),
-        severity: "warning",
+        id: id("exp"), severity: "warning",
         label: `Date range invalid for ${exp.role || exp.company}`,
         fix: "Start date must come before end date, and dates can’t be in the future.",
         jumpTo: { section: "experience", expId: exp.id, field: "startDate" },
       });
     }
 
+    let expBullets = 0, expQuant = 0, expVerbs = 0;
     for (const b of exp.bullets) {
       const text = b.rewrite?.trim();
       if (!text) continue;
-      bulletTotal++;
+      bulletTotal++; expBullets++;
       const wc = wordCount(text);
-      const inRange = wc >= 8 && wc <= 28;
-      if (inRange) bulletInRange++;
+      if (wc >= 8 && wc <= 32) bulletInRange++;
       const firstWord = text.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "");
-      const hasVerb = !!firstWord && ACTION_VERBS.has(firstWord);
-      if (hasVerb) bulletActionVerb++;
-      const hasNumber = /\d/.test(text);
-      if (hasNumber) bulletQuantified++;
-
-      if (!inRange) {
-        findings.push({
-          id: id("bul"),
-          severity: wc < 6 || wc > 35 ? "warning" : "info",
-          label: wc < 8 ? "Bullet too short" : "Bullet too long",
-          fix: `${wc} words — aim for 8–28. Trim filler or split into two.`,
-          jumpTo: { section: "experience", expId: exp.id, bulletId: b.id },
-        });
-      }
-      if (!hasVerb) {
-        findings.push({
-          id: id("bul"),
-          severity: "info",
-          label: "Bullet doesn’t start with an action verb",
-          fix: "Lead with verbs like ‘Led’, ‘Reduced’, ‘Implemented’.",
-          jumpTo: { section: "experience", expId: exp.id, bulletId: b.id },
-        });
+      if (firstWord && ACTION_VERBS.has(firstWord)) { bulletActionVerb++; expVerbs++; }
+      if (/\d/.test(text)) { bulletQuantified++; expQuant++; }
+    }
+    if (expBullets >= 2) {
+      const q = expQuant / expBullets, v = expVerbs / expBullets;
+      if (q < 0.34 || v < 0.6) {
+        expWithWeakBullets.push({ expId: exp.id, role: exp.role || exp.company, quantPct: q, verbPct: v });
       }
     }
   }
 
-  const quantPct = bulletTotal ? bulletQuantified / bulletTotal : 0;
-  const verbPct = bulletTotal ? bulletActionVerb / bulletTotal : 0;
-  const lenPct = bulletTotal ? bulletInRange / bulletTotal : 0;
-  formatting.push({ label: "≥40% bullets quantified", pass: quantPct >= 0.4 });
-  formatting.push({ label: "≥80% bullets start with action verb", pass: verbPct >= 0.8 });
+  const quantPct = bulletTotal ? bulletQuantified / bulletTotal : 1;
+  const verbPct = bulletTotal ? bulletActionVerb / bulletTotal : 1;
+  const lenPct = bulletTotal ? bulletInRange / bulletTotal : 1;
+  formatting.push({ label: "≥30% bullets quantified", pass: quantPct >= 0.3 });
+  formatting.push({ label: "≥70% bullets start with action verb", pass: verbPct >= 0.7 });
 
-  if (bulletTotal > 0 && quantPct < 0.4) {
+  // Consolidated: one finding per weak experience, with auto-fix
+  for (const w of expWithWeakBullets) {
+    const reasons: string[] = [];
+    if (w.quantPct < 0.34) reasons.push(`only ${Math.round(w.quantPct * 100)}% quantified`);
+    if (w.verbPct < 0.6) reasons.push(`only ${Math.round(w.verbPct * 100)}% start with an action verb`);
     findings.push({
-      id: id("bul"),
-      severity: "warning",
-      label: `Only ${Math.round(quantPct * 100)}% of bullets are quantified`,
-      fix: "Add numbers, %, currency, or scale (team size, budget) to at least 40% of bullets.",
-      jumpTo: { section: "experience" },
+      id: id("expbul"), severity: "warning",
+      label: `Tighten bullets for ${w.role}`,
+      fix: `${reasons.join("; ")}. One click rewrites them to start with strong verbs and add measurable impact.`,
+      jumpTo: { section: "experience", expId: w.expId },
+      autoFix: { kind: "bullets", expId: w.expId, action: "rewrite" },
     });
   }
 
-  // ── 4. Keyword match ─────────────────────────────────────────────
+  // ── 4. Keyword match (lenient) ───────────────────────────────────
   const keywords = pickKeywords(intent);
   const matched = keywords.filter((k) => {
     if (k.includes(" ")) return fullText.toLowerCase().includes(k);
     return tokenSet.has(k);
   });
-  const keywordMatch = keywords.length
-    ? Math.round((matched.length / keywords.length) * 100)
-    : 0;
-  if (keywords.length && matched.length / keywords.length < 0.35) {
+  const rawMatch = keywords.length ? matched.length / keywords.length : 0;
+  // Curve: hitting 35% of the dictionary = 100 (most CVs won't legitimately use every term).
+  const keywordMatch = Math.round(Math.min(100, (rawMatch / 0.35) * 100));
+  if (keywords.length && rawMatch < 0.2) {
     const missing = keywords.filter((k) => !matched.includes(k)).slice(0, 8);
     findings.push({
-      id: id("kw"),
-      severity: "warning",
-      label: `Low keyword coverage (${keywordMatch}%)`,
-      fix: `Weave in role-relevant terms where genuine. Missing high-value terms: ${missing.join(", ")}.`,
+      id: id("kw"), severity: "warning",
+      label: `Low keyword coverage`,
+      fix: `Weave in role-relevant terms where genuine. Consider: ${missing.join(", ")}.`,
       jumpTo: { section: "skills" },
     });
   }
 
   // ── 5. Readability ────────────────────────────────────────────────
   const readingEase = fleschReadingEase(fullText);
-  // Normalize: 50–80 is the sweet spot for CVs.
-  const readability = Math.round(
-    Math.max(
-      0,
-      Math.min(100, 100 - Math.abs(readingEase - 65) * 1.5),
-    ),
-  );
-  if (readingEase < 40) {
+  const readability = Math.round(Math.max(0, Math.min(100, 100 - Math.abs(readingEase - 55) * 1.1)));
+  if (readingEase < 30) {
     findings.push({
-      id: id("read"),
-      severity: "info",
-      label: "Dense, hard-to-read prose",
-      fix: "Shorten sentences. Replace passive voice with active verbs.",
+      id: id("read"), severity: "info", label: "Dense, hard-to-read prose",
+      fix: "Shorten sentences and prefer active voice.",
       jumpTo: { section: "summary" },
+      autoFix: { kind: "summary", action: "rewrite" },
     });
   }
 
   // ── 6. Page-limit estimate ────────────────────────────────────────
-  // Very rough: ~550 words per A4 page in a CV template.
   const totalWords = wordCount(fullText);
   const estPages = Math.max(1, Math.ceil(totalWords / 550));
   const limit = intent.pageLimit;
   if (limit && estPages > limit) {
     findings.push({
-      id: id("pages"),
-      severity: "warning",
+      id: id("pages"), severity: "warning",
       label: `Estimated ${estPages} pages — over ${limit}-page limit`,
-      fix: "Tighten older roles to 2–3 bullets, drop redundant phrasing in the summary.",
+      fix: "Tighten older roles to 2–3 bullets and condense the summary.",
+      autoFix: { kind: "summary", action: "condense" },
     });
   }
-  formatting.push({
-    label: limit ? `Fits ${limit}-page limit` : "No page limit set",
-    pass: !limit || estPages <= limit,
-  });
+  formatting.push({ label: limit ? `Fits ${limit}-page limit` : "No page limit set", pass: !limit || estPages <= limit });
 
-  // ── Aggregate ────────────────────────────────────────────────────
+  // ── Aggregate (lifted baselines) ─────────────────────────────────
+  const summaryScore = hasSummary ? 100 : Math.min(70, Math.round((cv.summary?.length ?? 0) / 80 * 70));
+  const experienceScore = hasExperience
+    ? Math.round(60 + (lenPct * 0.25 + verbPct * 0.4 + quantPct * 0.35) * 40)
+    : 0;
+  const skillsScore = hasSkills ? 100 : Math.min(85, cv.skills.length * 17);
+  const educationScore = hasEducation ? 100 : 50;
+
   const sectionScores = [
     { label: "Contact", score: contactScore },
-    { label: "Summary", score: hasSummary ? 100 : 40 },
-    {
-      label: "Experience",
-      score: hasExperience
-        ? Math.round((lenPct * 0.3 + verbPct * 0.3 + quantPct * 0.4) * 100)
-        : 0,
-    },
-    { label: "Skills", score: hasSkills ? 100 : Math.min(80, cv.skills.length * 16) },
-    { label: "Education", score: hasEducation ? 100 : 0 },
+    { label: "Summary", score: summaryScore },
+    { label: "Experience", score: experienceScore },
+    { label: "Skills", score: skillsScore },
+    { label: "Education", score: educationScore },
     { label: "Keywords", score: keywordMatch },
     { label: "Readability", score: readability },
   ];
 
-  const weights = { contact: 0.1, summary: 0.1, experience: 0.25, skills: 0.15, education: 0.05, keywords: 0.2, readability: 0.15 };
+  const weights = { contact: 0.1, summary: 0.1, experience: 0.28, skills: 0.15, education: 0.05, keywords: 0.17, readability: 0.15 };
   const overall = Math.round(
     sectionScores[0].score * weights.contact +
-      sectionScores[1].score * weights.summary +
-      sectionScores[2].score * weights.experience +
-      sectionScores[3].score * weights.skills +
-      sectionScores[4].score * weights.education +
-      sectionScores[5].score * weights.keywords +
-      sectionScores[6].score * weights.readability,
+    sectionScores[1].score * weights.summary +
+    sectionScores[2].score * weights.experience +
+    sectionScores[3].score * weights.skills +
+    sectionScores[4].score * weights.education +
+    sectionScores[5].score * weights.keywords +
+    sectionScores[6].score * weights.readability,
   );
 
-  // Stable sort: critical → warning → info
   const sev = { critical: 0, warning: 1, info: 2 } as const;
   findings.sort((a, b) => sev[a.severity] - sev[b.severity]);
 
-  return {
-    overall,
-    keywordMatch,
-    readability,
-    formatting,
-    findings,
-    sectionScores,
-  };
+  return { overall, keywordMatch, readability, formatting, findings, sectionScores };
 }
