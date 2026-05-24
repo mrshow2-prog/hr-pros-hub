@@ -197,7 +197,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
       if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
-        bullet(ctx, "▪", bul.rewrite || bul.original, { fs: 9.4 });
+        bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4 });
       }
       b.cursorY += 2.5;
     }
@@ -213,7 +213,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
 
   if (!isHidden(cv, "skills") && cv.skills.length > 0) {
     sectionTitle("Skills & Competencies");
-    renderTwoColList(b, SIENNA, cv.skills, "▪");
+    renderTwoColList(b, SIENNA, cv.skills, "•");
   }
 
   if (!isHidden(cv, "languages") && cv.languages.length > 0) {
@@ -366,7 +366,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
       if (comp) b.addText({ value: comp, fontSize: 10.5, color: SIENNA, spaceAfter: 2 });
       for (const bul of visibleBullets(exp)) {
-        bullet(ctx, "▸", bul.rewrite || bul.original, { fs: 10, lh: 1.7, glyphColor: SIENNA });
+        bullet(ctx, "›", bul.rewrite || bul.original, { fs: 10, lh: 1.7, glyphColor: SIENNA });
       }
       if (i < cv.experience.length - 1) b.cursorY += 4;
     });
@@ -597,7 +597,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
       if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.8 });
       for (const bul of visibleBullets(exp)) {
-        bullet(ctx, "→", bul.rewrite || bul.original, { fs: 9.4, lh: 1.6, glyphColor: SIENNA });
+        bullet(ctx, "›", bul.rewrite || bul.original, { fs: 9.4, lh: 1.6, glyphColor: SIENNA });
       }
       b.cursorY += 2;
       if (idx < cv.experience.length - 1) {
