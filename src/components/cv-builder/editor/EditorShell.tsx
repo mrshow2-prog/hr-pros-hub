@@ -581,12 +581,16 @@ function FindingGroup({
   tone,
   items,
   onJump,
+  onAutoFix,
+  fixingId,
 }: {
   title: string;
   icon: React.ReactNode;
   tone: "critical" | "warning" | "info";
   items: AtsFinding[];
   onJump: (f: AtsFinding) => void;
+  onAutoFix: (f: AtsFinding) => void;
+  fixingId: string | null;
 }) {
   if (items.length === 0) return null;
   const toneCls =
@@ -601,20 +605,35 @@ function FindingGroup({
         {icon} {title} · {items.length}
       </p>
       <ul className="space-y-2">
-        {items.map((f) => (
-          <li key={f.id} className="rounded-md border border-ink/10 bg-paper p-3">
-            <p className="font-dm text-xs font-medium text-ink">{f.label}</p>
-            <p className="mt-1 font-dm text-[11px] leading-relaxed text-ink/65">{f.fix}</p>
-            {f.jumpTo && (
-              <button
-                onClick={() => onJump(f)}
-                className="mt-2 inline-flex items-center gap-1 font-dm text-[11px] text-sienna hover:underline"
-              >
-                Fix it <ChevronRight size={10} />
-              </button>
-            )}
-          </li>
-        ))}
+        {items.map((f) => {
+          const fixing = fixingId === f.id;
+          return (
+            <li key={f.id} className="rounded-md border border-ink/10 bg-paper p-3">
+              <p className="font-dm text-xs font-medium text-ink">{f.label}</p>
+              <p className="mt-1 font-dm text-[11px] leading-relaxed text-ink/65">{f.fix}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                {f.autoFix && (
+                  <button
+                    onClick={() => onAutoFix(f)}
+                    disabled={fixing}
+                    className="inline-flex items-center gap-1 rounded-sm bg-sienna px-2 py-1 font-dm text-[11px] font-medium text-paper hover:opacity-90 disabled:opacity-60"
+                  >
+                    {fixing ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                    {fixing ? "Fixing…" : "Fix with AI"}
+                  </button>
+                )}
+                {f.jumpTo && (
+                  <button
+                    onClick={() => onJump(f)}
+                    className="inline-flex items-center gap-1 font-dm text-[11px] text-ink/60 hover:text-ink hover:underline"
+                  >
+                    {f.autoFix ? "Edit manually" : "Go to field"} <ChevronRight size={10} />
+                  </button>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
