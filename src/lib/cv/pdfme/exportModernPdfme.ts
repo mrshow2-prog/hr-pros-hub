@@ -159,41 +159,67 @@ export async function exportCvPdfme(
   };
 
   const sectionTitle = (label: string) => {
-    ensure(8);
-    // left accent bar
-    const barName = uid("bar");
-    push(
-      {
-        name: barName,
-        type: "line",
-        position: { x: MARGIN, y: y + 0.5 },
-        width: 1.4,
-        height: 5.2,
-        color: primary,
-      } as Schema & { name: string },
-      "",
-    );
-    addText({
-      value: label,
-      x: MARGIN + 3.5,
-      width: CONTENT_W - 3.5,
-      fontSize: 10.5,
-      color: ink,
-      bold: true,
-      uppercase: true,
-      letterSpacing: 1.1,
-      spaceAfter: 3,
-    });
+    ensure(10);
+    const useUpper = titleUpper;
+    if (dividerStyle === "bar") {
+      push(
+        {
+          name: uid("bar"),
+          type: "line",
+          position: { x: MARGIN, y: y + 0.5 },
+          width: 1.4,
+          height: 5.2,
+          color: primary,
+        } as Schema & { name: string },
+        "",
+      );
+      addText({
+        value: label,
+        x: MARGIN + 3.5,
+        width: CONTENT_W - 3.5,
+        fontSize: 10.5,
+        color: ink,
+        bold: true,
+        uppercase: useUpper,
+        letterSpacing: useUpper ? 1.1 : 0.2,
+        spaceAfter: 3,
+      });
+    } else {
+      addText({
+        value: label,
+        fontSize: 10.5,
+        color: ink,
+        bold: true,
+        uppercase: useUpper,
+        letterSpacing: useUpper ? 1.1 : 0.2,
+        spaceAfter: 1.5,
+      });
+      if (dividerStyle === "underline") {
+        push(
+          {
+            name: uid("uline"),
+            type: "line",
+            position: { x: MARGIN, y: y },
+            width: CONTENT_W,
+            height: 0.4,
+            color: primary,
+          } as Schema & { name: string },
+          "",
+        );
+        y += 2.5;
+      }
+    }
   };
 
   /* ---------------- Header ---------------- */
   if (!isHidden(cv, "contact")) {
     const photoSize = 24;
     const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
-    const hasPhoto = !!photoData && cfg.photoStyle !== "none";
+    const hasPhoto = !!photoData && photoShape !== "none";
 
-    const headerTextX = hasPhoto ? MARGIN + photoSize + 6 : MARGIN;
-    const headerTextW = CONTENT_W - (hasPhoto ? photoSize + 6 : 0);
+    const photoX = photoOnRight ? MARGIN + CONTENT_W - photoSize : MARGIN;
+    const headerTextX = !hasPhoto || photoOnRight ? MARGIN : MARGIN + photoSize + 6;
+    const headerTextW = hasPhoto ? CONTENT_W - photoSize - 6 : CONTENT_W;
     const headerStart = y;
 
     if (hasPhoto) {
