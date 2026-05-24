@@ -227,7 +227,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
     findings.push({
       id: id("expbul"), severity: "warning",
       label: `Tighten bullets for ${w.role}`,
-      fix: `${reasons.join("; ")}. One click rewrites them to start with strong verbs and add measurable impact.`,
+      fix: `${reasons.join("; ")}.`,
       jumpTo: { section: "experience", expId: w.expId },
       autoFix: { kind: "bullets", expId: w.expId, action: "rewrite" },
     });

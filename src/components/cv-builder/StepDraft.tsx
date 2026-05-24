@@ -354,31 +354,43 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           onChange={handlePhoto}
         />
 
-        <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
-        <Field
-          label="Job title"
-          value={contact.jobTitle}
-          onChange={(v) => patchContact({ jobTitle: v })}
-        />
+        <div data-field="name">
+          <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
+        </div>
+        <div data-field="jobTitle">
+          <Field
+            label="Job title"
+            value={contact.jobTitle}
+            onChange={(v) => patchContact({ jobTitle: v })}
+          />
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field
-            label="Email"
-            type="email"
-            value={contact.email}
-            onChange={(v) => patchContact({ email: v })}
-          />
-          <Field label="Phone" value={contact.phone} onChange={(v) => patchContact({ phone: v })} />
-          <Field
-            label="Location"
-            value={contact.location}
-            onChange={(v) => patchContact({ location: v })}
-          />
-          <Field
-            label="LinkedIn URL"
-            value={contact.linkedinUrl}
-            onChange={(v) => patchContact({ linkedinUrl: v })}
-          />
+          <div data-field="email">
+            <Field
+              label="Email"
+              type="email"
+              value={contact.email}
+              onChange={(v) => patchContact({ email: v })}
+            />
+          </div>
+          <div data-field="phone">
+            <Field label="Phone" value={contact.phone} onChange={(v) => patchContact({ phone: v })} />
+          </div>
+          <div data-field="location">
+            <Field
+              label="Location"
+              value={contact.location}
+              onChange={(v) => patchContact({ location: v })}
+            />
+          </div>
+          <div data-field="linkedinUrl">
+            <Field
+              label="LinkedIn URL"
+              value={contact.linkedinUrl}
+              onChange={(v) => patchContact({ linkedinUrl: v })}
+            />
+          </div>
         </div>
       </div>
       {err && (
@@ -537,22 +549,26 @@ function ExperienceCard({ exp }: { exp: CVExperience }) {
   };
 
   return (
-    <article className="rounded-md border border-ink/10 bg-paper p-5">
+    <article data-exp-id={exp.id} className="rounded-md border border-ink/10 bg-paper p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Job title" value={exp.role} onChange={(v) => patchExperience(exp.id, { role: v })} />
         <Field label="Company" value={exp.company} onChange={(v) => patchExperience(exp.id, { company: v })} />
-        <Field
-          label="From"
-          placeholder="MMM YYYY"
-          value={exp.startDate ?? ""}
-          onChange={(v) => patchExperience(exp.id, { startDate: v })}
-        />
-        <Field
-          label="To"
-          placeholder="MMM YYYY or Present"
-          value={exp.endDate ?? ""}
-          onChange={(v) => patchExperience(exp.id, { endDate: v })}
-        />
+        <div data-field="startDate">
+          <Field
+            label="From"
+            placeholder="MMM YYYY"
+            value={exp.startDate ?? ""}
+            onChange={(v) => patchExperience(exp.id, { startDate: v })}
+          />
+        </div>
+        <div data-field="endDate">
+          <Field
+            label="To"
+            placeholder="MMM YYYY or Present"
+            value={exp.endDate ?? ""}
+            onChange={(v) => patchExperience(exp.id, { endDate: v })}
+          />
+        </div>
         <Field
           label="Location"
           value={exp.location ?? ""}
@@ -726,7 +742,7 @@ function BulletRow({
   }
 
   return (
-    <li className="group flex items-start gap-2">
+    <li data-bullet-id={bullet.id} className="group flex items-start gap-2">
       <div className="flex-1">
         <AutoTextarea
           value={bullet.rewrite}

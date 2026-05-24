@@ -71,6 +71,8 @@ export default function EditorShell() {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [activeSection, setActiveSection] = useState<SectionKey>("contact");
   const [fixingId, setFixingId] = useState<string | null>(null);
+  const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
   const leftRef = useRef<HTMLDivElement>(null);
 
   // ── Auto-generate on first mount if we don't have a CV yet ────
@@ -130,14 +132,25 @@ export default function EditorShell() {
     scrollToSection(t.section);
     // Defer focus until after scroll
     setTimeout(() => {
-      const sel = t.bulletId
-        ? `[data-bullet-id="${t.bulletId}"] textarea, [data-bullet-id="${t.bulletId}"] input`
-        : t.expId
-          ? `[data-exp-id="${t.expId}"] input`
-          : t.field
-            ? `[data-field="${t.field}"]`
-            : `[data-section="${t.section}"]`;
-      const node = leftRef.current?.querySelector(sel) as HTMLElement | null;
+      const tryFind = (sel: string) =>
+        leftRef.current?.querySelector(sel) as HTMLElement | null;
+      let node: HTMLElement | null = null;
+      if (t.bulletId) {
+        node = tryFind(`[data-bullet-id="${t.bulletId}"] textarea`)
+          || tryFind(`[data-bullet-id="${t.bulletId}"] input`);
+      } else if (t.expId && t.field) {
+        node = tryFind(`[data-exp-id="${t.expId}"] [data-field="${t.field}"] input, [data-exp-id="${t.expId}"] [data-field="${t.field}"] textarea`);
+      } else if (t.expId) {
+        // For bullet findings, jump to the first bullet textarea inside that role
+        node = tryFind(`[data-exp-id="${t.expId}"] li[data-bullet-id] textarea`)
+          || tryFind(`[data-exp-id="${t.expId}"] textarea`)
+          || tryFind(`[data-exp-id="${t.expId}"] input`);
+      } else if (t.field) {
+        node = tryFind(`[data-field="${t.field}"] input, [data-field="${t.field}"] textarea`)
+          || tryFind(`[data-field="${t.field}"]`);
+      } else {
+        node = tryFind(`[data-section="${t.section}"]`);
+      }
       if (node) {
         node.focus?.();
         node.scrollIntoView?.({ behavior: "smooth", block: "center" });
@@ -150,6 +163,7 @@ export default function EditorShell() {
     const af = finding.autoFix;
     if (!af || !state.generatedCV) return;
     setFixingId(finding.id);
+    let success = false;
     try {
       if (af.kind === "summary") {
         const { data, error } = await supabase.functions.invoke("generate-cv-section", {
@@ -163,6 +177,7 @@ export default function EditorShell() {
         if (error) throw error;
         if (typeof data?.summary === "string" && data.summary.trim()) {
           patchSummary(data.summary.trim());
+          success = true;
         }
       } else if (af.kind === "bullets") {
         const exp = state.generatedCV.experience.find((e) => e.id === af.expId);
@@ -183,14 +198,30 @@ export default function EditorShell() {
         if (error) throw error;
         if (Array.isArray(data?.bullets) && data.bullets.length) {
           replaceBullets(af.expId, data.bullets);
+          success = true;
         }
       }
     } catch (e) {
       console.error("Auto-fix failed", e);
     } finally {
       setFixingId(null);
+      if (success) {
+        setSuppressedIds((s) => {
+          const next = new Set(s);
+          next.add(finding.id);
+          return next;
+        });
+      }
     }
   }, [state.generatedCV, state.intentForm, patchSummary, replaceBullets]);
+
+  const handleRefresh = useCallback(() => {
+    if (!state.generatedCV) return;
+    setRefreshing(true);
+    setSuppressedIds(new Set());
+    setAts(scoreCv(state.generatedCV, state.intentForm));
+    setTimeout(() => setRefreshing(false), 500);
+  }, [state.generatedCV, state.intentForm, setAts]);
 
   // ── Loading / generation gate ────────────────────────────────
   if (loading || !state.generatedCV) {
@@ -372,7 +403,15 @@ export default function EditorShell() {
 
         {/* ATS drawer */}
         {atsOpen && (
-          <AtsDrawer onClose={() => setAtsOpen(false)} onJump={jumpTo} onAutoFix={runAutoFix} fixingId={fixingId} />
+          <AtsDrawer
+            onClose={() => setAtsOpen(false)}
+            onJump={jumpTo}
+            onAutoFix={runAutoFix}
+            fixingId={fixingId}
+            suppressedIds={suppressedIds}
+            onRefresh={handleRefresh}
+            refreshing={refreshing}
+          />
         )}
       </div>
     </div>
@@ -438,26 +477,32 @@ function AtsDrawer({
   onJump,
   onAutoFix,
   fixingId,
+  suppressedIds,
+  onRefresh,
+  refreshing,
 }: {
   onClose: () => void;
   onJump: (f: AtsFinding) => void;
   onAutoFix: (f: AtsFinding) => void;
   fixingId: string | null;
+  suppressedIds: Set<string>;
+  onRefresh: () => void;
+  refreshing: boolean;
 }) {
-  const { state, setAts } = useCVBuilder();
+  const { state } = useCVBuilder();
   const score = state.atsScore;
 
-  const rescore = () => {
-    if (!state.generatedCV) return;
-    setAts(scoreCv(state.generatedCV, state.intentForm));
-  };
-
-  const findings = useMemo(() => score?.findings ?? [], [score]);
+  const findings = useMemo(
+    () => (score?.findings ?? []).filter((f) => !suppressedIds.has(f.id)),
+    [score, suppressedIds],
+  );
   const grouped = useMemo(() => ({
     critical: findings.filter((f) => f.severity === "critical"),
     warning: findings.filter((f) => f.severity === "warning"),
     info: findings.filter((f) => f.severity === "info"),
   }), [findings]);
+
+  const warningHasAutoFix = grouped.warning.some((f) => f.autoFix);
 
   return (
     <aside className="flex h-full w-[340px] flex-col border-l border-ink/10 bg-paper">
@@ -465,11 +510,13 @@ function AtsDrawer({
         <p className="font-syne text-sm text-ink">ATS analysis</p>
         <div className="flex items-center gap-1">
           <button
-            onClick={rescore}
-            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink disabled:opacity-60"
             aria-label="Re-score"
+            title="Re-score"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={14} className={cn(refreshing && "animate-spin")} />
           </button>
           <button
             onClick={onClose}
@@ -523,6 +570,7 @@ function AtsDrawer({
             onJump={onJump}
             onAutoFix={onAutoFix}
             fixingId={fixingId}
+            note={warningHasAutoFix ? "Click ‘Fix with AI’ to rewrite automatically, or ‘Edit manually’ to jump to the field." : undefined}
           />
           <FindingGroup
             title="Suggestions"
@@ -583,6 +631,7 @@ function FindingGroup({
   onJump,
   onAutoFix,
   fixingId,
+  note,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -591,6 +640,7 @@ function FindingGroup({
   onJump: (f: AtsFinding) => void;
   onAutoFix: (f: AtsFinding) => void;
   fixingId: string | null;
+  note?: string;
 }) {
   if (items.length === 0) return null;
   const toneCls =
@@ -604,6 +654,12 @@ function FindingGroup({
       <p className={cn("mb-2 inline-flex items-center gap-1.5 font-dm text-[11px] uppercase tracking-wider2", toneCls)}>
         {icon} {title} · {items.length}
       </p>
+      {note && (
+        <p className="mb-2 rounded-sm bg-ink/5 px-2.5 py-1.5 font-dm text-[11px] leading-relaxed text-ink/65">
+          {note}
+        </p>
+      )}
+
       <ul className="space-y-2">
         {items.map((f) => {
           const fixing = fixingId === f.id;
