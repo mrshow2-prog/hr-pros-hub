@@ -512,6 +512,8 @@ function AtsDrawer({
             tone="critical"
             items={grouped.critical}
             onJump={onJump}
+            onAutoFix={onAutoFix}
+            fixingId={fixingId}
           />
           <FindingGroup
             title="Warnings"
@@ -519,6 +521,8 @@ function AtsDrawer({
             tone="warning"
             items={grouped.warning}
             onJump={onJump}
+            onAutoFix={onAutoFix}
+            fixingId={fixingId}
           />
           <FindingGroup
             title="Suggestions"
@@ -526,6 +530,8 @@ function AtsDrawer({
             tone="info"
             items={grouped.info}
             onJump={onJump}
+            onAutoFix={onAutoFix}
+            fixingId={fixingId}
           />
           {findings.length === 0 && (
             <p className="font-dm text-xs text-ink/55">
