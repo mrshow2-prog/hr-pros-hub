@@ -4,6 +4,8 @@ import { saveAs } from "file-saver";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { buildDocxByTemplate } from "@/lib/docx/router";
+import { exportCompactPdf } from "@/lib/cv/exportCompactPdf";
+import { exportCompactDocx } from "@/lib/cv/exportCompactDocx";
 import React from "react";
 
 export function slugify(name: string, fallback = "cv") {
