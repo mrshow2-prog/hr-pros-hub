@@ -6,6 +6,7 @@ import PdfRouter from "@/components/cv-builder/pdf/PdfRouter";
 import { buildDocxByTemplate } from "@/lib/docx/router";
 import { exportCompactPdf } from "@/lib/cv/exportCompactPdf";
 import { exportCompactDocx } from "@/lib/cv/exportCompactDocx";
+import { exportModernPdfme } from "@/lib/cv/pdfme/exportModernPdfme";
 import React from "react";
 
 export function slugify(name: string, fallback = "cv") {
@@ -44,6 +45,9 @@ export async function exportCVToPdf(
 ) {
   if (template === "compact") {
     return exportCompactPdf(cv, photoUrl, fileName);
+  }
+  if (template === "modern") {
+    return exportModernPdfme(cv, photoUrl, fileName);
   }
   const photoDataUrl = photoUrl ? await urlToDataUrl(photoUrl) : null;
   const doc = React.createElement(PdfRouter, { cv, template, photoDataUrl });
