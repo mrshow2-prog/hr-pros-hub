@@ -21,12 +21,12 @@ function CvBuilderTopBar() {
   }, []);
   const logout = async () => {
     await supabase.auth.signOut();
-    nav("/career-studio/cv-builder/login", { replace: true });
+    nav("/login", { replace: true });
   };
   return (
     <div className="w-full bg-paper border-b border-ink/10">
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between text-xs font-dm text-ink/70">
-        <Link to="/career-studio/cv-builder/my-cvs" className="hover:text-ink">← My CVs</Link>
+        <Link to="/my-cvs" className="hover:text-ink">← My CVs</Link>
         <div className="flex items-center gap-3">
           {email && <span className="hidden sm:inline">{email}</span>}
           <button onClick={logout} className="hover:text-ink underline">Log out</button>
@@ -67,7 +67,7 @@ export default function CvBuilder() {
       <SEO
         title="CV Builder — Your CV, professionally rewritten"
         description="Upload your CV, answer a few questions, and get a rewritten ATS-optimised version. One payment, yours to keep."
-        path="/career-studio/cv-builder"
+        path="/builder"
       />
       <CvBuilderTopBar />
       <Wizard />

@@ -41,17 +41,17 @@ export default function MyCvs() {
 
   const open = (id: string) => {
     localStorage.setItem(SESSION_LS, id);
-    nav("/career-studio/cv-builder");
+    nav("/builder");
   };
 
   const startNew = () => {
     localStorage.removeItem(SESSION_LS);
-    nav("/career-studio/cv-builder");
+    nav("/builder");
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
-    nav("/career-studio/cv-builder/login", { replace: true });
+    nav("/login", { replace: true });
   };
 
   const titleOf = (r: Row) => {
@@ -67,7 +67,7 @@ export default function MyCvs() {
 
   return (
     <div className="min-h-screen bg-paper text-ink font-dm">
-      <SEO title="My CVs · CV Builder" description="Your saved CV drafts." path="/career-studio/cv-builder/my-cvs" />
+      <SEO title="My CVs · CV Builder" description="Your saved CV drafts." path="/my-cvs" />
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
