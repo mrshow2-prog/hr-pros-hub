@@ -1,0 +1,542 @@
+/**
+ * Split editor (Phase 2.1)
+ *
+ * Left pane: existing form blocks from StepDraft, organised under stable
+ * section anchors so the ATS panel can deep-link to fields via `jumpTo`.
+ * Right pane: live preview of the rendered template + ATS findings drawer.
+ * Top bar: section tabs, template / theme switchers, score pill, Continue.
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  RefreshCw,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+  CheckCircle2,
+  ChevronRight,
+  Sun,
+  Moon,
+  Loader2,
+  X,
+} from "lucide-react";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useCVBuilder, type SectionKey, type TemplateId, type AtsFinding } from "@/contexts/CVBuilderContext";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  ContactBlock,
+  SummaryBlock,
+  ExperienceList,
+  SkillsBlock,
+  EducationBlock,
+  ClustersBlock,
+  LanguagesBlock,
+  SectionShell,
+} from "../StepDraft";
+import CVRenderer from "../templates/CVRenderer";
+import { cn } from "@/lib/utils";
+import { scoreCv } from "@/lib/cv/atsEngine";
+
+const TEMPLATES: { id: TemplateId; label: string }[] = [
+  { id: "classic", label: "Classic" },
+  { id: "modern", label: "Modern" },
+  { id: "compact", label: "Compact" },
+  { id: "skills-first", label: "Skills-first" },
+  { id: "executive", label: "Executive" },
+];
+
+type SectionDef = { key: SectionKey; label: string };
+const SECTIONS: SectionDef[] = [
+  { key: "contact", label: "Contact" },
+  { key: "summary", label: "Summary" },
+  { key: "experience", label: "Experience" },
+  { key: "skills", label: "Skills" },
+  { key: "education", label: "Education" },
+  { key: "competencies", label: "Competencies" },
+  { key: "languages", label: "Languages" },
+];
+
+export default function EditorShell() {
+  const { state, setGeneratedCV, setAts, setStep, setTemplate, setTypeOption } =
+    useCVBuilder();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [atsOpen, setAtsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<SectionKey>("contact");
+  const leftRef = useRef<HTMLDivElement>(null);
+
+  // ── Auto-generate on first mount if we don't have a CV yet ────
+  const runGeneration = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-cv", {
+        body: {
+          parsedText: state.parsedText,
+          intentForm: state.intentForm,
+          gapResponses: state.gapAnalysis.responses,
+          template: state.selectedTemplate,
+          typeOption: state.typeOption,
+          uploadedFiles: state.uploadedFiles,
+          pageLimit: state.intentForm.pageLimit ?? null,
+          provider: "gemini",
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      if (data?.generatedCV) setGeneratedCV(data.generatedCV);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, [state.parsedText, state.intentForm, state.gapAnalysis.responses,
+      state.selectedTemplate, state.typeOption, state.uploadedFiles, setGeneratedCV]);
+
+  useEffect(() => {
+    if (!state.generatedCV) runGeneration();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Auto-score whenever the CV mutates (debounced) ────────────
+  useEffect(() => {
+    if (!state.generatedCV) return;
+    const t = setTimeout(() => {
+      const result = scoreCv(state.generatedCV!, state.intentForm);
+      setAts(result);
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.generatedCV, state.intentForm.targetRoles, state.intentForm.functionArea, state.intentForm.pageLimit]);
+
+  // ── Scroll the left pane to a section anchor ──────────────────
+  const scrollToSection = useCallback((key: SectionKey) => {
+    setActiveSection(key);
+    const el = leftRef.current?.querySelector(`[data-section="${key}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const jumpTo = useCallback((finding: AtsFinding) => {
+    const t = finding.jumpTo;
+    if (!t) return;
+    scrollToSection(t.section);
+    // Defer focus until after scroll
+    setTimeout(() => {
+      const sel = t.bulletId
+        ? `[data-bullet-id="${t.bulletId}"] textarea, [data-bullet-id="${t.bulletId}"] input`
+        : t.expId
+          ? `[data-exp-id="${t.expId}"] input`
+          : t.field
+            ? `[data-field="${t.field}"]`
+            : `[data-section="${t.section}"]`;
+      const node = leftRef.current?.querySelector(sel) as HTMLElement | null;
+      if (node) {
+        node.focus?.();
+        node.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      }
+    }, 350);
+  }, [scrollToSection]);
+
+  // ── Loading / generation gate ────────────────────────────────
+  if (loading || !state.generatedCV) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-paper">
+        {error ? (
+          <div className="max-w-md rounded-md border border-sienna/30 bg-clay/30 p-6 text-center">
+            <p className="font-syne text-lg text-ink">High demand right now</p>
+            <p className="mt-2 font-dm text-sm text-ink/70">{error}</p>
+            <button
+              onClick={runGeneration}
+              className="mt-4 inline-flex items-center gap-2 rounded-sm bg-sienna px-4 py-2 font-dm text-sm font-medium text-paper hover:opacity-90"
+            >
+              <RefreshCw size={14} /> Retry
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 font-dm text-sm text-ink/65">
+            <Loader2 className="animate-spin" size={16} />
+            Drafting your CV — about 20 seconds…
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const score = state.atsScore;
+  const cv = state.generatedCV;
+  const showCompetencies =
+    state.intentForm.cvType === "skills" || state.intentForm.cvType === "hybrid";
+
+  return (
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-paper">
+      {/* Top bar */}
+      <header className="flex flex-wrap items-center gap-2 border-b border-ink/10 bg-paper/95 px-3 py-2 backdrop-blur">
+        <nav className="flex flex-1 flex-wrap items-center gap-1 overflow-x-auto">
+          {SECTIONS.filter((s) => s.key !== "competencies" || showCompetencies).map((s) => (
+            <button
+              key={s.key}
+              onClick={() => scrollToSection(s.key)}
+              className={cn(
+                "rounded-sm px-2.5 py-1 font-dm text-xs transition",
+                activeSection === s.key
+                  ? "bg-ink text-paper"
+                  : "text-ink/65 hover:bg-ink/5 hover:text-ink",
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <select
+            value={state.selectedTemplate ?? "modern"}
+            onChange={(e) => setTemplate(e.target.value as TemplateId)}
+            className="rounded border border-ink/15 bg-paper px-2 py-1 font-dm text-xs text-ink focus:border-sienna focus:outline-none"
+            aria-label="Template"
+          >
+            {TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => setTypeOption(state.typeOption === "dark" ? "light" : "dark")}
+            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2 py-1 font-dm text-xs text-ink/70 hover:border-ink/40"
+            aria-label="Toggle theme"
+          >
+            {state.typeOption === "dark" ? <Moon size={12} /> : <Sun size={12} />}
+            {state.typeOption === "dark" ? "Dark" : "Light"}
+          </button>
+
+          <button
+            onClick={() => setAtsOpen((o) => !o)}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-sm border px-3 py-1 font-dm text-xs transition",
+              score && score.overall >= 75
+                ? "border-olive bg-olive/10 text-olive"
+                : score && score.overall >= 50
+                  ? "border-amber-600 bg-amber-50 text-amber-800"
+                  : "border-sienna/40 bg-sienna/10 text-sienna",
+            )}
+            aria-label="ATS score"
+          >
+            <CheckCircle2 size={12} />
+            ATS {score?.overall ?? "—"}
+            {score?.findings && score.findings.length > 0 && (
+              <span className="ml-1 rounded-full bg-ink/10 px-1.5 text-[10px] text-ink/70">
+                {score.findings.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setStep(7)}
+            className="inline-flex items-center gap-1 rounded-sm bg-sienna px-3 py-1.5 font-dm text-xs font-medium text-paper hover:opacity-90"
+          >
+            Continue <ChevronRight size={12} />
+          </button>
+        </div>
+      </header>
+
+      {/* Split body */}
+      <div className="flex flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
+          <ResizablePanel defaultSize={50} minSize={30}>
+            <div
+              ref={leftRef}
+              className="h-full overflow-y-auto px-5 py-6 lg:px-8"
+            >
+              <div className="mx-auto max-w-2xl space-y-10">
+                <div data-section="contact">
+                  <SectionShell sectionKey="contact" title="Contact">
+                    <ContactBlock contact={cv.contact} />
+                  </SectionShell>
+                </div>
+                <div data-section="summary">
+                  <SectionShell sectionKey="summary" title="Professional summary">
+                    <SummaryBlock summary={cv.summary} />
+                  </SectionShell>
+                </div>
+                <div data-section="experience">
+                  <SectionShell sectionKey="experience" title="Work experience">
+                    <ExperienceList experience={cv.experience} />
+                  </SectionShell>
+                </div>
+                <div data-section="skills">
+                  <SectionShell sectionKey="skills" title="Skills">
+                    <SkillsBlock skills={cv.skills} />
+                  </SectionShell>
+                </div>
+                <div data-section="education">
+                  <SectionShell sectionKey="education" title="Education & certifications">
+                    <EducationBlock education={cv.education} />
+                  </SectionShell>
+                </div>
+                {showCompetencies && (
+                  <div data-section="competencies">
+                    <SectionShell sectionKey="competencies" title="Competency clusters">
+                      <ClustersBlock clusters={cv.competencyClusters} />
+                    </SectionShell>
+                  </div>
+                )}
+                <div data-section="languages">
+                  <SectionShell sectionKey="languages" title="Languages">
+                    <LanguagesBlock languages={cv.languages} />
+                  </SectionShell>
+                </div>
+                <div className="h-32" />
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={50} minSize={30}>
+            <PreviewPane />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+
+        {/* ATS drawer */}
+        {atsOpen && (
+          <AtsDrawer onClose={() => setAtsOpen(false)} onJump={jumpTo} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ────────── Live preview pane ────────── */
+
+function PreviewPane() {
+  const { state } = useCVBuilder();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.85);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!state.photoPath) { setPhotoUrl(null); return; }
+      const { data } = await supabase.storage
+        .from("cv-builder-uploads")
+        .createSignedUrl(state.photoPath, 60 * 60);
+      if (active) setPhotoUrl(data?.signedUrl ?? null);
+    })();
+    return () => { active = false; };
+  }, [state.photoPath]);
+
+  // Fit width
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const ro = new ResizeObserver(() => {
+      if (!wrapRef.current) return;
+      const w = wrapRef.current.clientWidth - 48; // padding
+      setScale(Math.min(1, Math.max(0.45, w / 794)));
+    });
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  if (!state.generatedCV || !state.selectedTemplate) return null;
+
+  return (
+    <div ref={wrapRef} className="h-full overflow-y-auto bg-clay/30 p-6">
+      <div className="mx-auto" style={{ width: 794 * scale }}>
+        <div
+          className="origin-top shadow-xl ring-1 ring-ink/10"
+          style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}
+        >
+          <CVRenderer
+            cv={state.generatedCV}
+            template={state.selectedTemplate}
+            photoUrl={photoUrl}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────── ATS findings drawer ────────── */
+
+function AtsDrawer({
+  onClose,
+  onJump,
+}: {
+  onClose: () => void;
+  onJump: (f: AtsFinding) => void;
+}) {
+  const { state, setAts } = useCVBuilder();
+  const score = state.atsScore;
+
+  const rescore = () => {
+    if (!state.generatedCV) return;
+    setAts(scoreCv(state.generatedCV, state.intentForm));
+  };
+
+  const findings = useMemo(() => score?.findings ?? [], [score]);
+  const grouped = useMemo(() => ({
+    critical: findings.filter((f) => f.severity === "critical"),
+    warning: findings.filter((f) => f.severity === "warning"),
+    info: findings.filter((f) => f.severity === "info"),
+  }), [findings]);
+
+  return (
+    <aside className="flex h-full w-[340px] flex-col border-l border-ink/10 bg-paper">
+      <header className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
+        <p className="font-syne text-sm text-ink">ATS analysis</p>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={rescore}
+            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink"
+            aria-label="Re-score"
+          >
+            <RefreshCw size={14} />
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-ink/55 hover:bg-ink/5 hover:text-ink"
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* Score donut */}
+        <ScoreDonut value={score?.overall ?? 0} />
+
+        {/* Section breakdown */}
+        <div className="mt-5 space-y-1.5">
+          {(score?.sectionScores ?? []).map((s) => (
+            <div key={s.label} className="flex items-center gap-2">
+              <span className="w-24 shrink-0 font-dm text-[11px] text-ink/65">{s.label}</span>
+              <div className="h-1.5 flex-1 rounded-full bg-ink/10">
+                <div
+                  className={cn(
+                    "h-1.5 rounded-full",
+                    s.score >= 75 ? "bg-olive" : s.score >= 50 ? "bg-amber-500" : "bg-sienna",
+                  )}
+                  style={{ width: `${s.score}%` }}
+                />
+              </div>
+              <span className="w-8 text-right font-dm text-[11px] text-ink/55">{s.score}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Findings */}
+        <div className="mt-6 space-y-4">
+          <FindingGroup
+            title="Critical"
+            icon={<AlertCircle size={12} />}
+            tone="critical"
+            items={grouped.critical}
+            onJump={onJump}
+          />
+          <FindingGroup
+            title="Warnings"
+            icon={<AlertTriangle size={12} />}
+            tone="warning"
+            items={grouped.warning}
+            onJump={onJump}
+          />
+          <FindingGroup
+            title="Suggestions"
+            icon={<Info size={12} />}
+            tone="info"
+            items={grouped.info}
+            onJump={onJump}
+          />
+          {findings.length === 0 && (
+            <p className="font-dm text-xs text-ink/55">
+              No findings — your CV passes all checks. Nicely done.
+            </p>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function ScoreDonut({ value }: { value: number }) {
+  const r = 38;
+  const c = 2 * Math.PI * r;
+  const dash = c - (value / 100) * c;
+  const tone =
+    value >= 75 ? "stroke-olive" : value >= 50 ? "stroke-amber-500" : "stroke-sienna";
+  return (
+    <div className="flex items-center gap-4">
+      <svg width="92" height="92" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={r} className="fill-none stroke-ink/10" strokeWidth="9" />
+        <circle
+          cx="50" cy="50" r={r}
+          className={cn("fill-none", tone)}
+          strokeWidth="9"
+          strokeDasharray={c}
+          strokeDashoffset={dash}
+          strokeLinecap="round"
+          transform="rotate(-90 50 50)"
+        />
+        <text x="50" y="56" textAnchor="middle" className="fill-ink font-syne" fontSize="22">
+          {value}
+        </text>
+      </svg>
+      <div className="font-dm text-xs leading-relaxed text-ink/65">
+        Overall ATS readiness.<br />
+        <span className="text-ink/45">Updated live as you edit.</span>
+      </div>
+    </div>
+  );
+}
+
+function FindingGroup({
+  title,
+  icon,
+  tone,
+  items,
+  onJump,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  tone: "critical" | "warning" | "info";
+  items: AtsFinding[];
+  onJump: (f: AtsFinding) => void;
+}) {
+  if (items.length === 0) return null;
+  const toneCls =
+    tone === "critical"
+      ? "text-sienna"
+      : tone === "warning"
+        ? "text-amber-700"
+        : "text-ink/55";
+  return (
+    <div>
+      <p className={cn("mb-2 inline-flex items-center gap-1.5 font-dm text-[11px] uppercase tracking-wider2", toneCls)}>
+        {icon} {title} · {items.length}
+      </p>
+      <ul className="space-y-2">
+        {items.map((f) => (
+          <li key={f.id} className="rounded-md border border-ink/10 bg-paper p-3">
+            <p className="font-dm text-xs font-medium text-ink">{f.label}</p>
+            <p className="mt-1 font-dm text-[11px] leading-relaxed text-ink/65">{f.fix}</p>
+            {f.jumpTo && (
+              <button
+                onClick={() => onJump(f)}
+                className="mt-2 inline-flex items-center gap-1 font-dm text-[11px] text-sienna hover:underline"
+              >
+                Fix it <ChevronRight size={10} />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
