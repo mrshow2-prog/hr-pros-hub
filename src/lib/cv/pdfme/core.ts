@@ -233,7 +233,8 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           lineHeight: lh,
           characterSpacing: o.letterSpacing ?? 0,
           backgroundColor: o.bgColor ?? "",
-          fontName: o.bold ? "Roboto-Bold" : undefined,
+          // Bold is approximated via size/color/spacing — pdfme only ships
+          // a Roboto Regular by default.
         } as Schema & { name: string },
         value,
       );
