@@ -217,12 +217,11 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
       bulletTotal++; expBullets++;
       const wc = wordCount(text);
       if (wc >= 8 && wc <= 32) bulletInRange++;
-      const firstWord = text.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "");
-      if (firstWord && ACTION_VERBS.has(firstWord)) { bulletActionVerb++; expVerbs++; }
+      if (startsWithActionVerb(text)) { bulletActionVerb++; expVerbs++; }
     }
     if (expBullets >= 2) {
       const v = expVerbs / expBullets;
-      if (v < 0.6) {
+      if (v < 0.5) {
         expWithWeakBullets.push({ expId: exp.id, role: exp.role || exp.company, verbPct: v });
       }
     }
@@ -230,7 +229,7 @@ export function scoreCv(cv: GeneratedCV, intent: IntentForm): AtsResult {
 
   const verbPct = bulletTotal ? bulletActionVerb / bulletTotal : 1;
   const lenPct = bulletTotal ? bulletInRange / bulletTotal : 1;
-  formatting.push({ label: "≥70% bullets start with action verb", pass: verbPct >= 0.7 });
+  formatting.push({ label: "Most bullets start with action verbs", pass: verbPct >= 0.5 });
 
   // Consolidated: one finding per weak experience, with auto-fix
   for (const w of expWithWeakBullets) {
