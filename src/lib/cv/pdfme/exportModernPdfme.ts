@@ -2,7 +2,7 @@ import { generate } from "@pdfme/generator";
 import { text, image, line } from "@pdfme/schemas";
 import type { Template, Schema } from "@pdfme/common";
 import { saveAs } from "file-saver";
-import type { GeneratedCV } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { contactItems, isHidden, periodOf, visibleBullets } from "@/components/cv-builder/pdf/shared";
 import { getTemplateConfig } from "@/lib/cvTemplateConfig";
 
@@ -80,16 +80,21 @@ async function urlToDataUrl(url: string): Promise<string | null> {
   } catch { return null; }
 }
 
-export async function exportModernPdfme(
+export async function exportCvPdfme(
   cv: GeneratedCV,
   photoUrl: string | null,
+  templateId: TemplateId,
   fileName: string,
 ) {
-  const cfg = getTemplateConfig("modern");
+  const cfg = getTemplateConfig(templateId);
   const primary = cfg.primaryColor;
   const ink = "#111827";
   const sub = "#374151";
   const muted = "#6b7280";
+  const dividerStyle = cfg.sectionDividerStyle; // "underline" | "bar" | "none"
+  const titleUpper = cfg.headingUppercase;
+  const photoShape = cfg.photoStyle; // "circle" | "square" | "none"
+  const photoOnRight = cfg.photoPosition === "top-right";
 
   // We'll build a list of pages, each as an array of schemas.
   const pages: Array<Array<Schema & { name: string }>> = [[]];
@@ -154,41 +159,67 @@ export async function exportModernPdfme(
   };
 
   const sectionTitle = (label: string) => {
-    ensure(8);
-    // left accent bar
-    const barName = uid("bar");
-    push(
-      {
-        name: barName,
-        type: "line",
-        position: { x: MARGIN, y: y + 0.5 },
-        width: 1.4,
-        height: 5.2,
-        color: primary,
-      } as Schema & { name: string },
-      "",
-    );
-    addText({
-      value: label,
-      x: MARGIN + 3.5,
-      width: CONTENT_W - 3.5,
-      fontSize: 10.5,
-      color: ink,
-      bold: true,
-      uppercase: true,
-      letterSpacing: 1.1,
-      spaceAfter: 3,
-    });
+    ensure(10);
+    const useUpper = titleUpper;
+    if (dividerStyle === "bar") {
+      push(
+        {
+          name: uid("bar"),
+          type: "line",
+          position: { x: MARGIN, y: y + 0.5 },
+          width: 1.4,
+          height: 5.2,
+          color: primary,
+        } as Schema & { name: string },
+        "",
+      );
+      addText({
+        value: label,
+        x: MARGIN + 3.5,
+        width: CONTENT_W - 3.5,
+        fontSize: 10.5,
+        color: ink,
+        bold: true,
+        uppercase: useUpper,
+        letterSpacing: useUpper ? 1.1 : 0.2,
+        spaceAfter: 3,
+      });
+    } else {
+      addText({
+        value: label,
+        fontSize: 10.5,
+        color: ink,
+        bold: true,
+        uppercase: useUpper,
+        letterSpacing: useUpper ? 1.1 : 0.2,
+        spaceAfter: 1.5,
+      });
+      if (dividerStyle === "underline") {
+        push(
+          {
+            name: uid("uline"),
+            type: "line",
+            position: { x: MARGIN, y: y },
+            width: CONTENT_W,
+            height: 0.4,
+            color: primary,
+          } as Schema & { name: string },
+          "",
+        );
+        y += 2.5;
+      }
+    }
   };
 
   /* ---------------- Header ---------------- */
   if (!isHidden(cv, "contact")) {
     const photoSize = 24;
     const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
-    const hasPhoto = !!photoData && cfg.photoStyle !== "none";
+    const hasPhoto = !!photoData && photoShape !== "none";
 
-    const headerTextX = hasPhoto ? MARGIN + photoSize + 6 : MARGIN;
-    const headerTextW = CONTENT_W - (hasPhoto ? photoSize + 6 : 0);
+    const photoX = photoOnRight ? MARGIN + CONTENT_W - photoSize : MARGIN;
+    const headerTextX = !hasPhoto || photoOnRight ? MARGIN : MARGIN + photoSize + 6;
+    const headerTextW = hasPhoto ? CONTENT_W - photoSize - 6 : CONTENT_W;
     const headerStart = y;
 
     if (hasPhoto) {
@@ -196,9 +227,11 @@ export async function exportModernPdfme(
         {
           name: uid("photo"),
           type: "image",
-          position: { x: MARGIN, y: headerStart },
+          position: { x: photoX, y: headerStart },
           width: photoSize,
           height: photoSize,
+          rotate: 0,
+          ...(photoShape === "circle" ? { radius: photoSize / 2 } : {}),
         } as Schema & { name: string },
         photoData!,
       );
