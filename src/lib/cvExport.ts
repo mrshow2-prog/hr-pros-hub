@@ -42,6 +42,9 @@ export async function exportCVToPdf(
   photoUrl: string | null,
   fileName: string,
 ) {
+  if (template === "compact") {
+    return exportCompactPdf(cv, photoUrl, fileName);
+  }
   const photoDataUrl = photoUrl ? await urlToDataUrl(photoUrl) : null;
   const doc = React.createElement(PdfRouter, { cv, template, photoDataUrl });
   // @ts-expect-error - pdf() accepts a Document element
@@ -67,6 +70,9 @@ export async function exportCVToDocx(
   template: TemplateId = "modern",
   photoUrl: string | null = null,
 ) {
+  if (template === "compact") {
+    return exportCompactDocx(cv, photoUrl, fileName);
+  }
   const doc = await buildDocxByTemplate(cv, template, photoUrl);
   const blob = await Packer.toBlob(doc);
   saveAs(blob, fileName);
