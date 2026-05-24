@@ -1,4 +1,5 @@
 import { saveAs } from "file-saver";
+import { asBlob } from "html-docx-js-typescript";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import { renderCompactHtml } from "./templates/compact";
 
@@ -25,12 +26,10 @@ export async function exportCompactDocx(
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
   const html = renderCompactHtml(cv, photoData, "docx");
 
-  // html-docx-js is CJS without types — dynamic import to keep tree small
-  const mod: any = await import("html-docx-js/dist/html-docx");
-  const lib = mod.default ?? mod;
-  const blob: Blob = lib.asBlob(html, {
+  const result = await asBlob(html, {
     orientation: "portrait",
     margins: { top: 0, right: 0, bottom: 0, left: 0 },
   });
+  const blob = result instanceof Blob ? result : new Blob([result as BlobPart]);
   saveAs(blob, fileName);
 }
