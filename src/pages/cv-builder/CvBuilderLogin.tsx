@@ -50,8 +50,8 @@ export default function CvBuilderLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-paper px-4 font-dm text-ink">
       <SEO
-        title="CV Builder · Sign in"
-        description="Sign in to save and revisit your CV drafts."
+        title="Sign in · People.Studio CV Builder"
+        description="Sign in to your People Studio CV Builder account to save drafts, edit them later, and download ATS-optimised PDF CVs tailored to each role."
         path="/login"
       />
       <form onSubmit={submit} className="w-full max-w-sm space-y-4 border border-ink/10 rounded-lg p-6 bg-white">

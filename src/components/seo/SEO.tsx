@@ -1,10 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-// TODO: update when custom domain is connected.
-const BASE_URL = "https://www.peoplestudiohr.com";
-// TODO: replace with branded 1200×630 OG card
-const DEFAULT_OG_IMAGE =
-  "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c1c94bce-cab3-4e13-9216-06ef8f51ff27";
+const BASE_URL = "https://cv.peoplestudiohr.com";
 
 export const LOCAL_BUSINESS_SCHEMA = {
   "@context": "https://schema.org",
@@ -85,7 +81,6 @@ export default function SEO({ title, description, path, image, jsonLd, ogTitle, 
     : path;
   const finalPath = lang === "ar" ? arPath : path;
   const url = `${BASE_URL}${finalPath}`;
-  const ogImage = image ?? DEFAULT_OG_IMAGE;
   const schemas = [LOCAL_BUSINESS_SCHEMA, ...(jsonLd ?? [])];
   const finalTitle = lang === "ar" && titleAr ? titleAr : title;
   const finalDescription = lang === "ar" && descriptionAr ? descriptionAr : description;
@@ -97,17 +92,17 @@ export default function SEO({ title, description, path, image, jsonLd, ogTitle, 
       <meta name="description" content={finalDescription} />
       <link rel="canonical" href={url} />
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="People.Studio" />
+      <meta property="og:site_name" content="People.Studio CV Builder" />
       <meta property="og:locale" content={lang === "ar" ? "ar_AE" : "en_AE"} />
       <meta property="og:title" content={finalOgTitle} />
       <meta property="og:description" content={finalOgDescription} />
       <meta property="og:url" content={url} />
-      <meta property="og:image" content={ogImage} />
+      {image ? <meta property="og:image" content={image} /> : null}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@peoplestudioae" />
       <meta name="twitter:title" content={finalOgTitle} />
       <meta name="twitter:description" content={finalOgDescription} />
-      <meta name="twitter:image" content={ogImage} />
+      {image ? <meta name="twitter:image" content={image} /> : null}
       {schemas.map((schema, i) => (
         <script key={i} type="application/ld+json">
           {JSON.stringify(schema)}
