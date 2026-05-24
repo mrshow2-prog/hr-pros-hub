@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS public.cv_builder_sessions CASCADE;
