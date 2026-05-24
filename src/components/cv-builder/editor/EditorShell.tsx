@@ -631,6 +631,7 @@ function FindingGroup({
   onJump,
   onAutoFix,
   fixingId,
+  note,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -639,6 +640,7 @@ function FindingGroup({
   onJump: (f: AtsFinding) => void;
   onAutoFix: (f: AtsFinding) => void;
   fixingId: string | null;
+  note?: string;
 }) {
   if (items.length === 0) return null;
   const toneCls =
@@ -652,6 +654,12 @@ function FindingGroup({
       <p className={cn("mb-2 inline-flex items-center gap-1.5 font-dm text-[11px] uppercase tracking-wider2", toneCls)}>
         {icon} {title} · {items.length}
       </p>
+      {note && (
+        <p className="mb-2 rounded-sm bg-ink/5 px-2.5 py-1.5 font-dm text-[11px] leading-relaxed text-ink/65">
+          {note}
+        </p>
+      )}
+
       <ul className="space-y-2">
         {items.map((f) => {
           const fixing = fixingId === f.id;
