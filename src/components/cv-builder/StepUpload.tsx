@@ -4,6 +4,7 @@ import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import PhotoCropperDialog from "./PhotoCropperDialog";
+import IntentFields, { isIntentReady } from "./IntentFields";
 
 const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED = ["pdf", "doc", "docx"];
@@ -67,6 +68,7 @@ async function compressImage(
 export default function StepUpload() {
   const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
   const [pasteMode, setPasteMode] = useState(false);
+  const [scratchMode, setScratchMode] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState<number | null>(null);
@@ -213,12 +215,15 @@ export default function StepUpload() {
     setPhotoPath(path);
   };
 
-  const canContinue = pasteMode
+  const hasSource = pasteMode
     ? state.parsedText.trim().length > 80
-    : state.uploadedFiles.length > 0;
+    : scratchMode || state.uploadedFiles.length > 0;
+  const intentReady = isIntentReady(state.intentForm);
+  const canContinue = hasSource && intentReady;
+  const showIntent = hasSource;
 
   const handleNext = () => {
-    if (!pasteMode && !state.parsedText) {
+    if (!pasteMode && !scratchMode && !state.parsedText) {
       setParsedText(
         state.uploadedFiles.map((f) => `[${f.name}]`).join("\n") +
           "\n\n(Parsed content will be extracted server-side.)",
@@ -228,8 +233,11 @@ export default function StepUpload() {
   };
 
   const handleScratch = () => {
-    setParsedText("(Starting from scratch — no source CV uploaded.)");
-    setStep(3);
+    setScratchMode(true);
+    setPasteMode(false);
+    if (!state.parsedText) {
+      setParsedText("(Starting from scratch — no source CV uploaded.)");
+    }
   };
 
   return (
@@ -411,6 +419,19 @@ export default function StepUpload() {
         )}
       </section>
 
+      {showIntent && (
+        <section className="mt-10 border-t border-ink/10 pt-8">
+          <div className="mb-6">
+            <p className="font-dm text-xs uppercase tracking-wider2 text-ink/55">A few targeted questions</p>
+            <h3 className="mt-1 font-syne text-xl text-ink">Tell us where this CV is going</h3>
+            <p className="mt-1 font-dm text-sm text-ink/60">
+              A CV reads differently for a Director of Operations than for a Product Designer. These answers shape every choice the builder makes.
+            </p>
+          </div>
+          <IntentFields />
+        </section>
+      )}
+
       <PhotoCropperDialog
         open={cropperOpen}
         source={cropperSource}
@@ -422,17 +443,19 @@ export default function StepUpload() {
         onBack={() => setStep(1)}
         onNext={handleNext}
         nextDisabled={!canContinue}
-        nextLabel="Continue to gaps"
+        nextLabel={showIntent && !intentReady ? "Answer the questions to continue" : "Continue to gaps"}
       />
-      <div className="-mt-4 text-center">
-        <button
-          type="button"
-          onClick={handleScratch}
-          className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
-        >
-          No CV to upload? Start from scratch →
-        </button>
-      </div>
+      {!scratchMode && state.uploadedFiles.length === 0 && (
+        <div className="-mt-4 text-center">
+          <button
+            type="button"
+            onClick={handleScratch}
+            className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
+          >
+            No CV to upload? Start from scratch →
+          </button>
+        </div>
+      )}
     </>
   );
 }
