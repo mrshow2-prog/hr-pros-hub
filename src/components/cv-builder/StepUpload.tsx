@@ -75,6 +75,8 @@ export default function StepUpload() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState("");
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperSource, setCropperSource] = useState<File | string | null>(null);
 
   useEffect(() => {
     let active = true;
