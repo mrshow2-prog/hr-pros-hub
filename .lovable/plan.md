@@ -1,89 +1,22 @@
-## Goal
-Stop the loop of fixing one symptom and reintroducing the other by replacing the fragile PDF bullet spacing heuristic with a deterministic bullet layout system.
+## Problem
+The role/period row (`periodRow` in `src/lib/cv/pdfme/exportModernPdfme.ts`) still relies on `textHeightMm()` to estimate the role title's height, then advances `cursorY` by that estimate while letting pdfme do its own internal wrapping in the same text block. This is the exact same instability we just fixed for bullets: when the width estimator predicts a wrap that pdfme doesn't render (or vice versa), we get either an "empty line" between the role and the company line, or two roles overlap.
 
-## What I found
-- The current PDF export is built with pdfme absolute-positioned text blocks.
-- The overlap/gap problem is caused by predicting text wrapping manually, then advancing `cursorY` based on that estimate.
-- Small changes to the width estimate swing the result between two bad states:
-  - Under-estimate height: bullets overlap/cross.
-  - Over-estimate height: random empty lines appear.
-- The problem is not mainly caused by separate bullet text boxes in the UI. Separate boxes are fine if we sanitize and render them correctly. Changing to one large textarea can improve editing ergonomics, but it will not by itself fix PDF layout unless the PDF layout engine is corrected.
+Because role titles are short, the swing usually lands on the over-estimate side → a phantom blank line below some titles and not others.
 
-## Plan
+## Fix
+Apply the same deterministic line-by-line technique to `periodRow`:
 
-### 1. Replace heuristic bullet rendering with an atomic bullet block renderer
-Create a shared PDF helper that renders an entire job's bullet list as one controlled block instead of placing every bullet independently with guessed spacing.
+1. Pre-wrap the role text with `wrapLines(left, leftW, leftFs, { bold })`.
+2. Pre-wrap the right-side period with `wrapLines(right, periodW, rightFs)` (almost always 1 line).
+3. Take `lineCount = max(leftLines, rightLines)`.
+4. `lineStep = ptToMm(leftFs) * 1.25`; `blockH = lineCount * lineStep`.
+5. `b.ensure(blockH)`; render each line as its own single-line `addText` at exact Y = `py + i * lineStep` (left side iterates left lines, right side renders only on its first line, right-aligned).
+6. Advance `b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5)`.
 
-For each job:
-- Clean bullet text.
-- Measure each bullet with a deterministic line splitter.
-- Build rows as structured data:
-  - bullet glyph
-  - wrapped text lines
-  - exact row height
-  - fixed row gap
-- Render each bullet row manually line-by-line so pdfme does not do its own unpredictable internal wrapping.
+This guarantees the company line that follows always sits exactly one consistent gap below the role text — no phantom blank line, no overlap — regardless of role length.
 
-This means:
-- A one-line bullet gets exactly one line of height.
-- A two-line bullet gets exactly two line heights.
-- There is one small consistent gap between bullets.
-- No random blank line can appear because no empty text line is emitted.
-- No overlap can happen because each rendered line has a known Y coordinate.
+No other files change. `spaceAfter` defaults preserved per call site so per-template spacing stays identical for the "normal" 1-line case.
 
-### 2. Add section-level page break control for job entries
-Before rendering a job entry, estimate the full job block height:
-- role/date row
-- company/location row
-- bullet rows
-- job spacing
-
-If the job mostly fits on the current page, keep it together. If it does not fit, start it on a new page before rendering. For very long jobs, allow bullets to continue on the next page only between bullet rows, never through a line of text.
-
-This adapts the section-based idea from the provided reference, but keeps the existing pdfme system rather than switching the whole export to screenshots.
-
-### 3. Apply the same bullet block renderer to all 7 PDF templates
-Update all templates to use the new renderer:
-- Dubai
-- London
-- Zurich
-- Singapore
-- Berlin
-- Riyadh
-- Geneva
-
-Each template can still pass its own glyph, font size, line height, indent, and color, but the layout rules become shared and stable.
-
-### 4. Revert the recent over-conservative spacing patches
-Remove the unstable width multiplier / wrap guard changes that caused the system to bounce between overlap and empty-line issues. The new line-by-line renderer will own spacing instead.
-
-### 5. Keep the current separate bullet UI for now, but add a safer parser path
-I recommend not dropping the separate bullet boxes in this fix because that is a bigger UX/data change and is not the root PDF issue.
-
-However, I will add the foundation for a future single-textarea option by ensuring the bullet sanitizer supports:
-- pasted multi-line bullet lists
-- bullets starting with `-`, `•`, `*`, `–`, `—`
-- blank line removal
-
-If you later want the UI changed to one big bullet textarea per job, we can do that cleanly after the PDF export is stable.
-
-### 6. Validation
-After implementation:
-- Run a focused lint/type check on the edited files.
-- Use a stress sample with long hospitality/sales bullets like your screenshots.
-- Confirm the generated PDF preview has:
-  - no crossed text
-  - no random blank rows between bullets
-  - clean page breaks between job blocks/bullet rows
-
-## Technical approach
-- Add PDF helper functions in `src/lib/cv/pdfme/core.ts` or a new `layout.ts`:
-  - `measureWrappedLines(text, width, fontSize, options)`
-  - `renderWrappedTextLines(...)`
-  - `measureBulletList(...)`
-  - `renderBulletList(...)`
-- Update `src/lib/cv/pdfme/exportModernPdfme.ts` so experience rendering calls the shared bullet-list renderer instead of the current `bullet()` function.
-- Preserve DOCX and preview sanitization changes already made, since those are still useful.
-
-## Why this should stop the loop
-The key change is that pdfme will no longer be asked to wrap bullet paragraphs while our code guesses how much vertical space it used. We will pre-wrap text ourselves and render each line at exact positions, so the cursor advances from known geometry rather than estimates.
+## Validation
+- Lint the edited file.
+- Visually confirm in the Riyadh / Geneva / Dubai exports that every job has identical role→company spacing, including for long titles like "Senior Cross-Cultural Business Development Manager".
