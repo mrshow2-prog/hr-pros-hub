@@ -750,6 +750,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
   const lineH = ptToMm(fs) * lh;
   const singleLineH = lineH + padY * 2;
   const gap = 2;
+  const singleLineBuffer = 2.4;
   let x = b.margin;
   let y = b.cursorY;
   const maxX = b.margin + b.contentW;
@@ -761,14 +762,15 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
     // Binary search smallest inner width that still keeps the chip text on
     // a single line. Falls back to full width when the text genuinely wraps.
     let innerW = innerMax;
-    if (wrapLines(it, innerMax, fs).length === 1) {
+    const canStaySingleLine = wrapLines(it, innerMax, fs).length === 1;
+    if (canStaySingleLine) {
       let lo = 4, hi = innerMax;
       while (lo < hi - 0.5) {
         const mid = (lo + hi) / 2;
         if (wrapLines(it, mid, fs).length === 1) hi = mid;
         else lo = mid;
       }
-      innerW = hi;
+      innerW = Math.min(innerMax, hi + singleLineBuffer);
     }
     const lines = wrapLines(it, innerW, fs);
     const chipW = Math.min(b.contentW, innerW + padX * 2);
