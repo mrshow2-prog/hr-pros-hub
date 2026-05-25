@@ -1,5 +1,5 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { ContactLine, Page, Photo, isVisible } from "./shared";
+import { ContactLine, Page, Photo, isVisible, visibleBullets } from "./shared";
 
 const SH = ({ children }: { children: React.ReactNode }) => (
   <h2 className="mb-4 font-dm text-[18px] font-semibold tracking-[-0.01em] text-ink">{children}</h2>
@@ -69,17 +69,16 @@ export default function TemplateSkillsFirst({
                 <p className="mb-2 text-[14px] font-medium text-sienna">
                   {[exp.company, exp.location].filter(Boolean).join(" · ")}
                 </p>
-                {exp.bullets.length > 0 && (
+                {visibleBullets(exp).length > 0 && (
                   <ul className="space-y-1">
-                    {exp.bullets
-                      .filter((b) => b.status !== "reverted" && b.rewrite)
+                    {visibleBullets(exp)
                       .map((b) => (
                         <li
                           key={b.id}
                           className="relative pl-5 text-[13px] font-light leading-[1.6] text-ink/85"
                         >
                           <span className="absolute left-0 font-semibold text-sienna">→</span>
-                          {b.rewrite}
+                          {b.rewrite || b.original}
                         </li>
                       ))}
                   </ul>

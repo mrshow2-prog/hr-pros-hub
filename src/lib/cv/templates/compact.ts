@@ -15,8 +15,21 @@ const hidden = (cv: GeneratedCV, k: SectionKey) =>
 const period = (e: { startDate?: string; endDate?: string; period?: string }) =>
   [e.startDate, e.endDate].filter(Boolean).join(" – ") || e.period || "";
 
+const cleanBulletText = (value: string | null | undefined) =>
+  (value ?? "")
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[-–—•▪·*]+\s*/, "")
+    .trim();
+
 const visibleBullets = (e: GeneratedCV["experience"][number]) =>
-  e.bullets.filter((b) => b.status !== "reverted" && (b.rewrite || b.original));
+  e.bullets
+    .map((b) => ({
+      ...b,
+      rewrite: cleanBulletText(b.rewrite),
+      original: cleanBulletText(b.original),
+    }))
+    .filter((b) => b.status !== "reverted" && (b.rewrite || b.original));
 
 /* ─── Heuristic: how many experiences fit beside the sidebar ───
  * Sidebar ≈ skills * 18pt + 28 (header) + languages * 28pt + 28 (header) + ~30 padding.

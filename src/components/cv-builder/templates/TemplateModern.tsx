@@ -1,5 +1,5 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { ContactLine, Page, Photo, isVisible } from "./shared";
+import { ContactLine, Page, Photo, isVisible, visibleBullets } from "./shared";
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => (
   <h2 className="mb-5 border-l-4 border-sienna pl-4 font-dm text-[16px] font-semibold uppercase tracking-[0.08em] text-ink">
@@ -53,17 +53,16 @@ export default function TemplateModern({
                 <p className="mb-2.5 text-[15px] font-medium text-sienna">
                   {[exp.company, exp.location].filter(Boolean).join(" · ")}
                 </p>
-                {exp.bullets.length > 0 && (
+                {visibleBullets(exp).length > 0 && (
                   <ul className="space-y-1.5">
-                    {exp.bullets
-                      .filter((b) => b.status !== "reverted" && b.rewrite)
+                    {visibleBullets(exp)
                       .map((b) => (
                         <li
                           key={b.id}
                           className="relative pl-5 text-[14px] font-light leading-[1.6] text-ink/85"
                         >
                           <span className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-sienna" />
-                          {b.rewrite}
+                          {b.rewrite || b.original}
                         </li>
                       ))}
                   </ul>

@@ -1,5 +1,5 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { isVisible } from "./shared";
+import { isVisible, visibleBullets } from "./shared";
 
 /** Riyadh — Bold sidebar-style template (dark sienna rail). */
 export default function TemplateRiyadh({
@@ -121,14 +121,13 @@ export default function TemplateRiyadh({
                   <p className="mb-1.5 text-[12.5px] font-semibold text-sienna">
                     {[exp.company, exp.location].filter(Boolean).join(" · ")}
                   </p>
-                  {exp.bullets.length > 0 && (
+                  {visibleBullets(exp).length > 0 && (
                     <ul className="space-y-1">
-                      {exp.bullets
-                        .filter((b) => b.status !== "reverted" && b.rewrite)
+                      {visibleBullets(exp)
                         .map((b) => (
                           <li key={b.id} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
                             <span className="absolute left-0 top-[2px] font-bold text-sienna">•</span>
-                            {b.rewrite}
+                            {b.rewrite || b.original}
                           </li>
                         ))}
                     </ul>
