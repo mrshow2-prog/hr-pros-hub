@@ -649,7 +649,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 10.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
       b.cursorY += 1.8;
     }
@@ -705,7 +705,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     cv.experience.forEach((exp, idx) => {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.8 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.8 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "›", bul.rewrite || bul.original, { fs: 9.4, lh: 1.6, glyphColor: SIENNA });
       }
@@ -919,7 +919,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
+      deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx2, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
       }
