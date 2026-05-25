@@ -158,6 +158,7 @@ export interface PdfmeBuilder {
   addLine(o: LineOpts): void;
   addRect(o: RectOpts): void;
   addImage(o: { x: number; y: number; w: number; h: number; data: string }): void;
+  toBlob(): Promise<Blob>;
   finalize(fileName: string): Promise<void>;
 }
 
@@ -282,7 +283,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
         o.data,
       );
     },
-    async finalize(fileName: string) {
+    async toBlob() {
       const template: Template = {
         basePdf: { width: PAGE_W, height: PAGE_H, padding: [0, 0, 0, 0] },
         schemas: pages,
@@ -292,7 +293,10 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
         inputs: [inputs],
         plugins: { text, image, line, rectangle },
       });
-      const blob = new Blob([pdf as unknown as BlobPart], { type: "application/pdf" });
+      return new Blob([pdf as unknown as BlobPart], { type: "application/pdf" });
+    },
+    async finalize(fileName: string) {
+      const blob = await this.toBlob();
       saveAs(blob, fileName);
     },
   };

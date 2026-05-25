@@ -674,6 +674,16 @@ export async function exportCvPdfme(
   templateId: TemplateId,
   fileName: string,
 ) {
+  const blob = await generateCvPdfmeBlob(cv, photoUrl, templateId);
+  const { saveAs } = await import("file-saver");
+  saveAs(blob, fileName);
+}
+
+export async function generateCvPdfmeBlob(
+  cv: GeneratedCV,
+  photoUrl: string | null,
+  templateId: TemplateId,
+) {
   let b: PdfmeBuilder;
   switch (templateId) {
     case "classic":      b = await buildClassic(cv, photoUrl); break;
@@ -683,7 +693,7 @@ export async function exportCvPdfme(
     case "modern":
     default:             b = await buildModern(cv, photoUrl);
   }
-  await b.finalize(fileName);
+  return b.toBlob();
 }
 
 void PAGE_W;
