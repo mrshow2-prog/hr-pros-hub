@@ -88,7 +88,15 @@ export default function PdfmePreview({
   const pageHeight = Math.round(pageWidth * (297 / 210));
 
   if (status === "loading" && pages.length === 0) {
-    return <div className="animate-pulse bg-white shadow-xl ring-1 ring-ink/10" style={{ width: pageWidth, height: pageHeight }} />;
+    return (
+      <div
+        className="flex flex-col items-center justify-center gap-3 bg-white font-dm text-sm text-ink/60 shadow-xl ring-1 ring-ink/10"
+        style={{ width: pageWidth, height: pageHeight }}
+      >
+        <Loader2 className="animate-spin text-sienna" size={24} />
+        <span>Updating preview…</span>
+      </div>
+    );
   }
 
   if (status === "error") {
