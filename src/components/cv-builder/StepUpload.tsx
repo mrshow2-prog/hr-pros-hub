@@ -121,10 +121,11 @@ export default function StepUpload() {
       setPhotoError("Please sign in to upload a photo.");
       return;
     }
-    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${f.name}`;
+    const safePhotoName = f.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
+    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${safePhotoName}`;
     const { error: upErr } = await supabase.storage
       .from("cv-builder-uploads")
-      .upload(path, f, { upsert: true });
+      .upload(path, f, { upsert: true, contentType: f.type });
     setPhotoUploading(false);
     if (upErr) {
       setPhotoError("Couldn't upload the photo. Try again.");
