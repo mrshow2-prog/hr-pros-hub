@@ -316,7 +316,7 @@ export default function StepUpload() {
       <section className="mt-10 border-t border-ink/10 pt-8">
         <p className="font-syne text-lg text-ink">Profile photo (optional)</p>
         <p className="mt-1 font-dm text-sm text-ink/60">
-          Recommended in the UAE, GCC, and most MENA markets. JPG or PNG, max 2MB.
+          Recommended in the UAE, GCC, and most MENA markets. JPG or PNG — any size, we'll optimize it.
         </p>
 
         <div className="mt-5 flex items-center gap-5">
