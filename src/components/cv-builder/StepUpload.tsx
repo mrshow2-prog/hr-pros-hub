@@ -215,12 +215,15 @@ export default function StepUpload() {
     setPhotoPath(path);
   };
 
-  const canContinue = pasteMode
+  const hasSource = pasteMode
     ? state.parsedText.trim().length > 80
-    : state.uploadedFiles.length > 0;
+    : scratchMode || state.uploadedFiles.length > 0;
+  const intentReady = isIntentReady(state.intentForm);
+  const canContinue = hasSource && intentReady;
+  const showIntent = hasSource;
 
   const handleNext = () => {
-    if (!pasteMode && !state.parsedText) {
+    if (!pasteMode && !scratchMode && !state.parsedText) {
       setParsedText(
         state.uploadedFiles.map((f) => `[${f.name}]`).join("\n") +
           "\n\n(Parsed content will be extracted server-side.)",
@@ -230,8 +233,11 @@ export default function StepUpload() {
   };
 
   const handleScratch = () => {
-    setParsedText("(Starting from scratch — no source CV uploaded.)");
-    setStep(3);
+    setScratchMode(true);
+    setPasteMode(false);
+    if (!state.parsedText) {
+      setParsedText("(Starting from scratch — no source CV uploaded.)");
+    }
   };
 
   return (
