@@ -23,8 +23,9 @@ export async function exportCVToPdf(
   template: TemplateId,
   photoUrl: string | null,
   fileName: string,
+  opts?: { accentHex?: string | null; photoShape?: "circle" | "square" | "none" },
 ) {
-  return exportCvPdfme(cv, photoUrl, template, fileName);
+  return exportCvPdfme(cv, photoUrl, template, fileName, opts);
 }
 
 /** Back-compat shim — no longer used by Step 7 export flow. */
