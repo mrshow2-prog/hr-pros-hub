@@ -40,6 +40,7 @@ import {
   SectionShell,
 } from "../StepDraft";
 import CVRenderer from "../templates/CVRenderer";
+import Paginator from "../templates/Paginator";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 
