@@ -396,6 +396,15 @@ interface CVBuilderContextValue {
   addCluster: () => void;
   removeCluster: (clId: string) => void;
   setLanguages: (languages: LanguageEntry[]) => void;
+  setAchievements: (items: string[]) => void;
+  setCertifications: (items: Certification[]) => void;
+  addCertification: () => void;
+  removeCertification: (id: string) => void;
+  patchCertification: (id: string, patch: Partial<Certification>) => void;
+  setCustomSections: (items: CustomSection[]) => void;
+  addCustomSection: () => void;
+  removeCustomSection: (id: string) => void;
+  patchCustomSection: (id: string, patch: Partial<CustomSection>) => void;
   toggleSection: (key: SectionKey) => void;
 
   setAts: (ats: AtsScore | null) => void;
@@ -423,10 +432,12 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       if (!active) return;
       if (!error && data?.state) {
-        const remote = data.state as Partial<CVBuilderState>;
+        const remote = data.state as Partial<CVBuilderState> & { currentStep?: unknown };
         setState((prev) => ({
           ...prev,
           ...remote,
+          currentStep: remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep,
+          intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
           generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
           sessionId: prev.sessionId,
           anonToken: prev.anonToken,
