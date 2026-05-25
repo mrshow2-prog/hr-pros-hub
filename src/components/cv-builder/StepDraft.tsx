@@ -21,6 +21,8 @@ import {
   type ContactInfo,
   type LanguageEntry,
   type SectionKey,
+  type Certification,
+  type CustomSection,
 } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
@@ -28,6 +30,7 @@ import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
 import { getPalette } from "@/lib/cv/palettes";
+
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
