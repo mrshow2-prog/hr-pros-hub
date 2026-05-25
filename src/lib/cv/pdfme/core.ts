@@ -101,7 +101,7 @@ export function wrapLines(
         if (estimatedTextWidthMm(w, fontSizePt, bold, letterSpacing) > maxWidth) {
           const parts = splitLongToken(w, maxWidth, fontSizePt, bold, letterSpacing);
           lines.push(...parts.slice(0, -1));
-          cur = parts.at(-1) ?? "";
+          cur = parts[parts.length - 1] ?? "";
         } else {
           cur = w;
         }
