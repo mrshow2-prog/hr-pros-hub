@@ -83,6 +83,36 @@ function periodRow(
   b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5);
 }
 
+function deterministicLine(
+  ctx: Ctx,
+  value: string,
+  opts: { fs: number; color?: string; bold?: boolean; lh?: number; spaceAfter?: number; width?: number } = { fs: 9.8 },
+) {
+  const { b } = ctx;
+  if (!value) return;
+  const fs = opts.fs;
+  const lh = opts.lh ?? 1.25;
+  const width = opts.width ?? b.contentW;
+  const lineStep = ptToMm(fs) * lh;
+  const lines = wrapLines(value, width, fs, { bold: opts.bold });
+  const blockH = Math.max(1, lines.length) * lineStep;
+  b.ensure(blockH);
+  const py = b.cursorY;
+  for (let i = 0; i < lines.length; i += 1) {
+    b.addText({
+      value: lines[i],
+      x: b.margin,
+      y: py + i * lineStep,
+      width,
+      fontSize: fs,
+      color: opts.color ?? INK,
+      bold: opts.bold,
+      lineHeight: lh,
+    });
+  }
+  b.cursorY = py + blockH + (opts.spaceAfter ?? 1);
+}
+
 /**
  * Render a single bullet row with FULLY DETERMINISTIC layout.
  *
