@@ -8,7 +8,7 @@ import { PALETTES, getPalette, type PaletteId } from "@/lib/cv/palettes";
 import type { PhotoShape } from "@/contexts/CVBuilderContext";
 
 const SAMPLE_PHOTO_URL =
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=faces";
+ "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces";
 
 interface TemplateMeta {
   id: TemplateId;
