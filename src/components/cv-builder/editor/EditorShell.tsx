@@ -455,13 +455,13 @@ function PreviewPane() {
   return (
     <div ref={wrapRef} className="h-full overflow-y-auto bg-clay/30 p-6">
       <div className="mx-auto" style={{ width: 794 * scale }}>
-        <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
-          <PdfmePreview
-            cv={state.generatedCV}
-            template={state.selectedTemplate}
-            photoUrl={photoUrl}
-          />
-        </div>
+        <PdfmePreview
+          cv={state.generatedCV}
+          template={state.selectedTemplate}
+          photoUrl={photoUrl}
+          pageWidth={794 * scale}
+          gap={24 * scale}
+        />
       </div>
     </div>
   );
