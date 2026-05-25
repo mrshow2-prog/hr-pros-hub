@@ -157,7 +157,10 @@ export interface CustomSection {
   id: string;
   title: string;
   bullets: string[];
+  /** Where the section renders in templates that support a sidebar. */
+  placement: "body" | "sidebar";
 }
+
 
 export interface GeneratedCV {
   contact: ContactInfo;
