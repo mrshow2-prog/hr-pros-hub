@@ -31,18 +31,39 @@ export const SIENNA = "#9c5643";
  * vertical space (no overlap between sidebar items) while body bullets
  * don't over-reserve and leave phantom blank lines.
  */
-function charWidthMm(
+function estimatedTextWidthMm(
   text: string,
   fontSizePt: number,
   bold: boolean,
   letterSpacing = 0,
 ) {
-  const letters = text.replace(/[^A-Za-z]/g, "");
-  const upper = (text.match(/[A-Z]/g) || []).length;
-  const capsRatio = letters.length ? upper / letters.length : 0;
-  const base = bold ? 0.54 : 0.50;
-  const capsBoost = capsRatio > 0.7 ? 0.08 : capsRatio > 0.4 ? 0.04 : 0;
-  return (fontSizePt * (base + capsBoost)) / PT_PER_MM + letterSpacing;
+  const widthUnits = Array.from(text).reduce((sum, ch) => {
+    if (ch === " ") return sum + 0.26;
+    if (/[A-Z]/.test(ch)) return sum + (bold ? 0.62 : 0.58);
+    if (/[a-z]/.test(ch)) return sum + (bold ? 0.51 : 0.46);
+    if (/[0-9]/.test(ch)) return sum + 0.52;
+    if (/[.,;:'`!|]/.test(ch)) return sum + 0.24;
+    if (/[-–—/\\()]/.test(ch)) return sum + 0.34;
+    return sum + (bold ? 0.56 : 0.50);
+  }, 0);
+  const tracking = Math.max(0, text.length - 1) * (letterSpacing / PT_PER_MM);
+  return (fontSizePt * widthUnits) / PT_PER_MM + tracking;
+}
+
+function splitLongToken(token: string, maxWidthMm: number, fontSizePt: number, bold: boolean, letterSpacing: number) {
+  const parts: string[] = [];
+  let cur = "";
+  for (const ch of Array.from(token)) {
+    const next = cur + ch;
+    if (cur && estimatedTextWidthMm(next, fontSizePt, bold, letterSpacing) > maxWidthMm) {
+      parts.push(cur);
+      cur = ch;
+    } else {
+      cur = next;
+    }
+  }
+  if (cur) parts.push(cur);
+  return parts;
 }
 
 export function wrapLines(
@@ -52,34 +73,35 @@ export function wrapLines(
   opts: { bold?: boolean; letterSpacing?: number } = {},
 ): string[] {
   const lines: string[] = [];
-  const cw = charWidthMm(text, fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
+  const bold = !!opts.bold;
+  const letterSpacing = opts.letterSpacing ?? 0;
   // Tiny safety margin so we never under-predict vs pdfme's real wrapper.
-  const maxChars = Math.max(4, Math.floor((widthMm - 0.3) / cw));
+  const maxWidth = Math.max(2, widthMm - 0.3);
   for (const para of (text || "").split(/\n/)) {
-    if (!para) {
+    const cleanPara = para.trim();
+    if (!cleanPara) {
       lines.push("");
       continue;
     }
     // Split on whitespace; also allow long hyphenated tokens to break at
     // hyphens (matches pdfme's wrap behaviour and keeps "CROSS-CULTURAL
     // BUSINESS DEVELOPMENT" predictable).
-    const words = para.split(/\s+/).flatMap((w) =>
-      w.length > maxChars * 0.6 && w.includes("-") ? w.split(/(?<=-)/) : [w],
+    const words = cleanPara.split(/\s+/).flatMap((w) =>
+      estimatedTextWidthMm(w, fontSizePt, bold, letterSpacing) > maxWidth * 0.65 && w.includes("-")
+        ? w.split(/(?<=-)/)
+        : [w],
     );
     let cur = "";
     for (const w of words) {
       const next = cur ? cur + " " + w : w;
-      if (next.length <= maxChars) {
+      if (estimatedTextWidthMm(next, fontSizePt, bold, letterSpacing) <= maxWidth) {
         cur = next;
       } else {
         if (cur) lines.push(cur);
-        if (w.length > maxChars) {
-          let rest = w;
-          while (rest.length > maxChars) {
-            lines.push(rest.slice(0, maxChars));
-            rest = rest.slice(maxChars);
-          }
-          cur = rest;
+        if (estimatedTextWidthMm(w, fontSizePt, bold, letterSpacing) > maxWidth) {
+          const parts = splitLongToken(w, maxWidth, fontSizePt, bold, letterSpacing);
+          lines.push(...parts.slice(0, -1));
+          cur = parts.at(-1) ?? "";
         } else {
           cur = w;
         }
