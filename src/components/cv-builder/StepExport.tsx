@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
-import { FileDown, FileText, Calendar, Loader2 } from "lucide-react";
+import { FileDown, FileText, Calendar, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { exportCVToDocx, exportCVToPdf, slugify } from "@/lib/cvExport";
+import PaymentModal from "./PaymentModal";
 
 export default function StepExport() {
   const { state, setStep, resetSession } = useCVBuilder();
   const [busy, setBusy] = useState<"pdf" | "docx" | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [payOpen, setPayOpen] = useState(false);
+  const [pendingFormat, setPendingFormat] = useState<"pdf" | "docx" | null>(null);
 
   const cv = state.generatedCV;
   const template = state.selectedTemplate ?? "dubai";
   const baseName = slugify(cv?.contact.name || "cv");
+  const paid = state.paymentStatus === "paid";
 
   useEffect(() => {
     let active = true;
@@ -32,32 +36,42 @@ export default function StepExport() {
     };
   }, [state.photoPath]);
 
-  const handlePdf = async () => {
+  const doPdf = async () => {
     if (!cv) return;
     setBusy("pdf");
     try {
       await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`);
       toast.success("PDF downloaded");
     } catch (e) {
-      console.error(e);
-      toast.error("Could not generate PDF");
-    } finally {
-      setBusy(null);
-    }
+      console.error(e); toast.error("Could not generate PDF");
+    } finally { setBusy(null); }
   };
 
-  const handleDocx = async () => {
+  const doDocx = async () => {
     if (!cv) return;
     setBusy("docx");
     try {
       await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl);
       toast.success("Word file downloaded");
     } catch (e) {
-      console.error(e);
-      toast.error("Could not generate Word file");
-    } finally {
-      setBusy(null);
+      console.error(e); toast.error("Could not generate Word file");
+    } finally { setBusy(null); }
+  };
+
+  const requestExport = (fmt: "pdf" | "docx") => {
+    if (!paid) {
+      setPendingFormat(fmt);
+      setPayOpen(true);
+      return;
     }
+    if (fmt === "pdf") doPdf(); else doDocx();
+  };
+
+  const onPaid = () => {
+    const fmt = pendingFormat;
+    setPendingFormat(null);
+    if (fmt === "pdf") doPdf();
+    else if (fmt === "docx") doDocx();
   };
 
   const disabled = !cv;
@@ -65,15 +79,15 @@ export default function StepExport() {
   return (
     <>
       <StepHeader
-        eyebrow="Step 7 · Export"
+        eyebrow="Step 5 · Export"
         title="Your CV is ready"
-        subtitle="Download it in either format. You can come back any time to tweak and re-export."
+        subtitle={paid ? "Download it in either format. Come back anytime to tweak and re-export." : "Pick your format. You'll be prompted to unlock once before your first download."}
       />
 
       <div className="mx-auto max-w-2xl">
         {disabled && (
           <div className="mb-6 rounded-md border border-ink/15 bg-clay/40 p-4 font-dm text-sm text-ink/70">
-            No CV draft found. Go back to Step 6 to generate one first.
+            No CV draft found. Go back to the draft step to generate one first.
           </div>
         )}
 
@@ -81,9 +95,14 @@ export default function StepExport() {
           <button
             type="button"
             disabled={disabled || busy !== null}
-            onClick={handlePdf}
-            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => requestExport("pdf")}
+            className="group relative flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
           >
+            {!paid && (
+              <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-ink/5 px-2 py-0.5 font-dm text-[10px] text-ink/55">
+                <Lock size={10} /> Locked
+              </span>
+            )}
             {busy === "pdf" ? (
               <Loader2 className="mb-3 animate-spin text-sienna" size={36} />
             ) : (
@@ -95,9 +114,14 @@ export default function StepExport() {
           <button
             type="button"
             disabled={disabled || busy !== null}
-            onClick={handleDocx}
-            className="group flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => requestExport("docx")}
+            className="group relative flex flex-col items-center rounded-md border border-ink/15 bg-paper p-8 transition-colors hover:border-sienna disabled:cursor-not-allowed disabled:opacity-50"
           >
+            {!paid && (
+              <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-ink/5 px-2 py-0.5 font-dm text-[10px] text-ink/55">
+                <Lock size={10} /> Locked
+              </span>
+            )}
             {busy === "docx" ? (
               <Loader2 className="mb-3 animate-spin text-sienna" size={36} />
             ) : (
@@ -144,6 +168,7 @@ export default function StepExport() {
         </button>
       </div>
 
+      <PaymentModal open={payOpen} onOpenChange={setPayOpen} onPaid={onPaid} />
 
       <StepFooter onBack={() => setStep(4)} />
     </>

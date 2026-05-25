@@ -419,11 +419,20 @@ export default function StepUpload() {
       />
 
       <StepFooter
-        hideBack
+        onBack={() => setStep(1)}
         onNext={handleNext}
         nextDisabled={!canContinue}
-        nextLabel="Continue to intent"
+        nextLabel="Continue to gaps"
       />
+      <div className="-mt-4 text-center">
+        <button
+          type="button"
+          onClick={handleScratch}
+          className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
+        >
+          No CV to upload? Start from scratch →
+        </button>
+      </div>
     </>
   );
 }
