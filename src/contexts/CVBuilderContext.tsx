@@ -157,7 +157,10 @@ export interface CustomSection {
   id: string;
   title: string;
   bullets: string[];
+  /** Where the section renders in templates that support a sidebar. */
+  placement: "body" | "sidebar";
 }
+
 
 export interface GeneratedCV {
   contact: ContactInfo;
@@ -332,7 +335,9 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       id: s.id ?? newId("cs"),
       title: s.title ?? "",
       bullets: s.bullets ?? [],
+      placement: (s as Partial<CustomSection>).placement ?? "body",
     })),
+
     hiddenSections: raw?.hiddenSections ?? [],
   };
 }
@@ -694,7 +699,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
           ...cv,
           customSections: [
             ...cv.customSections,
-            { id: newId("cs"), title: "New section", bullets: [] },
+            { id: newId("cs"), title: "New section", bullets: [], placement: "body" },
           ],
         })),
       removeCustomSection: (id) =>

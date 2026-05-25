@@ -21,6 +21,8 @@ import {
   type ContactInfo,
   type LanguageEntry,
   type SectionKey,
+  type Certification,
+  type CustomSection,
 } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
@@ -28,6 +30,7 @@ import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
 import { getPalette } from "@/lib/cv/palettes";
+
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
@@ -1262,3 +1265,186 @@ function formatRelative(ts: number) {
   if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
   return `${Math.round(diff / 3600)}h ago`;
 }
+
+/* ---------------- Achievements ---------------- */
+
+export function AchievementsBlock({ achievements }: { achievements: string[] }) {
+  const { setAchievements } = useCVBuilder();
+  const update = (i: number, v: string) =>
+    setAchievements(achievements.map((a, idx) => (idx === i ? v : a)));
+  const remove = (i: number) =>
+    setAchievements(achievements.filter((_, idx) => idx !== i));
+  const add = () => setAchievements([...achievements, ""]);
+  return (
+    <div className="space-y-2">
+      {achievements.map((a, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <AutoTextarea
+            value={a}
+            onChange={(v) => update(i, v)}
+            placeholder="e.g. Grew ARR from $2M to $8M in 18 months"
+            className="min-h-12 flex-1"
+          />
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            className="mt-2 rounded p-1 text-ink/30 hover:bg-amber-50 hover:text-amber-700"
+            aria-label="Remove achievement"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={add}
+        className="inline-flex items-center gap-2 rounded border border-dashed border-ink/25 px-3 py-2 font-dm text-sm text-ink/70 hover:border-sienna hover:text-sienna"
+      >
+        <Plus size={14} /> Add achievement
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Certifications ---------------- */
+
+export function CertificationsBlock({ certifications }: { certifications: Certification[] }) {
+  const { addCertification, removeCertification, patchCertification } = useCVBuilder();
+  return (
+    <div className="space-y-3">
+      {certifications.map((c) => (
+        <div key={c.id} className="rounded-md border border-ink/10 bg-paper p-4">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Name" value={c.name} onChange={(v) => patchCertification(c.id, { name: v })} />
+            <Field label="Issuer" value={c.issuer} onChange={(v) => patchCertification(c.id, { issuer: v })} />
+            <Field label="Date" value={c.date} onChange={(v) => patchCertification(c.id, { date: v })} />
+          </div>
+          <button
+            type="button"
+            onClick={() => removeCertification(c.id)}
+            className="mt-3 inline-flex items-center gap-1.5 font-dm text-xs text-ink/55 hover:text-ink"
+          >
+            <Trash2 size={12} /> Remove
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addCertification}
+        className="inline-flex items-center gap-2 rounded border border-dashed border-ink/25 px-3 py-2 font-dm text-sm text-ink/70 hover:border-sienna hover:text-sienna"
+      >
+        <Plus size={14} /> Add certification
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Custom sections ---------------- */
+
+export function CustomSectionsBlock({ sections }: { sections: CustomSection[] }) {
+  const { addCustomSection, removeCustomSection, patchCustomSection } = useCVBuilder();
+  return (
+    <div className="space-y-4">
+      <p className="font-dm text-xs text-ink/55">
+        Add a custom section with a title and bullet points. You can choose whether it appears in the CV body
+        or the sidebar (sidebar applies only to templates with a side column).
+      </p>
+      {sections.map((s) => (
+        <div key={s.id} className="rounded-md border border-ink/10 bg-paper p-4 space-y-3">
+          <Field
+            label="Section title"
+            value={s.title}
+            onChange={(v) => patchCustomSection(s.id, { title: v })}
+          />
+          <div>
+            <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55 mb-1">
+              Placement
+            </span>
+            <div className="inline-flex rounded border border-ink/15 overflow-hidden">
+              {(["body", "sidebar"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => patchCustomSection(s.id, { placement: p })}
+                  className={cn(
+                    "px-3 py-1.5 font-dm text-xs capitalize",
+                    s.placement === p
+                      ? "bg-ink text-paper"
+                      : "bg-paper text-ink/65 hover:bg-ink/5",
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55 mb-1">
+              Bullets
+            </span>
+            <PillInputForBullets
+              values={s.bullets}
+              onChange={(bullets) => patchCustomSection(s.id, { bullets })}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => removeCustomSection(s.id)}
+            className="inline-flex items-center gap-1.5 font-dm text-xs text-ink/55 hover:text-ink"
+          >
+            <Trash2 size={12} /> Remove section
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addCustomSection}
+        className="inline-flex items-center gap-2 rounded border border-dashed border-ink/25 px-3 py-2 font-dm text-sm text-ink/70 hover:border-sienna hover:text-sienna"
+      >
+        <Plus size={14} /> Add custom section
+      </button>
+    </div>
+  );
+}
+
+function PillInputForBullets({
+  values,
+  onChange,
+}: {
+  values: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const update = (i: number, v: string) =>
+    onChange(values.map((b, idx) => (idx === i ? v : b)));
+  const remove = (i: number) => onChange(values.filter((_, idx) => idx !== i));
+  return (
+    <div className="space-y-2">
+      {values.map((v, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <AutoTextarea
+            value={v}
+            onChange={(nv) => update(i, nv)}
+            placeholder="Write a bullet…"
+            className="min-h-10 flex-1"
+          />
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            className="mt-2 rounded p-1 text-ink/30 hover:bg-amber-50 hover:text-amber-700"
+            aria-label="Remove bullet"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...values, ""])}
+        className="inline-flex items-center gap-1.5 font-dm text-sm text-sienna hover:underline"
+      >
+        <Plus size={13} /> Add bullet
+      </button>
+    </div>
+  );
+}
+

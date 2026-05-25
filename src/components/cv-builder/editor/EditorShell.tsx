@@ -35,12 +35,16 @@ import {
   EducationBlock,
   ClustersBlock,
   LanguagesBlock,
+  AchievementsBlock,
+  CertificationsBlock,
+  CustomSectionsBlock,
   SectionShell,
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
+import { ChevronDown } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "dubai", label: "Dubai" },
@@ -61,7 +65,11 @@ const SECTIONS: SectionDef[] = [
   { key: "education", label: "Education" },
   { key: "competencies", label: "Competencies" },
   { key: "languages", label: "Languages" },
+  { key: "achievements", label: "Achievements" },
+  { key: "certifications", label: "Certifications" },
+  { key: "custom", label: "Custom sections" },
 ];
+
 
 export default function EditorShell() {
   const { state, setGeneratedCV, setAts, setStep, setTemplate, patchSummary, replaceBullets } =
@@ -342,48 +350,62 @@ export default function EditorShell() {
               ref={leftRef}
               className="h-full overflow-y-auto px-5 py-6 lg:px-8"
             >
-              <div className="mx-auto max-w-2xl space-y-10">
-                <div data-section="contact">
-                  <SectionShell sectionKey="contact" title="Contact">
-                    <ContactBlock contact={cv.contact} />
-                  </SectionShell>
-                </div>
-                <div data-section="summary">
-                  <SectionShell sectionKey="summary" title="Professional summary">
-                    <SummaryBlock summary={cv.summary} />
-                  </SectionShell>
-                </div>
-                <div data-section="experience">
-                  <SectionShell sectionKey="experience" title="Work experience">
-                    <ExperienceList experience={cv.experience} />
-                  </SectionShell>
-                </div>
-                <div data-section="skills">
-                  <SectionShell sectionKey="skills" title="Skills">
-                    <SkillsBlock skills={cv.skills} />
-                  </SectionShell>
-                </div>
-                <div data-section="education">
-                  <SectionShell sectionKey="education" title="Education & certifications">
-                    <EducationBlock education={cv.education} />
-                  </SectionShell>
-                </div>
-                {showCompetencies && (
-                  <div data-section="competencies">
-                    <SectionShell sectionKey="competencies" title="Competency clusters">
-                      <ClustersBlock clusters={cv.competencyClusters} />
-                    </SectionShell>
-                  </div>
-                )}
-                <div data-section="languages">
-                  <SectionShell sectionKey="languages" title="Languages">
-                    <LanguagesBlock languages={cv.languages} />
-                  </SectionShell>
-                </div>
+              <div className="mx-auto max-w-2xl space-y-3">
+                {(() => {
+                  const visible = SECTIONS.filter(
+                    (s) => s.key !== "competencies" || showCompetencies,
+                  );
+                  const goNext = (key: SectionKey) => {
+                    const idx = visible.findIndex((v) => v.key === key);
+                    const next = visible[idx + 1];
+                    if (next) scrollToSection(next.key);
+                  };
+                  const renderBody = (key: SectionKey) => {
+                    switch (key) {
+                      case "contact": return <ContactBlock contact={cv.contact} />;
+                      case "summary": return <SummaryBlock summary={cv.summary} />;
+                      case "experience": return <ExperienceList experience={cv.experience} />;
+                      case "skills": return <SkillsBlock skills={cv.skills} />;
+                      case "education": return <EducationBlock education={cv.education} />;
+                      case "competencies": return <ClustersBlock clusters={cv.competencyClusters} />;
+                      case "languages": return <LanguagesBlock languages={cv.languages} />;
+                      case "achievements": return <AchievementsBlock achievements={cv.achievements} />;
+                      case "certifications": return <CertificationsBlock certifications={cv.certifications} />;
+                      case "custom": return <CustomSectionsBlock sections={cv.customSections} />;
+                      default: return null;
+                    }
+                  };
+                  const titleFor = (key: SectionKey, label: string) =>
+                    key === "summary" ? "Professional summary"
+                    : key === "experience" ? "Work experience"
+                    : key === "education" ? "Education"
+                    : key === "competencies" ? "Competency clusters"
+                    : key === "custom" ? "Custom sections"
+                    : label;
+                  return visible.map((s, i) => {
+                    const isLast = i === visible.length - 1;
+                    return (
+                      <CollapsibleSection
+                        key={s.key}
+                        sectionKey={s.key}
+                        title={titleFor(s.key, s.label)}
+                        isOpen={activeSection === s.key}
+                        onToggle={() => setActiveSection((cur) => (cur === s.key ? ("" as SectionKey) : s.key))}
+                        onContinue={isLast ? undefined : () => goNext(s.key)}
+                      >
+                        <SectionShell sectionKey={s.key} title={titleFor(s.key, s.label)}>
+                          {renderBody(s.key)}
+                        </SectionShell>
+                      </CollapsibleSection>
+                    );
+                  });
+                })()}
                 <div className="h-32" />
               </div>
             </div>
           </ResizablePanel>
+
+
 
           {previewOpen && (
             <>
@@ -689,3 +711,61 @@ function FindingGroup({
     </div>
   );
 }
+
+/* ────────── Collapsible progressive section ────────── */
+
+function CollapsibleSection({
+  sectionKey,
+  title,
+  isOpen,
+  onToggle,
+  onContinue,
+  children,
+}: {
+  sectionKey: SectionKey;
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  onContinue?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      data-section={sectionKey}
+      className={cn(
+        "rounded-md border border-ink/10 bg-paper transition",
+        isOpen ? "shadow-sm" : "hover:border-ink/25",
+      )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="font-syne text-base text-ink">{title}</span>
+        <ChevronDown
+          size={16}
+          className={cn("text-ink/55 transition-transform", isOpen && "rotate-180")}
+        />
+      </button>
+      {isOpen && (
+        <div className="border-t border-ink/10 px-5 py-5">
+          {children}
+          {onContinue && (
+            <div className="mt-6 flex justify-end border-t border-ink/10 pt-4">
+              <button
+                type="button"
+                onClick={onContinue}
+                className="inline-flex items-center gap-1 rounded-sm bg-ink px-4 py-2 font-dm text-xs font-medium text-paper hover:opacity-90"
+              >
+                Save & continue <ChevronRight size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
