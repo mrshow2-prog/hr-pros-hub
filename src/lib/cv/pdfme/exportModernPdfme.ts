@@ -72,12 +72,11 @@ function bullet(
   const lh = opts.lh ?? 1.45;
   const gw = opts.glyphW ?? 4.4;
   const tw = b.contentW - gw;
-  // Predict wrapped line count from the actual text — single-line bullets
-  // reserve a single line of leading, avoiding phantom blank rows between
-  // bullets when pdfme renders tighter than a generous lh would suggest.
-  const lineCount = Math.max(1, textHeightMm(text, tw, fs, lh) / (ptToMm(fs) * lh));
-  const h = ptToMm(fs) * lh * lineCount;
-  b.ensure(h + 0.4);
+  const lineStep = ptToMm(fs) * lh;
+  const lineCount = Math.max(1, Math.ceil(textHeightMm(text, tw, fs, lh) / lineStep - 0.01));
+  const wrapGuard = lineCount > 1 ? 1.2 : 0.25;
+  const h = lineStep * lineCount + wrapGuard;
+  b.ensure(h + 0.35);
   const py = b.cursorY;
   b.addText({
     value: glyph, x: b.margin, y: py, width: gw,
@@ -88,9 +87,7 @@ function bullet(
     value: text, x: b.margin + gw, y: py, width: tw,
     fontSize: fs, color: opts.textColor ?? SUBINK, lineHeight: lh,
   });
-  // Tight inter-bullet gap (0.4mm) — accumulating padding here is what
-  // showed up as "random empty lines" between bullets of the same job.
-  b.cursorY = py + h + 0.4;
+  b.cursorY = py + h + 0.35;
 }
 
 
