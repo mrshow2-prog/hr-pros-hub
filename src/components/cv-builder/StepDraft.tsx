@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
+import PhotoCropperDialog from "./PhotoCropperDialog";
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
