@@ -321,6 +321,18 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       name: l.name ?? "",
       level: l.level ?? "Professional",
     })),
+    achievements: raw?.achievements ?? [],
+    certifications: (raw?.certifications ?? []).map((c) => ({
+      id: c.id ?? newId("cert"),
+      name: c.name ?? "",
+      issuer: c.issuer ?? "",
+      date: c.date ?? "",
+    })),
+    customSections: (raw?.customSections ?? []).map((s) => ({
+      id: s.id ?? newId("cs"),
+      title: s.title ?? "",
+      bullets: s.bullets ?? [],
+    })),
     hiddenSections: raw?.hiddenSections ?? [],
   };
 }
