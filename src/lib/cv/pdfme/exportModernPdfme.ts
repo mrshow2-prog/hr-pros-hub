@@ -31,7 +31,14 @@ function contactLine(cv: GeneratedCV) {
   return contactItems(cv).join("   ·   ");
 }
 
-/** A role-on-left, period-on-right row that stays on one line. */
+/**
+ * A role-on-left, period-on-right row. Uses the same deterministic
+ * line-by-line layout as bullets: we pre-wrap with wrapLines() and emit
+ * one single-line addText() per visual line at an exact Y. This eliminates
+ * the phantom-blank-line gap (and overlap risk) that came from letting
+ * pdfme re-wrap a multi-line text block while our cursor advanced from a
+ * separate estimate.
+ */
 function periodRow(
   ctx: Ctx,
   left: string,
@@ -43,23 +50,37 @@ function periodRow(
   const rightFs = opts.rightFs ?? 8.8;
   const periodW = 52;
   const leftW = b.contentW - periodW - 2;
-  const h = Math.max(
-    ptToMm(leftFs) * 1.25,
-    textHeightMm(left, leftW, leftFs, 1.25, { bold: opts.bold }),
-  );
-  b.ensure(h + 1);
+  const lineStep = ptToMm(leftFs) * 1.25;
+  const leftLines = wrapLines(left || "", leftW, leftFs, { bold: opts.bold });
+  const lineCount = Math.max(1, leftLines.length);
+  const blockH = lineCount * lineStep;
+  b.ensure(blockH);
   const py = b.cursorY;
-  b.addText({
-    value: left, x: b.margin, y: py, width: leftW,
-    fontSize: leftFs, color: opts.leftColor ?? INK, bold: opts.bold,
-  });
-  if (right) {
+  for (let i = 0; i < leftLines.length; i++) {
     b.addText({
-      value: right, x: b.margin + leftW + 2, y: py, width: periodW,
-      fontSize: rightFs, color: opts.rightColor ?? MUTED, align: "right",
+      value: leftLines[i],
+      x: b.margin,
+      y: py + i * lineStep,
+      width: leftW,
+      fontSize: leftFs,
+      color: opts.leftColor ?? INK,
+      bold: opts.bold,
+      lineHeight: 1.25,
     });
   }
-  b.cursorY = py + h + (opts.spaceAfter ?? 0.5);
+  if (right) {
+    b.addText({
+      value: right,
+      x: b.margin + leftW + 2,
+      y: py,
+      width: periodW,
+      fontSize: rightFs,
+      color: opts.rightColor ?? MUTED,
+      align: "right",
+      lineHeight: 1.25,
+    });
+  }
+  b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5);
 }
 
 /**
