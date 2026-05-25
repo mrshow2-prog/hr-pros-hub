@@ -668,6 +668,45 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
           competencyClusters: cv.competencyClusters.filter((c) => c.id !== clId),
         })),
       setLanguages: (languages) => patchCV((cv) => ({ ...cv, languages })),
+      setAchievements: (items) => patchCV((cv) => ({ ...cv, achievements: items })),
+      setCertifications: (items) => patchCV((cv) => ({ ...cv, certifications: items })),
+      addCertification: () =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: [
+            ...cv.certifications,
+            { id: newId("cert"), name: "", issuer: "", date: "" },
+          ],
+        })),
+      removeCertification: (id) =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: cv.certifications.filter((c) => c.id !== id),
+        })),
+      patchCertification: (id, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: cv.certifications.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+        })),
+      setCustomSections: (items) => patchCV((cv) => ({ ...cv, customSections: items })),
+      addCustomSection: () =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: [
+            ...cv.customSections,
+            { id: newId("cs"), title: "New section", bullets: [] },
+          ],
+        })),
+      removeCustomSection: (id) =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: cv.customSections.filter((s) => s.id !== id),
+        })),
+      patchCustomSection: (id, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: cv.customSections.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+        })),
       toggleSection: (key) =>
         patchCV((cv) => ({
           ...cv,
