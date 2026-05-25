@@ -800,7 +800,6 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5 });
   }
 
-  const ctx2: Ctx = { cv, primary: SIENNA, b };
   if (!isHidden(cv, "experience") && cv.experience.length) {
     mainHeading("Experience");
     for (const exp of cv.experience) {
