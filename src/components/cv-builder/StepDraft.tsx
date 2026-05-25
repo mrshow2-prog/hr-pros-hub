@@ -246,7 +246,7 @@ export function SectionShell({
 /* ---------------- Contact ---------------- */
 
 export function ContactBlock({ contact }: { contact: ContactInfo }) {
-  const { patchContact, state, setPhotoPath } = useCVBuilder();
+  const { patchContact, state, setPhotoPath, patchIntent } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState("");
