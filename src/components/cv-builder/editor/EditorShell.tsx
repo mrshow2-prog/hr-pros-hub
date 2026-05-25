@@ -455,15 +455,14 @@ function PreviewPane() {
   return (
     <div ref={wrapRef} className="h-full overflow-y-auto bg-clay/30 p-6">
       <div className="mx-auto" style={{ width: 794 * scale }}>
-        <div
-          className="origin-top shadow-xl ring-1 ring-ink/10"
-          style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}
-        >
-          <CVRenderer
-            cv={state.generatedCV}
-            template={state.selectedTemplate}
-            photoUrl={photoUrl}
-          />
+        <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
+          <Paginator>
+            <CVRenderer
+              cv={state.generatedCV}
+              template={state.selectedTemplate}
+              photoUrl={photoUrl}
+            />
+          </Paginator>
         </div>
       </div>
     </div>
