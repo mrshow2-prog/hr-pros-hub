@@ -1,24 +1,27 @@
-import { Document, Paragraph, Table } from "docx";
+import { Document, Paragraph, Table, TextRun, BorderStyle } from "docx";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets,
   txt, sectionHeading, roleRow, companyRow, bulletPara,
-  headerTable, chipsParagraph, quoteSummary,
+  headerTable, chipsParagraph, quoteSummary, INK_HEX,
 } from "./shared";
 
-/** Single-column flowing layout — used by Modern, Classic, Executive, SkillsFirst. */
+/** Single-column flowing layout — used by Dubai, London, Zurich, Berlin, Geneva. */
 export interface FlowOptions {
   headingVariant: "bar" | "underline" | "none";
   sections: Array<"summary" | "experience" | "education" | "skills" | "skills-pills" | "languages">;
   photo?: { url: string | null; size: number; shape: "circle" | "square" };
   nameSize?: number;
-  /** Render summary in a sienna left-bar quote block (Executive). */
+  /** Render summary in a sienna left-bar quote block (Zurich). */
   quoteSummary?: boolean;
-  /** Header has a bottom ink rule (Classic, Skills-First). */
+  /** Header has a bottom ink rule (London, Berlin). */
   bottomRule?: boolean;
+  /** Geneva-style timeline rail under experience entries. */
+  timeline?: boolean;
   headingMap?: Partial<Record<"summary" | "experience" | "education" | "skills" | "languages", string>>;
 }
+
 
 export async function buildFlowingDoc(
   cv: GeneratedCV,
