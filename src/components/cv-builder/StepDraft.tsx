@@ -433,6 +433,12 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           {err}
         </p>
       )}
+      <PhotoCropperDialog
+        open={cropperOpen}
+        source={cropperSource}
+        onCancel={() => setCropperOpen(false)}
+        onConfirm={uploadCropped}
+      />
     </div>
   );
 }
