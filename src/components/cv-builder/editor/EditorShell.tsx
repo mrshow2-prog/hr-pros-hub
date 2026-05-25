@@ -285,18 +285,29 @@ export default function EditorShell() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <select
-            value={state.selectedTemplate ?? "dubai"}
-            onChange={(e) => setTemplate(e.target.value as TemplateId)}
-            className="rounded border border-ink/15 bg-paper px-2 py-1 font-dm text-xs text-ink focus:border-sienna focus:outline-none"
-            aria-label="Template"
-          >
-            {TEMPLATES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative flex items-center">
+            <select
+              value={state.selectedTemplate ?? "dubai"}
+              onChange={(e) => {
+                setTemplateChanging(true);
+                setTemplate(e.target.value as TemplateId);
+              }}
+              className="rounded border border-ink/15 bg-paper px-2 py-1 pr-7 font-dm text-xs text-ink focus:border-sienna focus:outline-none"
+              aria-label="Template"
+            >
+              {TEMPLATES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+            {templateChanging && (
+              <Loader2
+                className="pointer-events-none absolute right-1.5 animate-spin text-sienna"
+                size={12}
+              />
+            )}
+          </div>
           {/* dark/light toggle removed — palette is set on the Template step */}
 
           <button
