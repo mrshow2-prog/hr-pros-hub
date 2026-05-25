@@ -169,19 +169,6 @@ export default function StepGaps() {
         })()}
       </div>
 
-      {!loading && gaps.length > 0 && (
-        <div className="mt-10 rounded-md border border-sienna/30 bg-clay/40 p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sienna/15 text-sienna"><Lock size={18} /></div>
-            <div className="flex-1">
-              <p className="font-syne text-lg text-ink">Select your template, then unlock your full CV for AED 99</p>
-              <p className="mt-1 font-dm text-sm text-ink/70">One payment, yours to keep. Includes the rewrite, ATS scoring, and PDF + Word export.</p>
-            </div>
-            <button type="button" onClick={() => setStep(4)} className="hidden shrink-0 rounded-sm bg-sienna px-5 py-3 font-dm text-sm font-medium text-paper hover:opacity-90 sm:inline-flex">Choose template</button>
-          </div>
-          <button type="button" onClick={() => setStep(4)} className="mt-4 w-full rounded-sm bg-sienna px-5 py-3 font-dm text-sm font-medium text-paper hover:opacity-90 sm:hidden">Choose template</button>
-        </div>
-      )}
 
       <StepFooter onBack={() => setStep(2)} onNext={() => setStep(4)} nextLabel="Continue" />
     </>
