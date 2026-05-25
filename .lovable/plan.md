@@ -1,63 +1,89 @@
 ## Goal
-Add two new high-quality CV templates (built with pdfme) and rebrand the existing five with a coherent naming scheme — total **7 templates**, all wired through preview, PDF export, and DOCX export.
+Stop the loop of fixing one symptom and reintroducing the other by replacing the fragile PDF bullet spacing heuristic with a deterministic bullet layout system.
 
-## New templates
+## What I found
+- The current PDF export is built with pdfme absolute-positioned text blocks.
+- The overlap/gap problem is caused by predicting text wrapping manually, then advancing `cursorY` based on that estimate.
+- Small changes to the width estimate swing the result between two bad states:
+  - Under-estimate height: bullets overlap/cross.
+  - Over-estimate height: random empty lines appear.
+- The problem is not mainly caused by separate bullet text boxes in the UI. Separate boxes are fine if we sanitize and render them correctly. Changing to one large textarea can improve editing ergonomics, but it will not by itself fix PDF layout unless the PDF layout engine is corrected.
 
-**1. "Riyadh" — Sidebar (dark accent rail)**
-The most common style across MyPerfectCV and CV Elevator that we currently don't have. A 30% dark sienna left sidebar carrying photo, contact details, skills, and languages; main column holds summary, experience, education. Strong visual identity, still ATS-safe (single text flow exported as ordered blocks).
+## Plan
 
-**2. "Geneva" — Editorial timeline**
-Premium serif-style headline, generous whitespace, and a vertical timeline gutter (dot + line) running through the experience section. Distinct from everything we have; competes with MyPerfectCV's "modern" templates.
+### 1. Replace heuristic bullet rendering with an atomic bullet block renderer
+Create a shared PDF helper that renders an entire job's bullet list as one controlled block instead of placing every bullet independently with guessed spacing.
 
-## Renamed lineup (city naming, matches competitor pattern)
+For each job:
+- Clean bullet text.
+- Measure each bullet with a deterministic line splitter.
+- Build rows as structured data:
+  - bullet glyph
+  - wrapped text lines
+  - exact row height
+  - fixed row gap
+- Render each bullet row manually line-by-line so pdfme does not do its own unpredictable internal wrapping.
 
-| Old ID | New ID | New display name | Badge |
-|---|---|---|---|
-| modern | `dubai` | Dubai | Most picked |
-| classic | `london` | London | Recruiter favourite |
-| executive | `zurich` | Zurich | Executive |
-| compact | `singapore` | Singapore | Information-dense |
-| skills-first | `berlin` | Berlin | Career change |
-| — | `riyadh` | Riyadh | New · Bold |
-| — | `geneva` | Geneva | New · Premium |
+This means:
+- A one-line bullet gets exactly one line of height.
+- A two-line bullet gets exactly two line heights.
+- There is one small consistent gap between bullets.
+- No random blank line can appear because no empty text line is emitted.
+- No overlap can happen because each rendered line has a known Y coordinate.
 
-## Backwards compatibility
+### 2. Add section-level page break control for job entries
+Before rendering a job entry, estimate the full job block height:
+- role/date row
+- company/location row
+- bullet rows
+- job spacing
 
-Saved sessions in `cv_builder_sessions` store the old IDs. Add `normalizeTemplateId(id)` that maps `modern → dubai`, `classic → london`, `executive → zurich`, `compact → singapore`, `skills-first → berlin`. Call it inside `hydrateGeneratedCV` and at every read site (PDF exporter, DOCX router, CVRenderer) so old data keeps working.
+If the job mostly fits on the current page, keep it together. If it does not fit, start it on a new page before rendering. For very long jobs, allow bullets to continue on the next page only between bullet rows, never through a line of text.
 
-## Files to change
+This adapts the section-based idea from the provided reference, but keeps the existing pdfme system rather than switching the whole export to screenshots.
 
-### Types & config
-- `src/contexts/CVBuilderContext.tsx` — update `TemplateId` union; add `normalizeTemplateId` helper; call it in `hydrateGeneratedCV` and wherever a template is consumed.
-- `src/lib/cvTemplateConfig.ts` — replace the 5 old keys with the 7 new ones (keep brand sienna primary across all).
+### 3. Apply the same bullet block renderer to all 7 PDF templates
+Update all templates to use the new renderer:
+- Dubai
+- London
+- Zurich
+- Singapore
+- Berlin
+- Riyadh
+- Geneva
 
-### pdfme (PDF + live preview)
-- `src/lib/cv/pdfme/exportModernPdfme.ts` — rename internal `buildModern → buildDubai`, `buildClassic → buildLondon`, etc.; add `buildRiyadh` (sidebar) and `buildGeneva` (timeline); update `generateCvPdfmeBlob` switch.
-- `src/lib/cv/pdfme/core.ts` — add a small `addRect`-based sidebar helper if needed (already has rect support).
+Each template can still pass its own glyph, font size, line height, indent, and color, but the layout rules become shared and stable.
 
-### DOCX
-- `src/lib/docx/router.ts` — route 7 IDs to their builders, with legacy-ID fallthrough via `normalizeTemplateId`.
-- `src/lib/docx/singleColumn.ts` — rename existing builders, keep their `buildFlowingDoc` configs.
-- `src/lib/docx/sidebar.ts` (new) — builds Riyadh: two-column table, dark-fill left cell (`shading: { fill: "9C5643", type: ShadingType.CLEAR }`) with white text for photo/contact/skills/languages, right cell with summary/experience/education.
-- `src/lib/docx/timeline.ts` (new) — builds Geneva: section headings in serif (Georgia), each experience entry preceded by a small filled circle (Unicode `●`) acting as a timeline marker, with a left paragraph indent that simulates the vertical line.
+### 4. Revert the recent over-conservative spacing patches
+Remove the unstable width multiplier / wrap guard changes that caused the system to bounce between overlap and empty-line issues. The new line-by-line renderer will own spacing instead.
 
-### React preview cards (used only in template picker)
-- `src/components/cv-builder/templates/TemplateRiyadh.tsx` (new) — visual approximation for the selector card.
-- `src/components/cv-builder/templates/TemplateGeneva.tsx` (new) — visual approximation for the selector card.
-- `src/components/cv-builder/templates/CVRenderer.tsx` — add both to the switch + alias the renamed IDs.
-- The existing 5 React files (`TemplateModern`, `TemplateClassic`, etc.) stay as-is and are re-exported under new names — no need to rename files since `CVRenderer` is the single import point.
+### 5. Keep the current separate bullet UI for now, but add a safer parser path
+I recommend not dropping the separate bullet boxes in this fix because that is a bigger UX/data change and is not the root PDF issue.
 
-### Template picker UI
-- `src/components/cv-builder/StepTemplate.tsx` — replace `TEMPLATES` array with the 7-entry city lineup, each with refreshed copy, badge, and ATS score. Order: Dubai (default/most-picked), London, Zurich, Singapore, Berlin, Riyadh (New), Geneva (New).
+However, I will add the foundation for a future single-textarea option by ensuring the bullet sanitizer supports:
+- pasted multi-line bullet lists
+- bullets starting with `-`, `•`, `*`, `–`, `—`
+- blank line removal
 
-### Defaults
-- Anywhere the default template is `"modern"`, change to `"dubai"`.
+If you later want the UI changed to one big bullet textarea per job, we can do that cleanly after the PDF export is stable.
 
-## Out of scope
-- Re-architecting the wizard, payment flow, or section editors.
-- Adding sidebar layout support for the existing 5 templates (only Riyadh uses it).
-- DOCX preview parity beyond what the current Word builders already produce.
+### 6. Validation
+After implementation:
+- Run a focused lint/type check on the edited files.
+- Use a stress sample with long hospitality/sales bullets like your screenshots.
+- Confirm the generated PDF preview has:
+  - no crossed text
+  - no random blank rows between bullets
+  - clean page breaks between job blocks/bullet rows
 
-## Risk / verification
-- After implementation, manually verify in preview that all 7 templates render in `PdfmePreview` without overflow, and that the picker grid shows 7 cards in 3 columns (last row will have 1 card on `lg`).
-- Spot-check `exportCVToPdf` and `exportCVToDocx` for one old ID (`modern`) and one new ID (`riyadh`) to confirm the alias + new builder both work end-to-end.
+## Technical approach
+- Add PDF helper functions in `src/lib/cv/pdfme/core.ts` or a new `layout.ts`:
+  - `measureWrappedLines(text, width, fontSize, options)`
+  - `renderWrappedTextLines(...)`
+  - `measureBulletList(...)`
+  - `renderBulletList(...)`
+- Update `src/lib/cv/pdfme/exportModernPdfme.ts` so experience rendering calls the shared bullet-list renderer instead of the current `bullet()` function.
+- Preserve DOCX and preview sanitization changes already made, since those are still useful.
+
+## Why this should stop the loop
+The key change is that pdfme will no longer be asked to wrap bullet paragraphs while our code guesses how much vertical space it used. We will pre-wrap text ourselves and render each line at exact positions, so the cursor advances from known geometry rather than estimates.
