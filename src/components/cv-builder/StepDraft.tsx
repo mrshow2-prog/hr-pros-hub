@@ -10,6 +10,7 @@ import {
   X,
   ChevronRight,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import {
   useCVBuilder,
