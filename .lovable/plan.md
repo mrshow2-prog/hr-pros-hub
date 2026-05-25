@@ -1,27 +1,63 @@
 ## Goal
-Accept profile photos of any size from the user's device and automatically compress them client-side to under 1MB before uploading, so phone-camera shots don't get rejected.
+Add two new high-quality CV templates (built with pdfme) and rebrand the existing five with a coherent naming scheme — total **7 templates**, all wired through preview, PDF export, and DOCX export.
 
-## Approach
-Add a small client-side compression step in `StepUpload.tsx`'s `handlePhoto` flow. No new dependencies — use the browser's native `Image` + `<canvas>` + `canvas.toBlob()` APIs (works on all modern mobile browsers, including iOS Safari).
+## New templates
 
-### Steps
-1. Remove the hard 2MB pre-upload rejection. Instead, set a generous absolute ceiling (e.g. 20MB) just to guard against absurd inputs.
-2. Add a helper `compressImage(file, { maxBytes: 1_000_000, maxDimension: 1600 })` that:
-   - Loads the file into an `HTMLImageElement` via `URL.createObjectURL`.
-   - Draws it to a canvas, scaling longest edge down to `maxDimension` (preserves aspect ratio; only downsizes, never upsizes).
-   - Exports as JPEG via `canvas.toBlob(..., 'image/jpeg', quality)`.
-   - Iteratively lowers quality (0.85 → 0.75 → 0.65 → 0.55 → 0.45) until the blob is ≤ 1MB. If still too big, also halves dimensions and retries.
-   - Returns a new `File` with `.jpg` extension and `image/jpeg` type.
-3. In `handlePhoto`:
-   - Show "Compressing…" state while it runs.
-   - Always convert PNG/JPEG inputs through the compressor (PNGs become JPEGs — fine for headshots; if user really wants PNG transparency, that's not a use case for a profile photo).
-   - Upload the compressed file with the sanitized name (extension forced to `.jpg`).
-4. Update the helper text from "max 2MB" to something like "Any size — we'll optimize it for you."
-5. Keep JPG/PNG as the accepted input types. HEIC from iPhone is still not decodable by canvas — leave the existing rejection but improve the error message to suggest re-saving as JPG (iOS shares photos as JPEG by default when uploading via the file picker, so this is rarely hit).
+**1. "Riyadh" — Sidebar (dark accent rail)**
+The most common style across MyPerfectCV and CV Elevator that we currently don't have. A 30% dark sienna left sidebar carrying photo, contact details, skills, and languages; main column holds summary, experience, education. Strong visual identity, still ATS-safe (single text flow exported as ordered blocks).
 
-### Files to change
-- `src/components/cv-builder/StepUpload.tsx` — add `compressImage` helper, rewire `handlePhoto`, update validation + copy.
+**2. "Geneva" — Editorial timeline**
+Premium serif-style headline, generous whitespace, and a vertical timeline gutter (dot + line) running through the experience section. Distinct from everything we have; competes with MyPerfectCV's "modern" templates.
 
-### Out of scope
-- Compressing the CV PDFs/DOCX (different problem, different tradeoffs).
-- HEIC → JPEG conversion (would need an extra library like `heic2any`; can revisit if users hit it).
+## Renamed lineup (city naming, matches competitor pattern)
+
+| Old ID | New ID | New display name | Badge |
+|---|---|---|---|
+| modern | `dubai` | Dubai | Most picked |
+| classic | `london` | London | Recruiter favourite |
+| executive | `zurich` | Zurich | Executive |
+| compact | `singapore` | Singapore | Information-dense |
+| skills-first | `berlin` | Berlin | Career change |
+| — | `riyadh` | Riyadh | New · Bold |
+| — | `geneva` | Geneva | New · Premium |
+
+## Backwards compatibility
+
+Saved sessions in `cv_builder_sessions` store the old IDs. Add `normalizeTemplateId(id)` that maps `modern → dubai`, `classic → london`, `executive → zurich`, `compact → singapore`, `skills-first → berlin`. Call it inside `hydrateGeneratedCV` and at every read site (PDF exporter, DOCX router, CVRenderer) so old data keeps working.
+
+## Files to change
+
+### Types & config
+- `src/contexts/CVBuilderContext.tsx` — update `TemplateId` union; add `normalizeTemplateId` helper; call it in `hydrateGeneratedCV` and wherever a template is consumed.
+- `src/lib/cvTemplateConfig.ts` — replace the 5 old keys with the 7 new ones (keep brand sienna primary across all).
+
+### pdfme (PDF + live preview)
+- `src/lib/cv/pdfme/exportModernPdfme.ts` — rename internal `buildModern → buildDubai`, `buildClassic → buildLondon`, etc.; add `buildRiyadh` (sidebar) and `buildGeneva` (timeline); update `generateCvPdfmeBlob` switch.
+- `src/lib/cv/pdfme/core.ts` — add a small `addRect`-based sidebar helper if needed (already has rect support).
+
+### DOCX
+- `src/lib/docx/router.ts` — route 7 IDs to their builders, with legacy-ID fallthrough via `normalizeTemplateId`.
+- `src/lib/docx/singleColumn.ts` — rename existing builders, keep their `buildFlowingDoc` configs.
+- `src/lib/docx/sidebar.ts` (new) — builds Riyadh: two-column table, dark-fill left cell (`shading: { fill: "9C5643", type: ShadingType.CLEAR }`) with white text for photo/contact/skills/languages, right cell with summary/experience/education.
+- `src/lib/docx/timeline.ts` (new) — builds Geneva: section headings in serif (Georgia), each experience entry preceded by a small filled circle (Unicode `●`) acting as a timeline marker, with a left paragraph indent that simulates the vertical line.
+
+### React preview cards (used only in template picker)
+- `src/components/cv-builder/templates/TemplateRiyadh.tsx` (new) — visual approximation for the selector card.
+- `src/components/cv-builder/templates/TemplateGeneva.tsx` (new) — visual approximation for the selector card.
+- `src/components/cv-builder/templates/CVRenderer.tsx` — add both to the switch + alias the renamed IDs.
+- The existing 5 React files (`TemplateModern`, `TemplateClassic`, etc.) stay as-is and are re-exported under new names — no need to rename files since `CVRenderer` is the single import point.
+
+### Template picker UI
+- `src/components/cv-builder/StepTemplate.tsx` — replace `TEMPLATES` array with the 7-entry city lineup, each with refreshed copy, badge, and ATS score. Order: Dubai (default/most-picked), London, Zurich, Singapore, Berlin, Riyadh (New), Geneva (New).
+
+### Defaults
+- Anywhere the default template is `"modern"`, change to `"dubai"`.
+
+## Out of scope
+- Re-architecting the wizard, payment flow, or section editors.
+- Adding sidebar layout support for the existing 5 templates (only Riyadh uses it).
+- DOCX preview parity beyond what the current Word builders already produce.
+
+## Risk / verification
+- After implementation, manually verify in preview that all 7 templates render in `PdfmePreview` without overflow, and that the picker grid shows 7 cards in 3 columns (last row will have 1 card on `lg`).
+- Spot-check `exportCVToPdf` and `exportCVToDocx` for one old ID (`modern`) and one new ID (`riyadh`) to confirm the alias + new builder both work end-to-end.

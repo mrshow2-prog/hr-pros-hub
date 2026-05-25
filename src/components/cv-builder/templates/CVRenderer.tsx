@@ -1,28 +1,34 @@
-import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
+import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
 import TemplateClassic from "./TemplateClassic";
 import TemplateModern from "./TemplateModern";
 import TemplateCompact from "./TemplateCompact";
 import TemplateSkillsFirst from "./TemplateSkillsFirst";
 import TemplateExecutive from "./TemplateExecutive";
+import TemplateRiyadh from "./TemplateRiyadh";
+import TemplateGeneva from "./TemplateGeneva";
 
 export interface CVRendererProps {
   cv: GeneratedCV;
-  template: TemplateId;
+  template: TemplateId | string | null | undefined;
   photoUrl: string | null;
 }
 
 export default function CVRenderer({ cv, template, photoUrl }: CVRendererProps) {
-  switch (template) {
-    case "classic":
+  switch (normalizeTemplateId(template)) {
+    case "london":
       return <TemplateClassic cv={cv} photoUrl={photoUrl} />;
-    case "modern":
+    case "dubai":
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
-    case "compact":
+    case "singapore":
       return <TemplateCompact cv={cv} photoUrl={photoUrl} />;
-    case "skills-first":
+    case "berlin":
       return <TemplateSkillsFirst cv={cv} photoUrl={photoUrl} />;
-    case "executive":
+    case "zurich":
       return <TemplateExecutive cv={cv} photoUrl={photoUrl} />;
+    case "riyadh":
+      return <TemplateRiyadh cv={cv} photoUrl={photoUrl} />;
+    case "geneva":
+      return <TemplateGeneva cv={cv} photoUrl={photoUrl} />;
     default:
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
   }

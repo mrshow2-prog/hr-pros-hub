@@ -1,16 +1,16 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import { buildFlowingDoc } from "./flow";
 
-export const buildModernDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "modern", {
+export const buildDubaiDoc = (cv: GeneratedCV, photoUrl: string | null) =>
+  buildFlowingDoc(cv, "dubai", {
     headingVariant: "bar",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 100, shape: "square" },
     nameSize: 48,
   });
 
-export const buildClassicDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "classic", {
+export const buildLondonDoc = (cv: GeneratedCV, photoUrl: string | null) =>
+  buildFlowingDoc(cv, "london", {
     headingVariant: "underline",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 90, shape: "circle" },
@@ -18,8 +18,8 @@ export const buildClassicDoc = (cv: GeneratedCV, photoUrl: string | null) =>
     bottomRule: true,
   });
 
-export const buildExecutiveDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "executive", {
+export const buildZurichDoc = (cv: GeneratedCV, photoUrl: string | null) =>
+  buildFlowingDoc(cv, "zurich", {
     headingVariant: "none",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 110, shape: "square" },
@@ -32,11 +32,25 @@ export const buildExecutiveDoc = (cv: GeneratedCV, photoUrl: string | null) =>
     },
   });
 
-export const buildSkillsFirstDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "skills-first", {
+export const buildBerlinDoc = (cv: GeneratedCV, photoUrl: string | null) =>
+  buildFlowingDoc(cv, "berlin", {
     headingVariant: "none",
     sections: ["summary", "skills-pills", "experience", "education", "languages"],
     photo: { url: photoUrl, size: 90, shape: "circle" },
     nameSize: 40,
     bottomRule: true,
   });
+
+export const buildGenevaDoc = (cv: GeneratedCV, photoUrl: string | null) =>
+  buildFlowingDoc(cv, "geneva", {
+    headingVariant: "underline",
+    sections: ["summary", "experience", "education", "skills", "languages"],
+    photo: { url: photoUrl, size: 100, shape: "circle" },
+    nameSize: 52,
+    timeline: true,
+    headingMap: {
+      summary: "Profile",
+      experience: "Career Timeline",
+    },
+  });
+

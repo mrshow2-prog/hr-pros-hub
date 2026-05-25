@@ -44,11 +44,13 @@ import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
-  { id: "classic", label: "Classic" },
-  { id: "modern", label: "Modern" },
-  { id: "compact", label: "Compact" },
-  { id: "skills-first", label: "Skills-first" },
-  { id: "executive", label: "Executive" },
+  { id: "dubai", label: "Dubai" },
+  { id: "london", label: "London" },
+  { id: "zurich", label: "Zurich" },
+  { id: "singapore", label: "Singapore" },
+  { id: "berlin", label: "Berlin" },
+  { id: "riyadh", label: "Riyadh" },
+  { id: "geneva", label: "Geneva" },
 ];
 
 type SectionDef = { key: SectionKey; label: string };
@@ -276,7 +278,7 @@ export default function EditorShell() {
 
         <div className="flex items-center gap-2">
           <select
-            value={state.selectedTemplate ?? "modern"}
+            value={state.selectedTemplate ?? "dubai"}
             onChange={(e) => setTemplate(e.target.value as TemplateId)}
             className="rounded border border-ink/15 bg-paper px-2 py-1 font-dm text-xs text-ink focus:border-sienna focus:outline-none"
             aria-label="Template"

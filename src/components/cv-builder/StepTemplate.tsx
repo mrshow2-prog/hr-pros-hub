@@ -1,4 +1,4 @@
-import { Check, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { useCVBuilder, type TemplateId, type TypeOption } from "@/contexts/CVBuilderContext";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ interface TemplateMeta {
   id: TemplateId;
   name: string;
   badge: string;
+  isNew?: boolean;
   description: string;
   features: string[];
   ats: number;
@@ -19,74 +20,104 @@ interface TemplateMeta {
 
 const TEMPLATES: TemplateMeta[] = [
   {
-    id: "classic",
-    name: "Classic",
-    badge: "Classic",
+    id: "dubai",
+    name: "Dubai",
+    badge: "Most picked",
     description:
-      "Traditional single-column layout with formal typography. Perfect for conservative industries and senior positions.",
-    features: [
-      "Single column layout",
-      "Large name with circular photo",
-      "Traditional section headers",
-      "Dense, efficient use of space",
-    ],
-    ats: 95,
-  },
-  {
-    id: "modern",
-    name: "Modern",
-    badge: "Modern",
-    description:
-      "Clean contemporary design with generous spacing and accent bars. Ideal for creative and tech roles.",
+      "Clean contemporary design with accent bars and generous spacing. Our best all-rounder — works for every industry from finance to creative.",
     features: [
       "Left accent bars on sections",
-      "Square photo with rounded corners",
-      "Clean, generous white space",
-      "Contemporary typography",
+      "Square photo with crisp edges",
+      "Generous, modern white space",
+      "Strong sans-serif typography",
     ],
-    ats: 93,
+    ats: 96,
   },
   {
-    id: "compact",
-    name: "Compact",
-    badge: "Compact",
+    id: "london",
+    name: "London",
+    badge: "Recruiter favourite",
     description:
-      "Two-column layout maximising content visibility. Best for experienced professionals with extensive backgrounds.",
+      "Traditional single-column layout with formal serif typography. Perfect for banking, law, public sector and senior conservative roles.",
+    features: [
+      "Single column layout",
+      "Classic serif headings",
+      "Circular profile photo",
+      "Underlined section titles",
+    ],
+    ats: 97,
+  },
+  {
+    id: "zurich",
+    name: "Zurich",
+    badge: "Executive",
+    description:
+      "Refined design with oversized name and a featured executive summary. Designed for C-suite, board roles and senior leadership.",
+    features: [
+      "Display-sized name treatment",
+      "Quoted executive summary",
+      "Premium serif typography",
+      "Authoritative, refined feel",
+    ],
+    ats: 96,
+  },
+  {
+    id: "singapore",
+    name: "Singapore",
+    badge: "Information-dense",
+    description:
+      "Two-column compact layout maximising content visibility. Best for experienced professionals with long careers or technical resumes.",
     features: [
       "Two-column main layout",
       "Tighter line spacing",
       "More content per page",
       "Efficient use of space",
     ],
-    ats: 92,
+    ats: 94,
   },
   {
-    id: "skills-first",
-    name: "Skills-first",
-    badge: "Skills-First",
+    id: "berlin",
+    name: "Berlin",
+    badge: "Career change",
     description:
-      "Highlights competencies before experience with pill-style tags. Perfect for career changers and skills-based roles.",
+      "Leads with skills and pill-style competency tags before experience. Perfect for career changers and skills-led applications.",
     features: [
-      "Skills section prominently placed",
+      "Skills section placed first",
       "Pill-style competency tags",
       "Circular profile photo",
       "Modern, accessible design",
     ],
-    ats: 94,
+    ats: 95,
   },
   {
-    id: "executive",
-    name: "Executive",
-    badge: "Executive",
+    id: "riyadh",
+    name: "Riyadh",
+    badge: "New · Bold",
+    isNew: true,
     description:
-      "Refined design with generous white space and strong typography. Designed for C-suite and senior leadership.",
+      "Striking dark sidebar carrying photo, contact and skills next to a clean white main column. Stands out instantly while staying ATS-friendly.",
     features: [
-      "Large display typography",
-      "Prominent executive summary",
-      "Generous white space",
-      "Authoritative, refined feel",
+      "Dark accent sidebar",
+      "Photo and contact rail",
+      "High visual contrast",
+      "Modern recruiter-tested layout",
     ],
-    ats: 96,
+    ats: 93,
+  },
+  {
+    id: "geneva",
+    name: "Geneva",
+    badge: "New · Premium",
+    isNew: true,
+    description:
+      "Editorial-style layout with serif headlines and a vertical timeline for your career. Made for considered, premium personal brands.",
+    features: [
+      "Vertical career timeline",
+      "Serif editorial headlines",
+      "Numbered section eyebrows",
+      "Generous magazine spacing",
+    ],
+    ats: 94,
   },
 ];
 
@@ -100,7 +131,7 @@ export default function StepTemplate() {
       <StepHeader
         eyebrow="Step 4 · Template"
         title="Choose your CV template"
-        subtitle="Each template is ATS-friendly. The difference is tone, density, and the room your CV needs to walk into."
+        subtitle="Seven templates, all ATS-friendly. The difference is tone, density and the room your CV needs to walk into."
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-6">
@@ -170,6 +201,11 @@ export default function StepTemplate() {
                 {active && (
                   <div className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper shadow">
                     <Check size={14} />
+                  </div>
+                )}
+                {t.isNew && !active && (
+                  <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-ink px-2.5 py-1 font-dm text-[10px] font-semibold uppercase tracking-wider2 text-paper shadow">
+                    <Sparkles size={11} /> New
                   </div>
                 )}
               </button>

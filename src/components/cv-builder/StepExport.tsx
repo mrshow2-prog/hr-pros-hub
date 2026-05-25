@@ -12,7 +12,7 @@ export default function StepExport() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   const cv = state.generatedCV;
-  const template = state.selectedTemplate ?? "modern";
+  const template = state.selectedTemplate ?? "dubai";
   const baseName = slugify(cv?.contact.name || "cv");
 
   useEffect(() => {

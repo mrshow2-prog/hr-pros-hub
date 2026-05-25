@@ -1,4 +1,4 @@
-import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
+import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
   contactItems, isHidden, periodOf, visibleBullets,
 } from "./helpers";
@@ -666,12 +666,308 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
 }
 
 /* ============================================================
+ *  RIYADH
+ *  - Dark sienna left sidebar (full page height) with photo,
+ *    contact, skills, languages. Right column flows
+ *    summary/experience/education with restrained type.
+ * ============================================================ */
+const SIENNA_DARK = "#6e3d2f";
+const PAPER = "#f5f0e8";
+
+async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
+  const b = createBuilder({ margin: 0, top: 0, bottom: 0 });
+  const SIDEBAR_W = 64; // mm
+  const MAIN_X = SIDEBAR_W;
+  const MAIN_W = PAGE_W - SIDEBAR_W;
+  const PADX = 10;
+  const ctx: Ctx = { cv, primary: SIENNA, b };
+  void ctx;
+
+  // Sidebar background (drawn on first page only — pdfme has no template repeating BG)
+  b.addRect({ x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H, color: SIENNA_DARK });
+
+  // ---- Sidebar content ----
+  let sY = 14;
+  const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+  if (photoData) {
+    const sz = 32;
+    b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
+    sY += sz + 8;
+  }
+
+  const sideHeading = (label: string) => {
+    b.addText({
+      value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
+    });
+    sY += ptToMm(9) * 1.25 + 0.6;
+    // Underline
+    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: "#a07a6a" });
+    sY += 2.4;
+  };
+
+  const sideRow = (label: string | null, value: string) => {
+    if (label) {
+      b.addText({
+        value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+        fontSize: 6.8, color: "#e8d9c8", bold: true, letterSpacing: 1.2,
+      });
+      sY += ptToMm(6.8) * 1.4 + 0.2;
+    }
+    const h = textHeightMm(value, SIDEBAR_W - PADX * 2, 8.4, 1.45);
+    b.addText({
+      value, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      fontSize: 8.4, color: PAPER, lineHeight: 1.45,
+    });
+    sY += h + 1.6;
+  };
+
+  if (!isHidden(cv, "contact")) {
+    sideHeading("Contact");
+    if (cv.contact.location) sideRow("Location", cv.contact.location);
+    if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
+    if (cv.contact.email) sideRow("Email", cv.contact.email);
+    if (cv.contact.linkedinUrl) sideRow("LinkedIn", cv.contact.linkedinUrl);
+    sY += 3;
+  }
+
+  if (!isHidden(cv, "skills") && cv.skills.length) {
+    sideHeading("Skills");
+    for (const sk of cv.skills) {
+      const tw = SIDEBAR_W - PADX * 2 - 3;
+      const h = textHeightMm(sk, tw, 8.6, 1.45);
+      b.addText({ value: "▪", x: PADX, y: sY, width: 3, fontSize: 8.6, color: SIENNA, bold: true });
+      b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.45 });
+      sY += h + 0.8;
+    }
+    sY += 3;
+  }
+
+  if (!isHidden(cv, "languages") && cv.languages.length) {
+    sideHeading("Languages");
+    for (const l of cv.languages) {
+      const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+      sideRow(null, display);
+    }
+  }
+
+  // ---- Main column ----
+  // Override cursor + content area for the main column. We do this by
+  // patching the builder's margin/contentW for subsequent calls.
+  (b as unknown as { margin: number }).margin = MAIN_X + PADX + 2;
+  (b as unknown as { contentW: number }).contentW = MAIN_W - PADX * 2 - 2;
+  b.cursorY = 16;
+
+  // Name + title
+  b.addText({
+    value: cv.contact.name || "Your name",
+    fontSize: 24, color: INK, bold: true, letterSpacing: -0.4, lineHeight: 1.05,
+    spaceAfter: 1,
+  });
+  if (cv.contact.jobTitle) {
+    b.addText({
+      value: cv.contact.jobTitle.toUpperCase(),
+      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4, spaceAfter: 6,
+    });
+  } else {
+    b.cursorY += 4;
+  }
+
+  const mainHeading = (label: string) => {
+    b.ensure(10);
+    b.addText({
+      value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
+      letterSpacing: 1.6, spaceAfter: 1.2,
+    });
+    b.addLine({ x: (b as unknown as { margin: number }).margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
+    b.cursorY += 3.4;
+  };
+
+  if (!isHidden(cv, "summary") && cv.summary) {
+    mainHeading("Profile");
+    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5 });
+  }
+
+  const ctx2: Ctx = { cv, primary: SIENNA, b };
+  if (!isHidden(cv, "experience") && cv.experience.length) {
+    mainHeading("Experience");
+    for (const exp of cv.experience) {
+      periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+      const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
+      if (comp) b.addText({ value: comp, fontSize: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
+      for (const bul of visibleBullets(exp)) {
+        bullet(ctx2, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
+      }
+      b.cursorY += 2.4;
+    }
+  }
+
+  if (!isHidden(cv, "education") && cv.education.length) {
+    mainHeading("Education");
+    for (const ed of cv.education) {
+      periodRow(ctx2, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
+      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
+    }
+  }
+
+  return b;
+}
+
+/* ============================================================
+ *  GENEVA
+ *  - Editorial template with serif-flavour name, numbered
+ *    section eyebrows, and a timeline rail for experience.
+ * ============================================================ */
+async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
+  const b = createBuilder({ margin: 20, top: 22, bottom: 18 });
+  const ctx: Ctx = { cv, primary: SIENNA, b };
+
+  // ---- Header ----
+  if (!isHidden(cv, "contact")) {
+    const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    const sz = 26;
+    const hy0 = b.cursorY;
+    let textX = b.margin;
+    let textW = b.contentW;
+    if (photoData) {
+      b.addImage({ x: b.margin, y: hy0, w: sz, h: sz, data: photoData });
+      textX = b.margin + sz + 7;
+      textW = b.contentW - sz - 7;
+    }
+    b.addText({
+      value: "CURRICULUM VITAE", x: textX, y: hy0, width: textW,
+      fontSize: 7.6, color: SIENNA, bold: true, letterSpacing: 2.2,
+    });
+    let ty = hy0 + ptToMm(7.6) * 1.25 + 1;
+    b.addText({
+      value: cv.contact.name || "Your name", x: textX, y: ty, width: textW,
+      fontSize: 24, color: INK, bold: true, letterSpacing: -0.5, lineHeight: 1.05,
+    });
+    ty += ptToMm(24) * 1.05 + 1.2;
+    if (cv.contact.jobTitle) {
+      b.addText({
+        value: cv.contact.jobTitle, x: textX, y: ty, width: textW,
+        fontSize: 11, color: SUBINK,
+      });
+      ty += ptToMm(11) * 1.25 + 1.6;
+    }
+    const contact = contactItems(cv).join("   ·   ");
+    if (contact) {
+      const ch = textHeightMm(contact, textW, 8.4, 1.4);
+      b.addText({ value: contact, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
+      ty += ch + 1;
+    }
+    b.cursorY = Math.max(ty, hy0 + (photoData ? sz : 0)) + 8;
+  }
+
+  let sectionNum = 0;
+  const sectionTitle = (label: string) => {
+    sectionNum++;
+    b.ensure(11);
+    const startY = b.cursorY;
+    b.addText({
+      value: String(sectionNum).padStart(2, "0"), x: b.margin, y: startY, width: 10,
+      fontSize: 8, color: SIENNA, bold: true, letterSpacing: 2,
+    });
+    b.addText({
+      value: label, x: b.margin, y: startY + 3.6, width: b.contentW,
+      fontSize: 13, color: INK, bold: true,
+    });
+    b.cursorY = startY + ptToMm(13) * 1.25 + 5;
+    b.addLine({ x: b.margin, y: b.cursorY - 1.4, width: b.contentW, height: 0.25, color: "#d8cfc1" });
+    b.cursorY += 2;
+  };
+
+  if (!isHidden(cv, "summary") && cv.summary) {
+    sectionTitle("Profile");
+    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6 });
+  }
+
+  if (!isHidden(cv, "experience") && cv.experience.length) {
+    sectionTitle("Career Timeline");
+    const railX = b.margin + 1.2;
+    const indent = 6;
+    const startY = b.cursorY;
+    cv.experience.forEach((exp, idx) => {
+      // Dot
+      b.ensure(8);
+      const dotY = b.cursorY + 1.2;
+      b.addRect({
+        x: railX - 1.4, y: dotY, width: 2.8, height: 2.8,
+        color: PAPER, borderColor: SIENNA, borderWidth: 0.6, radius: 1.4,
+      });
+      // Push content to the right of the rail
+      const savedMargin = (b as unknown as { margin: number }).margin;
+      const savedContentW = (b as unknown as { contentW: number }).contentW;
+      (b as unknown as { margin: number }).margin = savedMargin + indent;
+      (b as unknown as { contentW: number }).contentW = savedContentW - indent;
+
+      periodRow({ cv, primary: SIENNA, b }, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
+      const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
+      if (comp) b.addText({ value: comp, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
+      for (const bul of visibleBullets(exp)) {
+        bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+      }
+
+      (b as unknown as { margin: number }).margin = savedMargin;
+      (b as unknown as { contentW: number }).contentW = savedContentW;
+      if (idx < cv.experience.length - 1) b.cursorY += 3.6;
+    });
+    // Draw the vertical rail spanning all experience entries
+    const endY = b.cursorY;
+    b.addLine({ x: railX, y: startY + 2.6, width: 0.3, height: endY - startY - 4, color: "#d8cfc1" });
+    b.cursorY += 4;
+  }
+
+  if (!isHidden(cv, "education") && cv.education.length) {
+    sectionTitle("Education");
+    for (const ed of cv.education) {
+      periodRow(ctx, ed.qualification, ed.period, { leftFs: 11, bold: true });
+      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
+    }
+  }
+
+  if (!isHidden(cv, "skills") && cv.skills.length) {
+    sectionTitle("Skills");
+    // Two-column plain dot list
+    const colW = (b.contentW - 8) / 2;
+    const fs = 9.6;
+    const lh = 1.5;
+    for (let i = 0; i < cv.skills.length; i += 2) {
+      const l = cv.skills[i];
+      const r = cv.skills[i + 1];
+      const h = Math.max(textHeightMm(l, colW, fs, lh), r ? textHeightMm(r, colW, fs, lh) : 0, ptToMm(fs) * lh);
+      b.ensure(h + 0.5);
+      const py = b.cursorY;
+      b.addText({ value: "·", x: b.margin, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
+      b.addText({ value: l, x: b.margin + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
+      if (r) {
+        b.addText({ value: "·", x: b.margin + colW + 8, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
+        b.addText({ value: r, x: b.margin + colW + 8 + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
+      }
+      b.cursorY = py + h + 0.8;
+    }
+    b.cursorY += 3;
+  }
+
+  if (!isHidden(cv, "languages") && cv.languages.length) {
+    sectionTitle("Languages");
+    b.addText({
+      value: cv.languages.map((l) => l.level?.trim() ? `${l.name} — ${l.level}` : l.name).join("       "),
+      fontSize: 9.8, color: SUBINK,
+    });
+  }
+  void HAIRLINE;
+  return b;
+}
+
+/* ============================================================
  * Public entry — routes to the right builder.
  * ============================================================ */
 export async function exportCvPdfme(
   cv: GeneratedCV,
   photoUrl: string | null,
-  templateId: TemplateId,
+  templateId: TemplateId | string,
   fileName: string,
 ) {
   const blob = await generateCvPdfmeBlob(cv, photoUrl, templateId);
@@ -682,18 +978,21 @@ export async function exportCvPdfme(
 export async function generateCvPdfmeBlob(
   cv: GeneratedCV,
   photoUrl: string | null,
-  templateId: TemplateId,
+  templateId: TemplateId | string,
 ) {
   let b: PdfmeBuilder;
-  switch (templateId) {
-    case "classic":      b = await buildClassic(cv, photoUrl); break;
-    case "executive":    b = await buildExecutive(cv, photoUrl); break;
-    case "compact":      b = await buildCompact(cv, photoUrl); break;
-    case "skills-first": b = await buildSkillsFirst(cv, photoUrl); break;
-    case "modern":
-    default:             b = await buildModern(cv, photoUrl);
+  switch (normalizeTemplateId(templateId)) {
+    case "london":     b = await buildClassic(cv, photoUrl); break;
+    case "zurich":     b = await buildExecutive(cv, photoUrl); break;
+    case "singapore":  b = await buildCompact(cv, photoUrl); break;
+    case "berlin":     b = await buildSkillsFirst(cv, photoUrl); break;
+    case "riyadh":     b = await buildRiyadh(cv, photoUrl); break;
+    case "geneva":     b = await buildGeneva(cv, photoUrl); break;
+    case "dubai":
+    default:           b = await buildModern(cv, photoUrl);
   }
   return b.toBlob();
 }
 
 void PAGE_W;
+

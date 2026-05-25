@@ -1,24 +1,27 @@
-import { Document, Paragraph, Table } from "docx";
+import { Document, Paragraph, Table, TextRun, BorderStyle } from "docx";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets,
   txt, sectionHeading, roleRow, companyRow, bulletPara,
-  headerTable, chipsParagraph, quoteSummary,
+  headerTable, chipsParagraph, quoteSummary, INK_HEX,
 } from "./shared";
 
-/** Single-column flowing layout — used by Modern, Classic, Executive, SkillsFirst. */
+/** Single-column flowing layout — used by Dubai, London, Zurich, Berlin, Geneva. */
 export interface FlowOptions {
   headingVariant: "bar" | "underline" | "none";
   sections: Array<"summary" | "experience" | "education" | "skills" | "skills-pills" | "languages">;
   photo?: { url: string | null; size: number; shape: "circle" | "square" };
   nameSize?: number;
-  /** Render summary in a sienna left-bar quote block (Executive). */
+  /** Render summary in a sienna left-bar quote block (Zurich). */
   quoteSummary?: boolean;
-  /** Header has a bottom ink rule (Classic, Skills-First). */
+  /** Header has a bottom ink rule (London, Berlin). */
   bottomRule?: boolean;
+  /** Geneva-style timeline rail under experience entries. */
+  timeline?: boolean;
   headingMap?: Partial<Record<"summary" | "experience" | "education" | "skills" | "languages", string>>;
 }
+
 
 export async function buildFlowingDoc(
   cv: GeneratedCV,
@@ -56,7 +59,14 @@ export async function buildFlowingDoc(
     } else if (sec === "experience") {
       if (!isHidden(cv, "experience") && cv.experience.length) {
         blocks.push(sectionHeading(labelOf("experience", "Work Experience"), t, opts.headingVariant));
-        cv.experience.forEach((exp) => {
+        cv.experience.forEach((exp, idx) => {
+          if (opts.timeline) {
+            // Geneva: a small marker paragraph + left-bordered indent block per role
+            blocks.push(new Paragraph({
+              spacing: { before: idx === 0 ? 60 : 180, after: 20 },
+              children: [new TextRun({ text: "●", size: 18, color: t.primary, font: t.body, bold: true })],
+            }));
+          }
           blocks.push(roleRow(exp.role || "", periodOf(exp), t, CONTENT_W));
           const cr = companyRow(exp.company || "", exp.location || "", t);
           if (cr) blocks.push(cr);
@@ -64,7 +74,9 @@ export async function buildFlowingDoc(
             blocks.push(bulletPara(b.rewrite || b.original, t));
           });
         });
+        void BorderStyle; void INK_HEX;
       }
+
     } else if (sec === "education") {
       if (!isHidden(cv, "education") && cv.education.length) {
         blocks.push(sectionHeading(labelOf("education", "Education"), t, opts.headingVariant));
