@@ -39,8 +39,7 @@ import {
   LanguagesBlock,
   SectionShell,
 } from "../StepDraft";
-import CVRenderer from "../templates/CVRenderer";
-import Paginator from "../templates/Paginator";
+import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 
@@ -457,13 +456,11 @@ function PreviewPane() {
     <div ref={wrapRef} className="h-full overflow-y-auto bg-clay/30 p-6">
       <div className="mx-auto" style={{ width: 794 * scale }}>
         <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
-          <Paginator>
-            <CVRenderer
-              cv={state.generatedCV}
-              template={state.selectedTemplate}
-              photoUrl={photoUrl}
-            />
-          </Paginator>
+          <PdfmePreview
+            cv={state.generatedCV}
+            template={state.selectedTemplate}
+            photoUrl={photoUrl}
+          />
         </div>
       </div>
     </div>
