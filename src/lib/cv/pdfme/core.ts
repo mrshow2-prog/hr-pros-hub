@@ -25,16 +25,24 @@ export const SIENNA = "#9c5643";
 
 /**
  * Average character width per pt of font size for pdfme's default Roboto.
- * Calibrated against actual rendered output: Roboto Regular ~0.50, Bold ~0.54.
- * If set too HIGH we over-predict line count and leave phantom blank lines
- * below text blocks (we reserve more vertical space than pdfme actually
- * renders). If set too LOW, pdfme may wrap a word into the next line and
- * overflow the element (the "Sum m ary" artefact). 0.50/0.54 is the sweet
- * spot for Roboto at 9–12pt body sizes.
+ * Roboto Regular ~0.50, Bold ~0.54 for mixed-case prose. ALL-CAPS strings
+ * (skill names, headings) render noticeably wider — capitals average ~0.58.
+ * We make the estimate content-aware so caps-heavy text reserves enough
+ * vertical space (no overlap between sidebar items) while body bullets
+ * don't over-reserve and leave phantom blank lines.
  */
-function charWidthMm(fontSizePt: number, bold: boolean, letterSpacing = 0) {
-  const ratio = bold ? 0.54 : 0.50;
-  return (fontSizePt * ratio) / PT_PER_MM + letterSpacing;
+function charWidthMm(
+  text: string,
+  fontSizePt: number,
+  bold: boolean,
+  letterSpacing = 0,
+) {
+  const letters = text.replace(/[^A-Za-z]/g, "");
+  const upper = (text.match(/[A-Z]/g) || []).length;
+  const capsRatio = letters.length ? upper / letters.length : 0;
+  const base = bold ? 0.54 : 0.50;
+  const capsBoost = capsRatio > 0.7 ? 0.08 : capsRatio > 0.4 ? 0.04 : 0;
+  return (fontSizePt * (base + capsBoost)) / PT_PER_MM + letterSpacing;
 }
 
 export function wrapLines(
@@ -44,7 +52,7 @@ export function wrapLines(
   opts: { bold?: boolean; letterSpacing?: number } = {},
 ): string[] {
   const lines: string[] = [];
-  const cw = charWidthMm(fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
+  const cw = charWidthMm(text, fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
   // Tiny safety margin so we never under-predict vs pdfme's real wrapper.
   const maxChars = Math.max(4, Math.floor((widthMm - 0.3) / cw));
   for (const para of (text || "").split(/\n/)) {
@@ -52,7 +60,12 @@ export function wrapLines(
       lines.push("");
       continue;
     }
-    const words = para.split(/\s+/);
+    // Split on whitespace; also allow long hyphenated tokens to break at
+    // hyphens (matches pdfme's wrap behaviour and keeps "CROSS-CULTURAL
+    // BUSINESS DEVELOPMENT" predictable).
+    const words = para.split(/\s+/).flatMap((w) =>
+      w.length > maxChars * 0.6 && w.includes("-") ? w.split(/(?<=-)/) : [w],
+    );
     let cur = "";
     for (const w of words) {
       const next = cur ? cur + " " + w : w;
