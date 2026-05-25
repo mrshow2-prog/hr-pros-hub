@@ -1,5 +1,5 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { ContactLine, Page, Photo, isVisible } from "./shared";
+import { ContactLine, Page, Photo, isVisible, visibleBullets } from "./shared";
 
 interface Props {
   cv: GeneratedCV;
@@ -53,12 +53,11 @@ export default function TemplateClassic({ cv, photoUrl }: Props) {
                 <p className="mb-1.5 text-[14px] text-sienna">
                   {[exp.company, exp.location].filter(Boolean).join(" · ")}
                 </p>
-                {exp.bullets.length > 0 && (
+                {visibleBullets(exp).length > 0 && (
                   <ul className="ml-5 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
-                    {exp.bullets
-                      .filter((b) => b.status !== "reverted" && b.rewrite)
+                    {visibleBullets(exp)
                       .map((b) => (
-                        <li key={b.id}>{b.rewrite}</li>
+                        <li key={b.id}>{b.rewrite || b.original}</li>
                       ))}
                   </ul>
                 )}
