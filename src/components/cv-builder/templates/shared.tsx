@@ -110,7 +110,8 @@ export function ScaledPreview({
 }) {
   const scaledWidth = pageWidth * scale;
   const hasExplicitHeight = typeof visibleHeight === "number";
-  const cropHeight = hasExplicitHeight ? visibleHeight : Math.round(scaledWidth * 1.15);
+  const topInset = 14;
+  const cropHeight = (hasExplicitHeight ? visibleHeight : Math.round(scaledWidth * 1.15)) + topInset;
   return (
     <div
       className={cn(
@@ -121,7 +122,7 @@ export function ScaledPreview({
     >
       <div
         className="relative"
-        style={{ width: scaledWidth, height: cropHeight, overflow: "hidden" }}
+        style={{ width: scaledWidth, height: cropHeight, overflow: "hidden", paddingTop: topInset }}
       >
         <div
           style={{
