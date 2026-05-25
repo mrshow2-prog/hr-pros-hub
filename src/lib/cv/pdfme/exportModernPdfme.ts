@@ -680,13 +680,26 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   const MAIN_X = SIDEBAR_W;
   const MAIN_W = PAGE_W - SIDEBAR_W;
   const PADX = 10;
-  const ctx: Ctx = { cv, primary: SIENNA, b };
-  void ctx;
+  const MAIN_MARGIN = MAIN_X + PADX + 2;
+  const MAIN_CONTENT_W = MAIN_W - PADX * 2 - 2;
 
-  // Sidebar background (drawn on first page only — pdfme has no template repeating BG)
-  b.addRect({ x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H, color: SIENNA_DARK });
+  // Draw sidebar background on every page.
+  const drawSidebar = () => {
+    b.addRect({
+      x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H,
+      color: SIENNA_DARK, borderColor: SIENNA_DARK, borderWidth: 0,
+    });
+  };
+  drawSidebar();
+  b.onNewPage(() => {
+    drawSidebar();
+    // Subsequent pages: cursor goes back to main column top.
+    b.margin = MAIN_MARGIN;
+    b.contentW = MAIN_CONTENT_W;
+    b.cursorY = 16;
+  });
 
-  // ---- Sidebar content ----
+  // ---- Sidebar content (absolute positioned) ----
   let sY = 14;
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
   if (photoData) {
@@ -701,7 +714,6 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
-    // Underline
     b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: "#a07a6a" });
     sY += 2.4;
   };
@@ -752,11 +764,10 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   }
 
   // ---- Main column ----
-  // Override cursor + content area for the main column. We do this by
-  // patching the builder's margin/contentW for subsequent calls.
-  (b as unknown as { margin: number }).margin = MAIN_X + PADX + 2;
-  (b as unknown as { contentW: number }).contentW = MAIN_W - PADX * 2 - 2;
+  b.margin = MAIN_MARGIN;
+  b.contentW = MAIN_CONTENT_W;
   b.cursorY = 16;
+  const ctx2: Ctx = { cv, primary: SIENNA, b };
 
   // Name + title
   b.addText({
@@ -779,9 +790,10 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
       letterSpacing: 1.6, spaceAfter: 1.2,
     });
-    b.addLine({ x: (b as unknown as { margin: number }).margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
+    b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
     b.cursorY += 3.4;
   };
+
 
   if (!isHidden(cv, "summary") && cv.summary) {
     mainHeading("Profile");
