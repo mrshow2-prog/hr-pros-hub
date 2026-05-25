@@ -35,12 +35,16 @@ import {
   EducationBlock,
   ClustersBlock,
   LanguagesBlock,
+  AchievementsBlock,
+  CertificationsBlock,
+  CustomSectionsBlock,
   SectionShell,
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
+import { ChevronDown } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "dubai", label: "Dubai" },
@@ -61,7 +65,11 @@ const SECTIONS: SectionDef[] = [
   { key: "education", label: "Education" },
   { key: "competencies", label: "Competencies" },
   { key: "languages", label: "Languages" },
+  { key: "achievements", label: "Achievements" },
+  { key: "certifications", label: "Certifications" },
+  { key: "custom", label: "Custom sections" },
 ];
+
 
 export default function EditorShell() {
   const { state, setGeneratedCV, setAts, setStep, setTemplate, patchSummary, replaceBullets } =
