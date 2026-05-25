@@ -345,6 +345,12 @@ export default function EditorShell() {
           </button>
 
           <button
+            onClick={() => setStep(3)}
+            className="inline-flex items-center gap-1 rounded-sm border border-ink/20 px-3 py-1.5 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
+          >
+            ← Back
+          </button>
+          <button
             onClick={() => setStep(5)}
             className="inline-flex items-center gap-1 rounded-sm bg-sienna px-3 py-1.5 font-dm text-xs font-medium text-paper hover:opacity-90"
           >
