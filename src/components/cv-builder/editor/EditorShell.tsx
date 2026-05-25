@@ -711,3 +711,61 @@ function FindingGroup({
     </div>
   );
 }
+
+/* ────────── Collapsible progressive section ────────── */
+
+function CollapsibleSection({
+  sectionKey,
+  title,
+  isOpen,
+  onToggle,
+  onContinue,
+  children,
+}: {
+  sectionKey: SectionKey;
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  onContinue?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      data-section={sectionKey}
+      className={cn(
+        "rounded-md border border-ink/10 bg-paper transition",
+        isOpen ? "shadow-sm" : "hover:border-ink/25",
+      )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="font-syne text-base text-ink">{title}</span>
+        <ChevronDown
+          size={16}
+          className={cn("text-ink/55 transition-transform", isOpen && "rotate-180")}
+        />
+      </button>
+      {isOpen && (
+        <div className="border-t border-ink/10 px-5 py-5">
+          {children}
+          {onContinue && (
+            <div className="mt-6 flex justify-end border-t border-ink/10 pt-4">
+              <button
+                type="button"
+                onClick={onContinue}
+                className="inline-flex items-center gap-1 rounded-sm bg-ink px-4 py-2 font-dm text-xs font-medium text-paper hover:opacity-90"
+              >
+                Save & continue <ChevronRight size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
