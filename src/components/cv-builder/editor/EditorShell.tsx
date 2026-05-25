@@ -82,6 +82,7 @@ export default function EditorShell() {
   const [fixingId, setFixingId] = useState<string | null>(null);
   const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const [templateChanging, setTemplateChanging] = useState(false);
   const leftRef = useRef<HTMLDivElement>(null);
 
   // ── Auto-generate on first mount if we don't have a CV yet ────
