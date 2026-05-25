@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { generateCvPdfmeBlob } from "@/lib/cv/pdfme/exportModernPdfme";
 import * as pdfjs from "pdfjs-dist";
@@ -14,6 +15,7 @@ interface Props {
   gap?: number;
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }
 
 export default function PdfmePreview({
@@ -24,9 +26,14 @@ export default function PdfmePreview({
   gap = 24,
   accentHex,
   photoShape,
+  onStatusChange,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    onStatusChange?.(status);
+  }, [status, onStatusChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +89,15 @@ export default function PdfmePreview({
   const pageHeight = Math.round(pageWidth * (297 / 210));
 
   if (status === "loading" && pages.length === 0) {
-    return <div className="animate-pulse bg-white shadow-xl ring-1 ring-ink/10" style={{ width: pageWidth, height: pageHeight }} />;
+    return (
+      <div
+        className="flex flex-col items-center justify-center gap-3 bg-white font-dm text-sm text-ink/60 shadow-xl ring-1 ring-ink/10"
+        style={{ width: pageWidth, height: pageHeight }}
+      >
+        <Loader2 className="animate-spin text-sienna" size={24} />
+        <span>Updating preview…</span>
+      </div>
+    );
   }
 
   if (status === "error") {
