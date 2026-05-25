@@ -26,7 +26,7 @@ export default function PdfmePreview({
 
   useEffect(() => {
     let cancelled = false;
-    let doc: Awaited<ReturnType<Awaited<ReturnType<typeof pdfjs.getDocument>>["promise"]>> | null = null;
+    let doc: { numPages: number; getPage: (pageNumber: number) => Promise<any>; destroy: () => Promise<void> } | null = null;
 
     const timer = window.setTimeout(async () => {
       try {
