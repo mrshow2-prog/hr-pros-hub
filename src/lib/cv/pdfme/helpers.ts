@@ -18,8 +18,20 @@ export function periodOf(exp: CVExperience) {
   return [exp.startDate, exp.endDate].filter(Boolean).join(" – ") || exp.period || "";
 }
 
+export function cleanBulletText(value: string | null | undefined) {
+  return (value ?? "")
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[-–—•▪·*]+\s*/, "")
+    .trim();
+}
+
 export function visibleBullets(exp: CVExperience) {
-  return exp.bullets.filter(
-    (b) => b.status !== "reverted" && (b.rewrite || b.original),
-  );
+  return exp.bullets
+    .map((b) => ({
+      ...b,
+      rewrite: cleanBulletText(b.rewrite),
+      original: cleanBulletText(b.original),
+    }))
+    .filter((b) => b.status !== "reverted" && (b.rewrite || b.original));
 }
