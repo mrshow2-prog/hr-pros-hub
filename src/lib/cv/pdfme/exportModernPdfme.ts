@@ -83,6 +83,36 @@ function periodRow(
   b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5);
 }
 
+function deterministicLine(
+  ctx: Ctx,
+  value: string,
+  opts: { fs: number; color?: string; bold?: boolean; lh?: number; spaceAfter?: number; width?: number } = { fs: 9.8 },
+) {
+  const { b } = ctx;
+  if (!value) return;
+  const fs = opts.fs;
+  const lh = opts.lh ?? 1.25;
+  const width = opts.width ?? b.contentW;
+  const lineStep = ptToMm(fs) * lh;
+  const lines = wrapLines(value, width, fs, { bold: opts.bold });
+  const blockH = Math.max(1, lines.length) * lineStep;
+  b.ensure(blockH);
+  const py = b.cursorY;
+  for (let i = 0; i < lines.length; i += 1) {
+    b.addText({
+      value: lines[i],
+      x: b.margin,
+      y: py + i * lineStep,
+      width,
+      fontSize: fs,
+      color: opts.color ?? INK,
+      bold: opts.bold,
+      lineHeight: lh,
+    });
+  }
+  b.cursorY = py + blockH + (opts.spaceAfter ?? 1);
+}
+
 /**
  * Render a single bullet row with FULLY DETERMINISTIC layout.
  *
@@ -275,7 +305,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4 });
       }
@@ -368,7 +398,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 10, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 10, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.6, glyphColor: SIENNA });
       }
@@ -444,7 +474,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     cv.experience.forEach((exp, i) => {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 12.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 10.5, color: SIENNA, spaceAfter: 2 });
+      deterministicLine(ctx, comp, { fs: 10.5, color: SIENNA, spaceAfter: 2 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "›", bul.rewrite || bul.original, { fs: 10, lh: 1.7, glyphColor: SIENNA });
       }
@@ -619,7 +649,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 10.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
       b.cursorY += 1.8;
     }
@@ -675,7 +705,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     cv.experience.forEach((exp, idx) => {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.8 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.8 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "›", bul.rewrite || bul.original, { fs: 9.4, lh: 1.6, glyphColor: SIENNA });
       }
@@ -889,7 +919,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
+      deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx2, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
       }
@@ -999,7 +1029,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
       periodRow({ cv, primary: SIENNA, b }, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
+      deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
       for (const bul of visibleBullets(exp)) {
         bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
       }
