@@ -59,7 +59,14 @@ export async function buildFlowingDoc(
     } else if (sec === "experience") {
       if (!isHidden(cv, "experience") && cv.experience.length) {
         blocks.push(sectionHeading(labelOf("experience", "Work Experience"), t, opts.headingVariant));
-        cv.experience.forEach((exp) => {
+        cv.experience.forEach((exp, idx) => {
+          if (opts.timeline) {
+            // Geneva: a small marker paragraph + left-bordered indent block per role
+            blocks.push(new Paragraph({
+              spacing: { before: idx === 0 ? 60 : 180, after: 20 },
+              children: [new TextRun({ text: "●", size: 18, color: t.primary, font: t.body, bold: true })],
+            }));
+          }
           blocks.push(roleRow(exp.role || "", periodOf(exp), t, CONTENT_W));
           const cr = companyRow(exp.company || "", exp.location || "", t);
           if (cr) blocks.push(cr);
@@ -67,7 +74,9 @@ export async function buildFlowingDoc(
             blocks.push(bulletPara(b.rewrite || b.original, t));
           });
         });
+        void BorderStyle; void INK_HEX;
       }
+
     } else if (sec === "education") {
       if (!isHidden(cv, "education") && cv.education.length) {
         blocks.push(sectionHeading(labelOf("education", "Education"), t, opts.headingVariant));
