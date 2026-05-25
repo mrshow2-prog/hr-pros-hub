@@ -101,7 +101,7 @@ export default function StepDraft() {
     return (
       <>
         <StepHeader
-          eyebrow="Step 6 · Draft"
+          eyebrow="Step 4 · Draft"
           title="Rewriting your CV"
           subtitle="Pulling your answers into a clean draft. This usually takes 20–30 seconds."
         />
@@ -136,10 +136,10 @@ export default function StepDraft() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(5)}
+                onClick={() => setStep(3)}
                 className="inline-flex items-center gap-2 rounded-sm border border-ink/20 px-4 py-2 font-dm text-sm text-ink hover:border-ink/40"
               >
-                Back to template
+                Back to gaps
               </button>
             </div>
           </div>
@@ -150,6 +150,7 @@ export default function StepDraft() {
             ))}
           </div>
         )}
+        <StepFooter onBack={() => setStep(3)} />
       </>
     );
   }
