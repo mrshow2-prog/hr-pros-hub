@@ -305,7 +305,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.8, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4 });
       }
@@ -398,7 +398,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     for (const exp of cv.experience) {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 10, color: SIENNA, spaceAfter: 1.5 });
+      deterministicLine(ctx, comp, { fs: 10, color: SIENNA, spaceAfter: 1.5 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.6, glyphColor: SIENNA });
       }
@@ -474,7 +474,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     cv.experience.forEach((exp, i) => {
       periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 12.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 10.5, color: SIENNA, spaceAfter: 2 });
+      deterministicLine(ctx, comp, { fs: 10.5, color: SIENNA, spaceAfter: 2 });
       for (const bul of visibleBullets(exp)) {
         bullet(ctx, "›", bul.rewrite || bul.original, { fs: 10, lh: 1.7, glyphColor: SIENNA });
       }
