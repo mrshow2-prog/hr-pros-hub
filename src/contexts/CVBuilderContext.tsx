@@ -52,13 +52,18 @@ export type SectionKey =
   | "skills"
   | "education"
   | "competencies"
-  | "languages";
+  | "languages"
+  | "achievements"
+  | "certifications"
+  | "custom";
 
 export interface UploadedFile {
   path: string;
   name: string;
   size: number;
 }
+
+export type PhotoShape = "circle" | "square" | "none";
 
 export interface IntentForm {
   targetRoles: string[];
@@ -70,6 +75,10 @@ export interface IntentForm {
   tone: Tone;
   /** null = unlimited pages */
   pageLimit: number | null;
+  /** Photo shape rendered in the CV (defaults per-template if unset). */
+  photoShape: PhotoShape;
+  /** Selected colour palette id (see src/lib/cv/palettes.ts). */
+  colorPalette: string;
 }
 
 export interface Gap {
@@ -137,6 +146,19 @@ export interface ContactInfo {
   photoPath: string | null;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+}
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  bullets: string[];
+}
+
 export interface GeneratedCV {
   contact: ContactInfo;
   summary: string;
@@ -145,6 +167,9 @@ export interface GeneratedCV {
   education: CVEducation[];
   competencyClusters: CompetencyCluster[];
   languages: LanguageEntry[];
+  achievements: string[];
+  certifications: Certification[];
+  customSections: CustomSection[];
   hiddenSections: SectionKey[];
 }
 
@@ -180,10 +205,21 @@ export interface AtsScore {
   sectionScores?: { label: string; score: number }[];
 }
 
+/**
+ * Wizard steps:
+ *   1 = Template
+ *   2 = Build (upload + intent)
+ *   3 = Gaps
+ *   4 = Draft / editor
+ *   5 = Export
+ * Payment is a modal triggered from step 5, not a step itself.
+ */
+export type WizardStep = 1 | 2 | 3 | 4 | 5;
+
 export interface CVBuilderState {
   sessionId: string;
   anonToken: string;
-  currentStep: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  currentStep: WizardStep;
   uploadedFiles: UploadedFile[];
   parsedText: string;
   photoPath: string | null;
@@ -196,6 +232,21 @@ export interface CVBuilderState {
   atsScore: AtsScore | null;
   lastSavedAt: number | null;
   lastScoredAt: number | null;
+}
+
+/** Maps any legacy persisted step value to the new 1-5 range. */
+export function migrateStep(raw: unknown): WizardStep {
+  const n = typeof raw === "number" ? raw : Number(raw);
+  // Old: 1 Upload, 2 Intent, 3 Gaps, 4 Template, 5 Payment, 6 Editor, 7 Export
+  // New: 1 Template, 2 Build, 3 Gaps, 4 Editor, 5 Export
+  if (n === 7) return 5;
+  if (n === 6) return 4;
+  if (n === 5) return 4;
+  if (n === 4) return 1;
+  if (n === 3) return 3;
+  if (n === 2) return 2;
+  if (n === 1) return 2;
+  return 1;
 }
 
 // ---------- Defaults & storage ----------
@@ -215,6 +266,8 @@ const defaultIntent: IntentForm = {
   cvType: "",
   tone: "",
   pageLimit: null,
+  photoShape: "circle",
+  colorPalette: "sienna",
 };
 
 const emptyContact: ContactInfo = {
