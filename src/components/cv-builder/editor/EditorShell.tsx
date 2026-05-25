@@ -463,6 +463,8 @@ function PreviewPane() {
           photoUrl={photoUrl}
           pageWidth={794 * scale}
           gap={24 * scale}
+          accentHex={accentHexForPreview}
+          photoShape={state.intentForm.photoShape}
         />
       </div>
     </div>
