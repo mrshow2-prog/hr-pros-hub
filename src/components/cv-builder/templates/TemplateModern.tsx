@@ -15,7 +15,7 @@ export default function TemplateModern({
   photoUrl: string | null;
 }) {
   return (
-    <Page className="px-16 py-14">
+    <Page className="px-16">
       {isVisible(cv, "contact") && (
         <header className="mb-12 flex items-start gap-8">
           {photoUrl && <Photo url={photoUrl} shape="square" size={140} />}

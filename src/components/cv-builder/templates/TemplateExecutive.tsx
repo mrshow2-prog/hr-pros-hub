@@ -15,7 +15,7 @@ export default function TemplateExecutive({
   photoUrl: string | null;
 }) {
   return (
-    <Page className="px-[72px] py-16">
+    <Page className="px-[72px]">
       {isVisible(cv, "contact") && (
         <header className="mb-14 flex items-start gap-10">
           {photoUrl && <Photo url={photoUrl} shape="square" size={160} />}

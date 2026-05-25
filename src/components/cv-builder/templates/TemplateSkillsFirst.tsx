@@ -13,7 +13,7 @@ export default function TemplateSkillsFirst({
   photoUrl: string | null;
 }) {
   return (
-    <Page className="px-14 py-12">
+    <Page className="px-14">
       {isVisible(cv, "contact") && (
         <header className="mb-10 flex items-center gap-7 border-b border-ink/25 pb-6">
           {photoUrl && <Photo url={photoUrl} shape="circle" size={120} />}
