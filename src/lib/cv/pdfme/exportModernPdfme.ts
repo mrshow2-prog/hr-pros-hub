@@ -1118,9 +1118,12 @@ export async function generateCvPdfmeBlob(
   templateId: TemplateId | string,
   opts?: PdfmeOptions,
 ) {
-  const { setAccent } = await import("./core");
+  const { setAccent, maskImageCircle } = await import("./core");
   setAccent(opts?.accentHex ?? null);
-  const effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
+  let effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
+  if (effectivePhoto && opts?.photoShape === "circle") {
+    effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;
+  }
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
     case "london":     b = await buildClassic(cv, effectivePhoto); break;
