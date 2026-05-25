@@ -202,7 +202,7 @@ export default function StepDraft() {
         </aside>
       </div>
 
-      <StepFooter onBack={() => setStep(5)} onNext={() => setStep(7)} nextLabel="Export" />
+      <StepFooter onBack={() => setStep(3)} onNext={() => setStep(5)} nextLabel="Export" />
     </>
   );
 }
