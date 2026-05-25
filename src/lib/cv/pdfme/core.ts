@@ -157,6 +157,8 @@ export interface PdfmeBuilder {
   pageIndex: number;
   newPage(): void;
   ensure(h: number): void;
+  /** Register a callback that runs after each newPage() — useful for repeating backgrounds. */
+  onNewPage(cb: (b: PdfmeBuilder) => void): void;
   /** Add a text block at the current cursor (or absolute pos); auto-advances cursor when y omitted. */
   addText(o: TextOpts): number;
   addLine(o: LineOpts): void;
