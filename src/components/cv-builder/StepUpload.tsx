@@ -9,7 +9,59 @@ const ALLOWED = ["pdf", "doc", "docx"];
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_FILES = 3;
 const PHOTO_TYPES = ["image/jpeg", "image/png"];
-const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+const PHOTO_HARD_MAX_BYTES = 20 * 1024 * 1024;
+const PHOTO_TARGET_BYTES = 1_000_000;
+const PHOTO_MAX_DIMENSION = 1600;
+
+async function compressImage(
+  file: File,
+  opts: { maxBytes: number; maxDimension: number },
+): Promise<File> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Could not read image."));
+      el.src = url;
+    });
+
+    let { width, height } = img;
+    const scale = Math.min(1, opts.maxDimension / Math.max(width, height));
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+
+    const qualities = [0.85, 0.75, 0.65, 0.55, 0.45];
+    let blob: Blob | null = null;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported.");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      for (const q of qualities) {
+        blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob((b) => resolve(b), "image/jpeg", q),
+        );
+        if (blob && blob.size <= opts.maxBytes) break;
+      }
+      if (blob && blob.size <= opts.maxBytes) break;
+      width = Math.max(400, Math.round(width * 0.7));
+      height = Math.max(400, Math.round(height * 0.7));
+    }
+
+    if (!blob) throw new Error("Could not compress image.");
+    const base = file.name.replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 export default function StepUpload() {
   const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
@@ -106,14 +158,25 @@ export default function StepUpload() {
     if (!f) return;
     setPhotoError("");
     if (!PHOTO_TYPES.includes(f.type)) {
-      setPhotoError("Please upload a JPG or PNG image.");
+      setPhotoError("Please upload a JPG or PNG image. (iPhone HEIC photos: re-save as JPG first.)");
       return;
     }
-    if (f.size > PHOTO_MAX_BYTES) {
-      setPhotoError("Photo must be 2MB or smaller.");
+    if (f.size > PHOTO_HARD_MAX_BYTES) {
+      setPhotoError("Photo is too large. Please choose one under 20MB.");
       return;
     }
     setPhotoUploading(true);
+    let toUpload: File = f;
+    try {
+      toUpload = await compressImage(f, {
+        maxBytes: PHOTO_TARGET_BYTES,
+        maxDimension: PHOTO_MAX_DIMENSION,
+      });
+    } catch (err) {
+      setPhotoUploading(false);
+      setPhotoError("Couldn't process this image. Try a different photo.");
+      return;
+    }
     const { data: sess } = await supabase.auth.getSession();
     const uid = sess.session?.user.id;
     if (!uid) {
@@ -121,11 +184,11 @@ export default function StepUpload() {
       setPhotoError("Please sign in to upload a photo.");
       return;
     }
-    const safePhotoName = f.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
+    const safePhotoName = toUpload.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
     const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${safePhotoName}`;
     const { error: upErr } = await supabase.storage
       .from("cv-builder-uploads")
-      .upload(path, f, { upsert: true, contentType: f.type });
+      .upload(path, toUpload, { upsert: true, contentType: "image/jpeg" });
     setPhotoUploading(false);
     if (upErr) {
       setPhotoError("Couldn't upload the photo. Try again.");
@@ -253,7 +316,7 @@ export default function StepUpload() {
       <section className="mt-10 border-t border-ink/10 pt-8">
         <p className="font-syne text-lg text-ink">Profile photo (optional)</p>
         <p className="mt-1 font-dm text-sm text-ink/60">
-          Recommended in the UAE, GCC, and most MENA markets. JPG or PNG, max 2MB.
+          Recommended in the UAE, GCC, and most MENA markets. JPG or PNG — any size, we'll optimize it.
         </p>
 
         <div className="mt-5 flex items-center gap-5">
