@@ -16,12 +16,19 @@ export const PAGE_H = 297;
 export const PT_PER_MM = 2.8346;
 export const ptToMm = (pt: number) => pt / PT_PER_MM;
 
-/* Brand palette — kept in sync with the HTML/React previews. */
+/* Brand palette — kept in sync with the HTML/React previews.
+ * SIENNA is intentionally mutable so the wizard can override the accent
+ * colour per-export via setAccent(). ES module live bindings ensure every
+ * importer sees the updated value. */
 export const INK = "#1a1714";
 export const SUBINK = "#2f2b27";
 export const MUTED = "#6b6258";
 export const HAIRLINE = "#e8dfd1";
-export const SIENNA = "#9c5643";
+export let SIENNA = "#9c5643";
+export const DEFAULT_ACCENT = "#9c5643";
+export function setAccent(hex: string | null | undefined) {
+  SIENNA = hex && /^#?[0-9a-f]{6}$/i.test(hex) ? (hex.startsWith("#") ? hex : `#${hex}`) : DEFAULT_ACCENT;
+}
 
 /**
  * Average character width per pt of font size for pdfme's default Roboto.

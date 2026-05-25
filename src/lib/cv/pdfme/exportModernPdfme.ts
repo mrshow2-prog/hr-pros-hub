@@ -1089,13 +1089,19 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 /* ============================================================
  * Public entry — routes to the right builder.
  * ============================================================ */
+export interface PdfmeOptions {
+  accentHex?: string | null;
+  photoShape?: "circle" | "square" | "none";
+}
+
 export async function exportCvPdfme(
   cv: GeneratedCV,
   photoUrl: string | null,
   templateId: TemplateId | string,
   fileName: string,
+  opts?: PdfmeOptions,
 ) {
-  const blob = await generateCvPdfmeBlob(cv, photoUrl, templateId);
+  const blob = await generateCvPdfmeBlob(cv, photoUrl, templateId, opts);
   const { saveAs } = await import("file-saver");
   saveAs(blob, fileName);
 }
@@ -1104,17 +1110,21 @@ export async function generateCvPdfmeBlob(
   cv: GeneratedCV,
   photoUrl: string | null,
   templateId: TemplateId | string,
+  opts?: PdfmeOptions,
 ) {
+  const { setAccent } = await import("./core");
+  setAccent(opts?.accentHex ?? null);
+  const effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
-    case "london":     b = await buildClassic(cv, photoUrl); break;
-    case "zurich":     b = await buildExecutive(cv, photoUrl); break;
-    case "singapore":  b = await buildCompact(cv, photoUrl); break;
-    case "berlin":     b = await buildSkillsFirst(cv, photoUrl); break;
-    case "riyadh":     b = await buildRiyadh(cv, photoUrl); break;
-    case "geneva":     b = await buildGeneva(cv, photoUrl); break;
+    case "london":     b = await buildClassic(cv, effectivePhoto); break;
+    case "zurich":     b = await buildExecutive(cv, effectivePhoto); break;
+    case "singapore":  b = await buildCompact(cv, effectivePhoto); break;
+    case "berlin":     b = await buildSkillsFirst(cv, effectivePhoto); break;
+    case "riyadh":     b = await buildRiyadh(cv, effectivePhoto); break;
+    case "geneva":     b = await buildGeneva(cv, effectivePhoto); break;
     case "dubai":
-    default:           b = await buildModern(cv, photoUrl);
+    default:           b = await buildModern(cv, effectivePhoto);
   }
   return b.toBlob();
 }
