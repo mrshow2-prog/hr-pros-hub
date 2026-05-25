@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
-import { UploadCloud, X, FileType2, User, Camera } from "lucide-react";
+import { UploadCloud, X, FileType2, User, Camera, Pencil } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
+import PhotoCropperDialog from "./PhotoCropperDialog";
 
 const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED = ["pdf", "doc", "docx"];
