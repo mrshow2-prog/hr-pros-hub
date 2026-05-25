@@ -9,6 +9,24 @@ export function isVisible(cv: GeneratedCV, key: SectionKey) {
   return !cv.hiddenSections.includes(key);
 }
 
+export function cleanBulletText(value: string | null | undefined) {
+  return (value ?? "")
+    .replace(/\r?\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[-–—•▪·*]+\s*/, "")
+    .trim();
+}
+
+export function visibleBullets(exp: GeneratedCV["experience"][number]) {
+  return exp.bullets
+    .map((b) => ({
+      ...b,
+      rewrite: cleanBulletText(b.rewrite),
+      original: cleanBulletText(b.original),
+    }))
+    .filter((b) => b.status !== "reverted" && (b.rewrite || b.original));
+}
+
 export function ContactLine({ cv, className }: { cv: GeneratedCV; className?: string }) {
   const items = [
     cv.contact.location,
