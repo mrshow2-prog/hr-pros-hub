@@ -4,8 +4,9 @@ import { renderCompactHtml } from "@/lib/cv/templates/compact";
 
 /**
  * Compact template preview — renders the same HTML used for PDF/DOCX export
- * inside a sandboxed iframe scaled to fit the wizard's preview pane.
- * This guarantees what-you-see-is-what-you-get.
+ * inside a sandboxed iframe at natural A4 width (794px). The iframe height
+ * auto-resizes to its body's scrollHeight so an outer Paginator/ScaledPreview
+ * can measure and slice the content into A4 pages.
  */
 export default function TemplateCompact({
   cv,
@@ -14,42 +15,46 @@ export default function TemplateCompact({
   cv: GeneratedCV;
   photoUrl: string | null;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  // A4 width in CSS pixels at 96dpi = 794
   const A4_W = 794;
-  const A4_H = 1123;
-
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      const w = el.clientWidth;
-      setScale(Math.min(1, w / A4_W));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(1123);
   const html = renderCompactHtml(cv, photoUrl, "preview");
 
+  useEffect(() => {
+    const f = iframeRef.current;
+    if (!f) return;
+    const measure = () => {
+      try {
+        const body = f.contentDocument?.body;
+        if (body) {
+          const h = Math.max(body.scrollHeight, body.offsetHeight, 1123);
+          setHeight(h);
+        }
+      } catch {
+        /* sandboxed cross-origin — fall back to default */
+      }
+    };
+    const onLoad = () => {
+      measure();
+      // Re-measure shortly after in case fonts/images change layout
+      setTimeout(measure, 50);
+      setTimeout(measure, 250);
+    };
+    f.addEventListener("load", onLoad);
+    return () => f.removeEventListener("load", onLoad);
+  }, [html]);
+
   return (
-    <div
-      ref={wrapRef}
-      className="relative w-full overflow-hidden bg-clay/30"
-      style={{ height: A4_H * scale }}
-    >
+    <div style={{ width: A4_W, height, background: "white" }}>
       <iframe
+        ref={iframeRef}
         title="CV preview"
         srcDoc={html}
         sandbox="allow-same-origin"
         style={{
           width: A4_W,
-          height: A4_H,
+          height,
           border: 0,
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
           background: "white",
           display: "block",
         }}
