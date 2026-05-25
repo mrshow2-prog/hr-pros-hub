@@ -334,14 +334,18 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
         <button
           type="button"
           onClick={openEditCurrent}
-          className={cn(
-            "relative h-20 w-20 shrink-0 overflow-hidden border border-ink/10 hover:ring-2 hover:ring-sienna/50",
-            shapeClass,
-          )}
+          className="group relative h-20 w-20 shrink-0"
           aria-label="Edit photo"
         >
-          <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-          <span className="absolute -bottom-1 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-sienna text-paper">
+          <span
+            className={cn(
+              "block h-full w-full overflow-hidden border border-ink/10 group-hover:ring-2 group-hover:ring-sienna/50",
+              shapeClass,
+            )}
+          >
+            <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+          </span>
+          <span className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-sienna text-paper ring-2 ring-paper">
             <Pencil size={11} />
           </span>
         </button>

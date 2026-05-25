@@ -352,21 +352,23 @@ export default function StepUpload() {
           <button
             type="button"
             onClick={() => (photoUrl ? openEditCurrent() : photoInputRef.current?.click())}
-            className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-ink/20 bg-clay/30 transition-colors hover:border-sienna"
+            className="group relative h-24 w-24 shrink-0"
             aria-label={photoUrl ? "Edit profile photo" : "Upload profile photo"}
           >
-            {photoUrl ? (
-              <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <User size={32} className="text-ink/35 group-hover:text-sienna" />
-            )}
-            {photoUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-paper/75 font-dm text-[10px] text-ink/70">
-                Uploading…
-              </div>
-            )}
+            <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-ink/20 bg-clay/30 transition-colors group-hover:border-sienna">
+              {photoUrl ? (
+                <img src={photoUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <User size={32} className="text-ink/35 group-hover:text-sienna" />
+              )}
+              {photoUploading && (
+                <span className="absolute inset-0 flex items-center justify-center bg-paper/75 font-dm text-[10px] text-ink/70">
+                  Uploading…
+                </span>
+              )}
+            </span>
             {!photoUploading && (
-              <span className="absolute -bottom-1 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper">
+              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper ring-2 ring-paper">
                 {photoUrl ? <Pencil size={12} /> : <Camera size={14} />}
               </span>
             )}
