@@ -155,7 +155,7 @@ export default function StepUpload() {
     uploadFiles(e.dataTransfer.files);
   };
 
-  const handlePhoto = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
     if (!f) return;
@@ -168,14 +168,27 @@ export default function StepUpload() {
       setPhotoError("Photo is too large. Please choose one under 20MB.");
       return;
     }
+    setCropperSource(f);
+    setCropperOpen(true);
+  };
+
+  const openEditCurrent = () => {
+    if (!photoUrl) return;
+    setPhotoError("");
+    setCropperSource(photoUrl);
+    setCropperOpen(true);
+  };
+
+  const uploadCroppedFile = async (cropped: File) => {
+    setCropperOpen(false);
     setPhotoUploading(true);
-    let toUpload: File = f;
+    let toUpload: File = cropped;
     try {
-      toUpload = await compressImage(f, {
+      toUpload = await compressImage(cropped, {
         maxBytes: PHOTO_TARGET_BYTES,
         maxDimension: PHOTO_MAX_DIMENSION,
       });
-    } catch (err) {
+    } catch {
       setPhotoUploading(false);
       setPhotoError("Couldn't process this image. Try a different photo.");
       return;
