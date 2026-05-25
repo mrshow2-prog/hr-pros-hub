@@ -140,7 +140,7 @@ export function sectionHeading(
     bold: true,
     size: 24,
     font: t.heading,
-    color: variant === "bar" ? t.primary : "111827",
+    color: INK_HEX,
   });
   if (variant === "bar") {
     // left-accent bar: simulate with a thick left border on the paragraph
