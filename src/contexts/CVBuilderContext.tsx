@@ -699,7 +699,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
           ...cv,
           customSections: [
             ...cv.customSections,
-            { id: newId("cs"), title: "New section", bullets: [] },
+            { id: newId("cs"), title: "New section", bullets: [], placement: "body" },
           ],
         })),
       removeCustomSection: (id) =>
