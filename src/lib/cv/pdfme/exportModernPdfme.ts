@@ -242,11 +242,17 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
   let hy = hy0 + ptToMm(o.nameFs) * 1.08 + 1.4;
 
   if (cv.contact.jobTitle) {
+    const titleLh = 1.25;
+    const titleH = Math.max(
+      ptToMm(o.titleFs) * titleLh,
+      textHeightMm(cv.contact.jobTitle, textW, o.titleFs, titleLh, { bold: o.titleBold }),
+    );
     b.addText({
       value: cv.contact.jobTitle, x: textX, y: hy, width: textW,
       fontSize: o.titleFs, color: o.titleColor ?? SIENNA, bold: o.titleBold,
+      lineHeight: titleLh,
     });
-    hy += ptToMm(o.titleFs) * 1.25 + 1.4;
+    hy += titleH + 1.4;
   }
   const cText = contactLine(cv);
   if (cText) {
