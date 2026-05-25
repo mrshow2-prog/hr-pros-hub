@@ -386,22 +386,13 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           ))}
         </div>
         {photoUrl ? (
-          <>
-            <button
-              type="button"
-              onClick={openEditCurrent}
-              className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
-            >
-              <Pencil size={11} /> Edit photo
-            </button>
-            <button
-              type="button"
-              onClick={() => setPhotoPath(null)}
-              className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
-            >
-              <Trash2 size={11} /> Remove
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={() => setPhotoPath(null)}
+            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
+          >
+            <Trash2 size={11} /> Remove
+          </button>
         ) : (
           <button
             type="button"

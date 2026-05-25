@@ -387,13 +387,6 @@ export default function StepUpload() {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={openEditCurrent}
-                  className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-3 py-1.5 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
-                >
-                  <Pencil size={12} /> Edit photo
-                </button>
-                <button
-                  type="button"
                   onClick={() => {
                     setPhotoPath(null);
                     setPhotoError("");
