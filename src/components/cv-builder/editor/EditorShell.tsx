@@ -423,7 +423,13 @@ export default function EditorShell() {
             <>
               <ResizableHandle withHandle />
               <ResizablePanel defaultSize={50} minSize={25}>
-                <PreviewPane />
+                <PreviewPane
+                  onStatusChange={(status) => {
+                    if (status === "ready" || status === "error") {
+                      setTemplateChanging(false);
+                    }
+                  }}
+                />
               </ResizablePanel>
             </>
           )}
