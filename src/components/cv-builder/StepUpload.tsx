@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
-import { UploadCloud, X, FileType2, User, Camera } from "lucide-react";
+import { UploadCloud, X, FileType2, User, Camera, Pencil } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
+import PhotoCropperDialog from "./PhotoCropperDialog";
 
 const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED = ["pdf", "doc", "docx"];
@@ -74,6 +75,8 @@ export default function StepUpload() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState("");
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperSource, setCropperSource] = useState<File | string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -152,7 +155,7 @@ export default function StepUpload() {
     uploadFiles(e.dataTransfer.files);
   };
 
-  const handlePhoto = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
     if (!f) return;
@@ -165,14 +168,27 @@ export default function StepUpload() {
       setPhotoError("Photo is too large. Please choose one under 20MB.");
       return;
     }
+    setCropperSource(f);
+    setCropperOpen(true);
+  };
+
+  const openEditCurrent = () => {
+    if (!photoUrl) return;
+    setPhotoError("");
+    setCropperSource(photoUrl);
+    setCropperOpen(true);
+  };
+
+  const uploadCroppedFile = async (cropped: File) => {
+    setCropperOpen(false);
     setPhotoUploading(true);
-    let toUpload: File = f;
+    let toUpload: File = cropped;
     try {
-      toUpload = await compressImage(f, {
+      toUpload = await compressImage(cropped, {
         maxBytes: PHOTO_TARGET_BYTES,
         maxDimension: PHOTO_MAX_DIMENSION,
       });
-    } catch (err) {
+    } catch {
       setPhotoUploading(false);
       setPhotoError("Couldn't process this image. Try a different photo.");
       return;
@@ -322,9 +338,9 @@ export default function StepUpload() {
         <div className="mt-5 flex items-center gap-5">
           <button
             type="button"
-            onClick={() => photoInputRef.current?.click()}
+            onClick={() => (photoUrl ? openEditCurrent() : photoInputRef.current?.click())}
             className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-ink/20 bg-clay/30 transition-colors hover:border-sienna"
-            aria-label={photoUrl ? "Replace profile photo" : "Upload profile photo"}
+            aria-label={photoUrl ? "Edit profile photo" : "Upload profile photo"}
           >
             {photoUrl ? (
               <img src={photoUrl} alt="" className="h-full w-full object-cover" />
@@ -336,9 +352,9 @@ export default function StepUpload() {
                 Uploading…
               </div>
             )}
-            {!photoUrl && !photoUploading && (
+            {!photoUploading && (
               <span className="absolute -bottom-1 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-sienna text-paper">
-                <Camera size={14} />
+                {photoUrl ? <Pencil size={12} /> : <Camera size={14} />}
               </span>
             )}
           </button>
@@ -353,19 +369,31 @@ export default function StepUpload() {
 
           <div className="flex-1">
             {photoUrl ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setPhotoPath(null);
-                  setPhotoError("");
-                }}
-                className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-3 py-1.5 font-dm text-xs text-ink/65 hover:border-amber-500 hover:text-amber-700"
-              >
-                <X size={12} /> Remove photo
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openEditCurrent}
+                  className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-3 py-1.5 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
+                >
+                  <Pencil size={12} /> Edit photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhotoPath(null);
+                    setPhotoError("");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-3 py-1.5 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
+                >
+                  <X size={12} /> Remove photo
+                </button>
+                <p className="basis-full font-dm text-[11px] text-ink/45">
+                  Edit lets you adjust the crop or pick a different photo.
+                </p>
+              </div>
             ) : (
               <p className="font-dm text-xs text-ink/55">
-                Click the circle to add a headshot. Skip this if you'd rather not include one.
+                Click the circle to add a headshot. You&apos;ll be able to crop and zoom before saving.
               </p>
             )}
           </div>
@@ -377,6 +405,13 @@ export default function StepUpload() {
           </p>
         )}
       </section>
+
+      <PhotoCropperDialog
+        open={cropperOpen}
+        source={cropperSource}
+        onCancel={() => setCropperOpen(false)}
+        onConfirm={uploadCroppedFile}
+      />
 
       <StepFooter
         hideBack

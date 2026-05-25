@@ -10,6 +10,7 @@ import {
   X,
   ChevronRight,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import {
   useCVBuilder,
@@ -25,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
+import PhotoCropperDialog from "./PhotoCropperDialog";
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
@@ -245,6 +247,8 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperSource, setCropperSource] = useState<File | string | null>(null);
 
   const photoPath = state.photoPath;
 
@@ -265,7 +269,7 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
     };
   }, [photoPath]);
 
-  const handlePhoto = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
     if (!f) return;
@@ -274,10 +278,23 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
       setErr("Please upload a JPG or PNG.");
       return;
     }
-    if (f.size > 2 * 1024 * 1024) {
-      setErr("Keep the photo under 2MB.");
+    if (f.size > 20 * 1024 * 1024) {
+      setErr("Photo is too large. Please choose one under 20MB.");
       return;
     }
+    setCropperSource(f);
+    setCropperOpen(true);
+  };
+
+  const openEditCurrent = () => {
+    if (!photoUrl) return;
+    setErr("");
+    setCropperSource(photoUrl);
+    setCropperOpen(true);
+  };
+
+  const uploadCropped = async (cropped: File) => {
+    setCropperOpen(false);
     setUploading(true);
     const { data: sess } = await supabase.auth.getSession();
     const uid = sess.session?.user.id;
@@ -286,10 +303,11 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
       setErr("Please sign in to upload a photo.");
       return;
     }
-    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${f.name}`;
+    const safeName = cropped.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
+    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${safeName}`;
     const { error } = await supabase.storage
       .from("cv-builder-uploads")
-      .upload(path, f, { upsert: true });
+      .upload(path, cropped, { upsert: true, contentType: "image/jpeg" });
     setUploading(false);
     if (error) {
       setErr("Upload failed. Try again.");
@@ -301,9 +319,17 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
   const photoRow = (
     <div className="flex items-center gap-4">
       {photoUrl ? (
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-ink/10">
+        <button
+          type="button"
+          onClick={openEditCurrent}
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-ink/10 hover:ring-2 hover:ring-sienna/50"
+          aria-label="Edit photo"
+        >
           <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-        </div>
+          <span className="absolute -bottom-1 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-sienna text-paper">
+            <Pencil size={11} />
+          </span>
+        </button>
       ) : (
         <button
           type="button"
@@ -321,20 +347,30 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
         </button>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
-        >
-          <Camera size={11} /> {photoUrl ? "Replace photo" : "Upload photo"}
-        </button>
-        {photoUrl && (
+        {photoUrl ? (
+          <>
+            <button
+              type="button"
+              onClick={openEditCurrent}
+              className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
+            >
+              <Pencil size={11} /> Edit photo
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhotoPath(null)}
+              className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
+            >
+              <Trash2 size={11} /> Remove
+            </button>
+          </>
+        ) : (
           <button
             type="button"
-            onClick={() => setPhotoPath(null)}
-            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/55 hover:border-amber-500 hover:text-amber-700"
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2.5 py-1 font-dm text-xs text-ink/70 hover:border-ink/40 hover:text-ink"
           >
-            <Trash2 size={11} /> Remove
+            <Camera size={11} /> Upload photo
           </button>
         )}
       </div>
@@ -397,6 +433,12 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           {err}
         </p>
       )}
+      <PhotoCropperDialog
+        open={cropperOpen}
+        source={cropperSource}
+        onCancel={() => setCropperOpen(false)}
+        onConfirm={uploadCropped}
+      />
     </div>
   );
 }
