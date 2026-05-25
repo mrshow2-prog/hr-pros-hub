@@ -48,18 +48,17 @@ function Wizard() {
   }
 
   const step = state.currentStep;
-  if (step === 6) {
+  // Step 4 (Draft) renders the full-screen editor outside the wizard shell.
+  if (step === 4) {
     return <EditorShell />;
   }
 
   return (
     <WizardShell stepKey={step}>
-      {step === 1 && <StepUpload />}
-      {step === 2 && <StepIntent />}
+      {step === 1 && <StepTemplate />}
+      {step === 2 && <StepUpload />}
       {step === 3 && <StepGaps />}
-      {step === 4 && <StepTemplate />}
-      {step === 5 && <StepPayment />}
-      {step === 7 && <StepExport />}
+      {step === 5 && <StepExport />}
     </WizardShell>
   );
 }

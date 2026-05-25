@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Lock, RotateCcw } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
 import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { cn } from "@/lib/utils";
 import {
@@ -15,13 +15,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const STEPS = [
-  { n: 1, label: "Upload", tier: "Free" },
-  { n: 2, label: "Intent", tier: "Free" },
-  { n: 3, label: "Gaps", tier: "Free" },
-  { n: 4, label: "Template", tier: "Free" },
-  { n: 5, label: "Unlock", tier: "Paid" },
-  { n: 6, label: "Draft", tier: "Paid" },
-  { n: 7, label: "Export", tier: "Paid" },
+  { n: 1, label: "Template" },
+  { n: 2, label: "Build" },
+  { n: 3, label: "Gaps" },
+  { n: 4, label: "Draft" },
+  { n: 5, label: "Export" },
 ] as const;
 
 interface Props {
@@ -31,7 +29,6 @@ interface Props {
 
 export default function WizardShell({ children, stepKey }: Props) {
   const { state, resetSession } = useCVBuilder();
-  const paid = state.paymentStatus === "paid";
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
@@ -50,7 +47,7 @@ export default function WizardShell({ children, stepKey }: Props) {
                 <RotateCcw size={11} /> Start over
               </button>
               <p className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
-                Step {state.currentStep} of 7
+                Step {state.currentStep} of {STEPS.length}
               </p>
             </div>
           </div>
@@ -59,7 +56,6 @@ export default function WizardShell({ children, stepKey }: Props) {
             {STEPS.map((s) => {
               const done = state.currentStep > s.n;
               const active = state.currentStep === s.n;
-              const locked = s.tier === "Paid" && !paid;
               return (
                 <li key={s.n} className="flex-1">
                   <div className="flex items-center gap-2">
@@ -71,7 +67,7 @@ export default function WizardShell({ children, stepKey }: Props) {
                         !done && !active && "border-ink/20 bg-paper text-ink/45",
                       )}
                     >
-                      {done ? <Check size={12} /> : locked ? <Lock size={10} /> : s.n}
+                      {done ? <Check size={12} /> : s.n}
                     </div>
                     <div className="hidden min-w-0 sm:block">
                       <p
@@ -81,9 +77,6 @@ export default function WizardShell({ children, stepKey }: Props) {
                         )}
                       >
                         {s.label}
-                      </p>
-                      <p className="font-dm text-[9px] uppercase tracking-wider2 text-ink/40">
-                        {s.tier}
                       </p>
                     </div>
                   </div>
