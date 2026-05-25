@@ -14,8 +14,6 @@ import {
   Info,
   CheckCircle2,
   ChevronRight,
-  Sun,
-  Moon,
   Loader2,
   X,
   PanelRightOpen,
