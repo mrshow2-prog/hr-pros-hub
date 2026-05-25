@@ -1029,7 +1029,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
       periodRow({ cv, primary: SIENNA, b }, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
       const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (comp) b.addText({ value: comp, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
+      deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
       for (const bul of visibleBullets(exp)) {
         bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
       }
