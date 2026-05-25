@@ -75,13 +75,18 @@ export default function PdfmePreview({
     };
   }, [cv, template, photoUrl, pageWidth]);
 
+  const pageHeight = Math.round(pageWidth * (297 / 210));
+
   if (status === "loading" && pages.length === 0) {
-    return <div className="h-[1123px] w-[794px] animate-pulse bg-white shadow-xl ring-1 ring-ink/10" />;
+    return <div className="animate-pulse bg-white shadow-xl ring-1 ring-ink/10" style={{ width: pageWidth, height: pageHeight }} />;
   }
 
   if (status === "error") {
     return (
-      <div className="flex h-[1123px] w-[794px] items-center justify-center bg-white font-dm text-sm text-ink/60 shadow-xl ring-1 ring-ink/10">
+      <div
+        className="flex items-center justify-center bg-white font-dm text-sm text-ink/60 shadow-xl ring-1 ring-ink/10"
+        style={{ width: pageWidth, height: pageHeight }}
+      >
         Preview refresh failed. Export is still available.
       </div>
     );
