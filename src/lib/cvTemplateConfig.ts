@@ -1,4 +1,4 @@
-import type { TemplateId } from "@/contexts/CVBuilderContext";
+import { normalizeTemplateId, type TemplateId } from "@/contexts/CVBuilderContext";
 
 export interface TemplateConfig {
   primaryColor: string;
@@ -11,29 +11,36 @@ export interface TemplateConfig {
   headingUppercase: boolean;
 }
 
+/** Brand sienna across the board — every template uses the same accent
+ *  so that exports and the wizard preview share a consistent palette. */
+const SIENNA = "#9c5643";
+
 export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
-  classic: {
-    primaryColor: "#1f2937",
+  // London — traditional serif, single column, underline headings, circle photo
+  london: {
+    primaryColor: SIENNA,
     headingFont: "Times-Roman",
     bodyFont: "Times-Roman",
     sectionDividerStyle: "underline",
-    photoStyle: "square",
+    photoStyle: "circle",
     photoPosition: "top-left",
     layoutStyle: "single-column",
     headingUppercase: true,
   },
-  modern: {
-    primaryColor: "#b8552a",
+  // Dubai — clean contemporary, accent bar, square photo
+  dubai: {
+    primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
     sectionDividerStyle: "bar",
     photoStyle: "square",
     photoPosition: "top-left",
-    layoutStyle: "sidebar",
+    layoutStyle: "single-column",
     headingUppercase: true,
   },
-  compact: {
-    primaryColor: "#0f172a",
+  // Singapore — dense, two-column information-rich
+  singapore: {
+    primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
     sectionDividerStyle: "underline",
@@ -42,28 +49,52 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  "skills-first": {
-    primaryColor: "#0d7a5f",
+  // Berlin — skills-led with pill chips
+  berlin: {
+    primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
-    sectionDividerStyle: "bar",
+    sectionDividerStyle: "none",
     photoStyle: "circle",
+    photoPosition: "top-left",
+    layoutStyle: "single-column",
+    headingUppercase: false,
+  },
+  // Zurich — premium executive serif
+  zurich: {
+    primaryColor: SIENNA,
+    headingFont: "Times-Bold",
+    bodyFont: "Times-Roman",
+    sectionDividerStyle: "none",
+    photoStyle: "square",
+    photoPosition: "top-left",
+    layoutStyle: "single-column",
+    headingUppercase: false,
+  },
+  // Riyadh — bold dark sidebar
+  riyadh: {
+    primaryColor: SIENNA,
+    headingFont: "Helvetica-Bold",
+    bodyFont: "Helvetica",
+    sectionDividerStyle: "none",
+    photoStyle: "square",
     photoPosition: "top-left",
     layoutStyle: "sidebar",
     headingUppercase: true,
   },
-  executive: {
-    primaryColor: "#0f1b3d",
+  // Geneva — editorial timeline, serif headings
+  geneva: {
+    primaryColor: SIENNA,
     headingFont: "Times-Bold",
-    bodyFont: "Times-Roman",
+    bodyFont: "Helvetica",
     sectionDividerStyle: "underline",
     photoStyle: "circle",
-    photoPosition: "top-right",
+    photoPosition: "top-left",
     layoutStyle: "single-column",
-    headingUppercase: true,
+    headingUppercase: false,
   },
 };
 
-export function getTemplateConfig(id: TemplateId | null | undefined): TemplateConfig {
-  return TEMPLATE_CONFIG[id ?? "modern"] ?? TEMPLATE_CONFIG.modern;
+export function getTemplateConfig(id: TemplateId | string | null | undefined): TemplateConfig {
+  return TEMPLATE_CONFIG[normalizeTemplateId(id)];
 }
