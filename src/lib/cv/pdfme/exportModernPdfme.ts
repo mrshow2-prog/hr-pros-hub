@@ -747,13 +747,17 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sideHeading("Skills");
     for (const sk of cv.skills) {
       const tw = SIDEBAR_W - PADX * 2 - 3;
-      const h = textHeightMm(sk, tw, 8.6, 1.45);
+      // Use bold:true in the height prediction as extra safety: caps-heavy
+      // skill names render wider than mixed case and we'd rather over-
+      // reserve a hair than overlap into the next item.
+      const h = textHeightMm(sk, tw, 8.6, 1.5, { bold: true });
       b.addText({ value: "▪", x: PADX, y: sY, width: 3, fontSize: 8.6, color: SIENNA, bold: true });
-      b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.45 });
-      sY += h + 0.8;
+      b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
+      sY += h + 1.6;
     }
     sY += 3;
   }
+
 
   if (!isHidden(cv, "languages") && cv.languages.length) {
     sideHeading("Languages");
