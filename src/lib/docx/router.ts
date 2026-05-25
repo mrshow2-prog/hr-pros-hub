@@ -1,21 +1,24 @@
 import type { Document } from "docx";
-import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
+import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
-  buildModernDoc, buildClassicDoc, buildExecutiveDoc, buildSkillsFirstDoc,
+  buildDubaiDoc, buildLondonDoc, buildZurichDoc, buildBerlinDoc, buildGenevaDoc,
 } from "./singleColumn";
 import { buildCompactDoc } from "./compact";
+import { buildRiyadhDoc } from "./sidebar";
 
 export function buildDocxByTemplate(
   cv: GeneratedCV,
-  template: TemplateId,
+  template: TemplateId | string,
   photoUrl: string | null,
 ): Promise<Document> {
-  switch (template) {
-    case "classic": return buildClassicDoc(cv, photoUrl);
-    case "executive": return buildExecutiveDoc(cv, photoUrl);
-    case "compact": return buildCompactDoc(cv, photoUrl);
-    case "skills-first": return buildSkillsFirstDoc(cv, photoUrl);
-    case "modern":
-    default: return buildModernDoc(cv, photoUrl);
+  switch (normalizeTemplateId(template)) {
+    case "london":    return buildLondonDoc(cv, photoUrl);
+    case "zurich":    return buildZurichDoc(cv, photoUrl);
+    case "singapore": return buildCompactDoc(cv, photoUrl);
+    case "berlin":    return buildBerlinDoc(cv, photoUrl);
+    case "riyadh":    return buildRiyadhDoc(cv, photoUrl);
+    case "geneva":    return buildGenevaDoc(cv, photoUrl);
+    case "dubai":
+    default:          return buildDubaiDoc(cv, photoUrl);
   }
 }
