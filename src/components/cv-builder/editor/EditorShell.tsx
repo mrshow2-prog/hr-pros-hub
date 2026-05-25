@@ -42,6 +42,7 @@ import {
 import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
+import { getPalette } from "@/lib/cv/palettes";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "dubai", label: "Dubai" },
@@ -65,7 +66,7 @@ const SECTIONS: SectionDef[] = [
 ];
 
 export default function EditorShell() {
-  const { state, setGeneratedCV, setAts, setStep, setTemplate, setTypeOption, patchSummary, replaceBullets } =
+  const { state, setGeneratedCV, setAts, setStep, setTemplate, patchSummary, replaceBullets } =
     useCVBuilder();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -289,14 +290,7 @@ export default function EditorShell() {
               </option>
             ))}
           </select>
-          <button
-            onClick={() => setTypeOption(state.typeOption === "dark" ? "light" : "dark")}
-            className="inline-flex items-center gap-1 rounded border border-ink/15 px-2 py-1 font-dm text-xs text-ink/70 hover:border-ink/40"
-            aria-label="Toggle theme"
-          >
-            {state.typeOption === "dark" ? <Moon size={12} /> : <Sun size={12} />}
-            {state.typeOption === "dark" ? "Dark" : "Light"}
-          </button>
+          {/* dark/light toggle removed — palette is set on the Template step */}
 
           <button
             onClick={() => setPreviewOpen((o) => !o)}
@@ -453,6 +447,8 @@ function PreviewPane() {
   }, []);
 
   if (!state.generatedCV || !state.selectedTemplate) return null;
+  const accentHexForPreview = getPalette(state.intentForm.colorPalette).accentHex;
+
 
   return (
     <div ref={wrapRef} className="h-full overflow-y-auto bg-clay/30 p-6">
