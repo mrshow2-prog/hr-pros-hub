@@ -149,6 +149,39 @@ export async function urlToDataUrl(url: string): Promise<string | null> {
   }
 }
 
+/** Mask an image URL into a circular PNG data URL (transparent corners). */
+export async function maskImageCircle(url: string): Promise<string | null> {
+  if (typeof document === "undefined") return url;
+  try {
+    const dataUrl = url.startsWith("data:") ? url : await urlToDataUrl(url);
+    if (!dataUrl) return null;
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const el = new Image();
+      el.crossOrigin = "anonymous";
+      el.onload = () => res(el);
+      el.onerror = rej;
+      el.src = dataUrl;
+    });
+    const size = Math.min(img.naturalWidth, img.naturalHeight);
+    if (!size) return url;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return url;
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    const sx = (img.naturalWidth - size) / 2;
+    const sy = (img.naturalHeight - size) / 2;
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return url;
+  }
+}
+
 export interface BuilderOpts {
   margin?: number;
   top?: number;

@@ -242,11 +242,17 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
   let hy = hy0 + ptToMm(o.nameFs) * 1.08 + 1.4;
 
   if (cv.contact.jobTitle) {
+    const titleLh = 1.25;
+    const titleH = Math.max(
+      ptToMm(o.titleFs) * titleLh,
+      textHeightMm(cv.contact.jobTitle, textW, o.titleFs, titleLh, { bold: o.titleBold }),
+    );
     b.addText({
       value: cv.contact.jobTitle, x: textX, y: hy, width: textW,
       fontSize: o.titleFs, color: o.titleColor ?? SIENNA, bold: o.titleBold,
+      lineHeight: titleLh,
     });
-    hy += ptToMm(o.titleFs) * 1.25 + 1.4;
+    hy += titleH + 1.4;
   }
   const cText = contactLine(cv);
   if (cText) {
@@ -1112,9 +1118,12 @@ export async function generateCvPdfmeBlob(
   templateId: TemplateId | string,
   opts?: PdfmeOptions,
 ) {
-  const { setAccent } = await import("./core");
+  const { setAccent, maskImageCircle } = await import("./core");
   setAccent(opts?.accentHex ?? null);
-  const effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
+  let effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
+  if (effectivePhoto && opts?.photoShape === "circle") {
+    effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;
+  }
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
     case "london":     b = await buildClassic(cv, effectivePhoto); break;
