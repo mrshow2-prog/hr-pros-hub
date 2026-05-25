@@ -224,15 +224,20 @@ export default function StepUpload() {
           "\n\n(Parsed content will be extracted server-side.)",
       );
     }
-    setStep(2);
+    setStep(3);
+  };
+
+  const handleScratch = () => {
+    setParsedText("(Starting from scratch — no source CV uploaded.)");
+    setStep(3);
   };
 
   return (
     <>
       <StepHeader
-        eyebrow="Step 1 · Upload"
+        eyebrow="Step 2 · Build"
         title="Start with your current CV"
-        subtitle="Drop your latest CV in any format. We'll read it, then ask you a few targeted questions so the rewrite reflects the work you've actually done."
+        subtitle="Drop your latest CV in any format. We'll read it, then ask a few targeted questions. No CV to upload? Start from scratch."
       />
 
       {!pasteMode ? (
@@ -414,11 +419,20 @@ export default function StepUpload() {
       />
 
       <StepFooter
-        hideBack
+        onBack={() => setStep(1)}
         onNext={handleNext}
         nextDisabled={!canContinue}
-        nextLabel="Continue to intent"
+        nextLabel="Continue to gaps"
       />
+      <div className="-mt-4 text-center">
+        <button
+          type="button"
+          onClick={handleScratch}
+          className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
+        >
+          No CV to upload? Start from scratch →
+        </button>
+      </div>
     </>
   );
 }

@@ -12,6 +12,8 @@ interface Props {
   photoUrl: string | null;
   pageWidth?: number;
   gap?: number;
+  accentHex?: string | null;
+  photoShape?: "circle" | "square" | "none";
 }
 
 export default function PdfmePreview({
@@ -20,6 +22,8 @@ export default function PdfmePreview({
   photoUrl,
   pageWidth = 794,
   gap = 24,
+  accentHex,
+  photoShape,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -31,7 +35,7 @@ export default function PdfmePreview({
     const timer = window.setTimeout(async () => {
       try {
         setStatus("loading");
-        const blob = await generateCvPdfmeBlob(cv, photoUrl, template);
+        const blob = await generateCvPdfmeBlob(cv, photoUrl, template, { accentHex, photoShape });
         const loadingTask = pdfjs.getDocument({ data: await blob.arrayBuffer() });
         doc = await loadingTask.promise;
         const rendered: string[] = [];
@@ -73,7 +77,7 @@ export default function PdfmePreview({
       window.clearTimeout(timer);
       void doc?.destroy();
     };
-  }, [cv, template, photoUrl, pageWidth]);
+  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape]);
 
   const pageHeight = Math.round(pageWidth * (297 / 210));
 
