@@ -69,12 +69,18 @@ export default function StepUpload() {
         setError("Please sign in to upload files.");
         continue;
       }
-      const path = `${uid}/${state.sessionId}/${Date.now()}-${f.name}`;
+      const safeName = f.name
+        .normalize("NFKD")
+        .replace(/[^\w.\-]+/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
+      const path = `${uid}/${state.sessionId}/${Date.now()}-${safeName}`;
       const { error: upErr } = await supabase.storage
         .from("cv-builder-uploads")
-        .upload(path, f, { upsert: false });
+        .upload(path, f, { upsert: false, contentType: f.type || "application/octet-stream" });
       if (upErr) {
-        setError(`We couldn't upload ${f.name}. Try again.`);
+        console.error("CV upload failed", upErr);
+        setError(`We couldn't upload ${f.name}: ${upErr.message}`);
         continue;
       }
       next.push({ path, name: f.name, size: f.size });
@@ -115,10 +121,11 @@ export default function StepUpload() {
       setPhotoError("Please sign in to upload a photo.");
       return;
     }
-    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${f.name}`;
+    const safePhotoName = f.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
+    const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${safePhotoName}`;
     const { error: upErr } = await supabase.storage
       .from("cv-builder-uploads")
-      .upload(path, f, { upsert: true });
+      .upload(path, f, { upsert: true, contentType: f.type });
     setPhotoUploading(false);
     if (upErr) {
       setPhotoError("Couldn't upload the photo. Try again.");
