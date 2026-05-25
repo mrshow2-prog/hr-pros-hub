@@ -6,6 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { exportCVToDocx, exportCVToPdf, slugify } from "@/lib/cvExport";
 import PaymentModal from "./PaymentModal";
+import { getPalette } from "@/lib/cv/palettes";
+
+function paletteHexFor(id: string) {
+  return getPalette(id).accentHex;
+}
 
 export default function StepExport() {
   const { state, setStep, resetSession } = useCVBuilder();
@@ -36,11 +41,16 @@ export default function StepExport() {
     };
   }, [state.photoPath]);
 
+  const exportOpts = {
+    accentHex: paletteHexFor(state.intentForm.colorPalette),
+    photoShape: state.intentForm.photoShape,
+  };
+
   const doPdf = async () => {
     if (!cv) return;
     setBusy("pdf");
     try {
-      await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`);
+      await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`, exportOpts);
       toast.success("PDF downloaded");
     } catch (e) {
       console.error(e); toast.error("Could not generate PDF");

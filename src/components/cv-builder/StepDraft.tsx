@@ -27,6 +27,7 @@ import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
+import { getPalette } from "@/lib/cv/palettes";
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
@@ -469,6 +470,7 @@ export function LivePreview() {
   if (!state.generatedCV || !state.selectedTemplate) return null;
 
   const scale = 0.36;
+  const accentHex = getPalette(state.intentForm.colorPalette).accentHex;
   return (
     <div className="rounded-md border border-ink/10 bg-paper p-3">
       <p className="mb-2 font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
@@ -482,6 +484,8 @@ export function LivePreview() {
             photoUrl={photoUrl}
             pageWidth={794 * scale}
             gap={24 * scale}
+            accentHex={accentHex}
+            photoShape={state.intentForm.photoShape}
           />
         </div>
       </div>
