@@ -69,11 +69,15 @@ function bullet(
 ) {
   const { b } = ctx;
   const fs = opts.fs ?? 9.7;
-  const lh = opts.lh ?? 1.55;
+  const lh = opts.lh ?? 1.45;
   const gw = opts.glyphW ?? 4.4;
   const tw = b.contentW - gw;
-  const h = Math.max(ptToMm(fs) * lh, textHeightMm(text, tw, fs, lh));
-  b.ensure(h + 0.6);
+  // Predict wrapped line count from the actual text — single-line bullets
+  // reserve a single line of leading, avoiding phantom blank rows between
+  // bullets when pdfme renders tighter than a generous lh would suggest.
+  const lineCount = Math.max(1, textHeightMm(text, tw, fs, lh) / (ptToMm(fs) * lh));
+  const h = ptToMm(fs) * lh * lineCount;
+  b.ensure(h + 0.4);
   const py = b.cursorY;
   b.addText({
     value: glyph, x: b.margin, y: py, width: gw,
@@ -84,8 +88,11 @@ function bullet(
     value: text, x: b.margin + gw, y: py, width: tw,
     fontSize: fs, color: opts.textColor ?? SUBINK, lineHeight: lh,
   });
-  b.cursorY = py + h + 1;
+  // Tight inter-bullet gap (0.4mm) — accumulating padding here is what
+  // showed up as "random empty lines" between bullets of the same job.
+  b.cursorY = py + h + 0.4;
 }
+
 
 interface HeaderOpts {
   photoUrl: string | null;
