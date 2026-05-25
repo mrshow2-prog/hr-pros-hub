@@ -247,7 +247,7 @@ function styles(mode: CompactMode) {
     body {
       font-family: Calibri, Carlito, Arial, sans-serif;
       font-size: 11pt; line-height: 1.4; color: #1A1714; background: white;
-      padding: 14mm 15mm;
+      padding: ${mode === "preview" ? "0 15mm" : "14mm 15mm"};
       print-color-adjust: exact; -webkit-print-color-adjust: exact;
     }
     ${headerCss}

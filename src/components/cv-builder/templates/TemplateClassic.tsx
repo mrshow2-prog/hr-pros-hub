@@ -14,7 +14,7 @@ const SectionHeader = ({ children }: { children: React.ReactNode }) => (
 
 export default function TemplateClassic({ cv, photoUrl }: Props) {
   return (
-    <Page className="px-14 py-12">
+    <Page className="px-14">
       {/* Header */}
       {isVisible(cv, "contact") && (
         <header className="mb-8 flex items-start gap-6 border-b-2 border-ink pb-6">

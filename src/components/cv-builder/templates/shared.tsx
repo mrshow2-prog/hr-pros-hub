@@ -62,7 +62,7 @@ export function Page({
   return (
     <div
       className={cn(
-        "mx-auto w-[794px] max-w-full min-h-[1123px] bg-white text-ink shadow-sm font-dm text-left",
+        "mx-auto w-[794px] max-w-full bg-white text-ink font-dm text-left",
         className,
       )}
     >
