@@ -335,7 +335,9 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       id: s.id ?? newId("cs"),
       title: s.title ?? "",
       bullets: s.bullets ?? [],
+      placement: (s as Partial<CustomSection>).placement ?? "body",
     })),
+
     hiddenSections: raw?.hiddenSections ?? [],
   };
 }
