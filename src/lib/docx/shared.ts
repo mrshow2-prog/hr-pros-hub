@@ -278,6 +278,159 @@ export async function photoParagraph(
   });
 }
 
+/** Photo + name/title/contact placed side-by-side via a borderless 2-col table.
+ *  Mirrors the wizard previews where the photo sits to the left of the name.
+ *  If `bottomRule` is set, a single ink line is drawn under the header table. */
+export async function headerTable(
+  cv: GeneratedCV,
+  t: DocxTheme,
+  opts: {
+    photoUrl: string | null;
+    photoSize: number; // px
+    photoShape: "circle" | "square";
+    nameSize?: number; // half-points
+    titleSize?: number;
+    contentW: number;
+    bottomRule?: boolean;
+  },
+): Promise<Array<Table | Paragraph>> {
+  const nameSize = opts.nameSize ?? 44;
+  const titleSize = opts.titleSize ?? 22;
+  const photoImg = opts.photoUrl ? await urlToImageData(opts.photoUrl) : null;
+  const photoCellW = photoImg ? Math.round(opts.photoSize * 15) : 0; // ~15 DXA / px
+  const gapW = photoImg ? 200 : 0;
+  const textCellW = opts.contentW - photoCellW - gapW;
+
+  const textChildren: Paragraph[] = [
+    new Paragraph({
+      spacing: { after: 40 },
+      children: [
+        new TextRun({
+          text: cv.contact.name || "Your name",
+          bold: true,
+          size: nameSize,
+          font: t.heading,
+          color: INK_HEX,
+        }),
+      ],
+    }),
+  ];
+  if (cv.contact.jobTitle) {
+    textChildren.push(
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [
+          new TextRun({
+            text: cv.contact.jobTitle,
+            size: titleSize,
+            font: t.body,
+            color: t.primary,
+          }),
+        ],
+      }),
+    );
+  }
+  const items = [
+    cv.contact.location,
+    cv.contact.phone,
+    cv.contact.email,
+    cv.contact.linkedinUrl,
+  ].filter(Boolean) as string[];
+  if (items.length) {
+    textChildren.push(
+      new Paragraph({
+        spacing: { after: 0 },
+        children: [
+          new TextRun({
+            text: items.join("   ·   "),
+            size: 18,
+            color: t.muted,
+            font: t.body,
+          }),
+        ],
+      }),
+    );
+  }
+
+  const cells: TableCell[] = [];
+  if (photoImg) {
+    cells.push(
+      new TableCell({
+        width: { size: photoCellW, type: WidthType.DXA },
+        borders: noBorders,
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 0, bottom: 0, left: 0, right: 100 },
+        children: [
+          new Paragraph({
+            spacing: { after: 0 },
+            children: [
+              new ImageRun({
+                data: photoImg.buffer,
+                transformation: { width: opts.photoSize, height: opts.photoSize },
+                type: photoImg.type,
+              } as any),
+            ],
+          }),
+        ],
+      }),
+    );
+  }
+  cells.push(
+    new TableCell({
+      width: { size: textCellW, type: WidthType.DXA },
+      borders: noBorders,
+      verticalAlign: VerticalAlign.CENTER,
+      margins: { top: 0, bottom: 0, left: photoImg ? 100 : 0, right: 0 },
+      children: textChildren,
+    }),
+  );
+
+  const tbl = new Table({
+    width: { size: opts.contentW, type: WidthType.DXA },
+    columnWidths: photoImg ? [photoCellW, textCellW] : [opts.contentW],
+    borders: opts.bottomRule
+      ? { ...noBorders, bottom: { style: BorderStyle.SINGLE, size: 12, color: INK_HEX } }
+      : noBorders,
+    rows: [new TableRow({ children: cells })],
+  });
+  return [tbl, blank(120)];
+}
+
+/** Render a list of skills as visual "chips" — TextRuns with shaded backgrounds,
+ *  separated by a thin gap. Mirrors the rounded pills in the Skills-First preview. */
+export function chipsParagraph(items: string[], t: DocxTheme): Paragraph {
+  const runs: TextRun[] = [];
+  items.forEach((s, i) => {
+    runs.push(
+      new TextRun({
+        text: ` ${s} `,
+        size: 19,
+        font: t.body,
+        color: INK_HEX,
+        shading: { type: ShadingType.CLEAR, fill: "F4EFE6", color: "auto" },
+      }),
+    );
+    if (i < items.length - 1) {
+      runs.push(new TextRun({ text: "  ", size: 19, font: t.body }));
+    }
+  });
+  return new Paragraph({ spacing: { after: 140, line: 320 }, children: runs });
+}
+
+/** Quote-style summary block with a sienna left border (Executive template). */
+export function quoteSummary(text: string, t: DocxTheme): Paragraph {
+  return new Paragraph({
+    spacing: { after: 200, line: 340 },
+    indent: { left: 200 },
+    border: {
+      left: { style: BorderStyle.SINGLE, size: 18, color: t.primary, space: 8 },
+    },
+    children: [
+      new TextRun({ text, size: 21, font: t.body, color: t.subInk, italics: false }),
+    ],
+  });
+}
+
 export function footerOf(cv: GeneratedCV, t: DocxTheme) {
   return new Footer({
     children: [
