@@ -747,38 +747,63 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
   const padX = 3;
   const padY = 1.6;
   const lh = 1.2;
-  const chipH = ptToMm(fs) * lh + padY * 2;
+  const singleLineH = ptToMm(fs) * lh + padY * 2;
   const gap = 2;
-  // Bold-ish width estimate for chip widths to avoid overflow
-  const cwPerChar = (fs * 0.58) / 2.8346;
   let x = b.margin;
   let y = b.cursorY;
   const maxX = b.margin + b.contentW;
-  b.ensure(chipH + 0.4);
+  b.ensure(singleLineH + 0.4);
   y = b.cursorY;
+
   for (const it of items) {
-    const w = Math.min(b.contentW, it.length * cwPerChar + padX * 2);
-    if (x + w > maxX) {
-      x = b.margin;
-      y += chipH + gap;
-      if (y + chipH > b.PAGE_H - b.bottom) {
-        b.cursorY = y;
-        b.newPage();
-        y = b.cursorY;
+    const innerMax = b.contentW - padX * 2;
+    // Binary search smallest inner width that still keeps the chip text on
+    // a single line. Falls back to full width when the text genuinely wraps.
+    let innerW = innerMax;
+    if (wrapLines(it, innerMax, fs).length === 1) {
+      let lo = 4, hi = innerMax;
+      while (lo < hi - 0.5) {
+        const mid = (lo + hi) / 2;
+        if (wrapLines(it, mid, fs).length === 1) hi = mid;
+        else lo = mid;
       }
+      innerW = hi;
     }
+    const lines = wrapLines(it, innerW, fs);
+    const chipW = Math.min(b.contentW, innerW + padX * 2);
+    const chipH = ptToMm(fs) * lh * lines.length + padY * 2;
+
+    if (x !== b.margin && x + chipW > maxX) {
+      x = b.margin;
+      y += singleLineH + gap;
+    }
+    if (y + chipH > b.PAGE_H - b.bottom) {
+      b.cursorY = y;
+      b.newPage();
+      y = b.cursorY;
+    }
+
     b.addRect({
-      x, y, width: w, height: chipH,
+      x, y, width: chipW, height: chipH,
       color: "#f4efe6", borderColor: HAIRLINE, borderWidth: 0.3,
-      radius: chipH / 2,
+      radius: singleLineH / 2,
     });
     b.addText({
-      value: it, x: x + padX, y: y + padY * 0.65, width: w - padX * 2,
-      fontSize: fs, color: INK, lineHeight: lh,
+      value: lines.join("\n"),
+      x: x + padX,
+      y: y + padY * 0.65,
+      width: chipW - padX * 2,
+      fontSize: fs,
+      color: INK,
+      lineHeight: lh,
     });
-    x += w + gap;
+    x += chipW + gap;
+    if (lines.length > 1) {
+      x = b.margin;
+      y += chipH + gap;
+    }
   }
-  b.cursorY = y + chipH + 1;
+  b.cursorY = y + singleLineH + 1;
 }
 
 /* ============================================================
