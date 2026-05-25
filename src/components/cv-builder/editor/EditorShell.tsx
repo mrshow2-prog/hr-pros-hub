@@ -448,7 +448,7 @@ export default function EditorShell() {
 
 /* ────────── Live preview pane ────────── */
 
-function PreviewPane() {
+function PreviewPane({ onStatusChange }: { onStatusChange?: (status: "loading" | "ready" | "error") => void }) {
   const { state } = useCVBuilder();
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -493,6 +493,7 @@ function PreviewPane() {
           gap={24 * scale}
           accentHex={accentHexForPreview}
           photoShape={state.intentForm.photoShape}
+          onStatusChange={onStatusChange}
         />
       </div>
     </div>
