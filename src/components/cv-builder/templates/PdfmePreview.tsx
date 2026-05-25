@@ -112,7 +112,7 @@ export default function PdfmePreview({
   }
 
   return (
-    <div className="flex flex-col items-center" style={{ width: pageWidth, gap }}>
+    <div className="relative flex flex-col items-center" style={{ width: pageWidth, gap }}>
       {pages.map((src, index) => (
         <img
           key={`${template}-${index}-${src.slice(-24)}`}
@@ -123,6 +123,14 @@ export default function PdfmePreview({
           draggable={false}
         />
       ))}
+      {status === "loading" && (
+        <div className="pointer-events-none absolute inset-0 flex items-start justify-center pt-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-ink/85 px-3 py-1.5 font-dm text-xs text-paper shadow-lg backdrop-blur">
+            <Loader2 className="animate-spin" size={14} />
+            Updating preview…
+          </div>
+        </div>
+      )}
     </div>
   );
 }
