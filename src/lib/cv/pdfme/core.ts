@@ -24,13 +24,16 @@ export const HAIRLINE = "#e8dfd1";
 export const SIENNA = "#9c5643";
 
 /**
- * Conservative average character width per pt of font size. pdfme's default
- * font is Roboto (regular ~0.52, bold ~0.56). We over-estimate slightly to
- * prevent pdfme from ever wrapping a word into the next pseudo-line, which
- * is what produced the "Sum m ary" / "Govern m ent" artefacts.
+ * Average character width per pt of font size for pdfme's default Roboto.
+ * Calibrated against actual rendered output: Roboto Regular ~0.50, Bold ~0.54.
+ * If set too HIGH we over-predict line count and leave phantom blank lines
+ * below text blocks (we reserve more vertical space than pdfme actually
+ * renders). If set too LOW, pdfme may wrap a word into the next line and
+ * overflow the element (the "Sum m ary" artefact). 0.50/0.54 is the sweet
+ * spot for Roboto at 9–12pt body sizes.
  */
 function charWidthMm(fontSizePt: number, bold: boolean, letterSpacing = 0) {
-  const ratio = bold ? 0.62 : 0.56;
+  const ratio = bold ? 0.54 : 0.50;
   return (fontSizePt * ratio) / PT_PER_MM + letterSpacing;
 }
 
@@ -42,7 +45,8 @@ export function wrapLines(
 ): string[] {
   const lines: string[] = [];
   const cw = charWidthMm(fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
-  const maxChars = Math.max(4, Math.floor(widthMm / cw));
+  // Tiny safety margin so we never under-predict vs pdfme's real wrapper.
+  const maxChars = Math.max(4, Math.floor((widthMm - 0.3) / cw));
   for (const para of (text || "").split(/\n/)) {
     if (!para) {
       lines.push("");
