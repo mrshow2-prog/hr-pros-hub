@@ -320,7 +320,6 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
     setPhotoPath(path);
   };
 
-  const { patchIntent } = useCVBuilder();
   const photoShape = state.intentForm.photoShape;
   const shapeClass =
     photoShape === "square"
