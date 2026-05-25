@@ -38,16 +38,16 @@ function estimatedTextWidthMm(
   letterSpacing = 0,
 ) {
   const widthUnits = Array.from(text).reduce((sum, ch) => {
-    if (ch === " ") return sum + 0.26;
-    if (/[A-Z]/.test(ch)) return sum + (bold ? 0.62 : 0.58);
-    if (/[a-z]/.test(ch)) return sum + (bold ? 0.51 : 0.46);
-    if (/[0-9]/.test(ch)) return sum + 0.52;
-    if (/[.,;:'`!|]/.test(ch)) return sum + 0.24;
-    if (/[-–—/\\()]/.test(ch)) return sum + 0.34;
-    return sum + (bold ? 0.56 : 0.50);
+    if (ch === " ") return sum + 0.32;
+    if (/[A-Z]/.test(ch)) return sum + (bold ? 0.66 : 0.62);
+    if (/[a-z]/.test(ch)) return sum + (bold ? 0.56 : 0.52);
+    if (/[0-9]/.test(ch)) return sum + 0.56;
+    if (/[.,;:'`!|]/.test(ch)) return sum + 0.28;
+    if (/[-–—/\\()]/.test(ch)) return sum + 0.38;
+    return sum + (bold ? 0.60 : 0.55);
   }, 0);
   const tracking = Math.max(0, text.length - 1) * (letterSpacing / PT_PER_MM);
-  return (fontSizePt * widthUnits) / PT_PER_MM + tracking;
+  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.06;
 }
 
 function splitLongToken(token: string, maxWidthMm: number, fontSizePt: number, bold: boolean, letterSpacing: number) {
