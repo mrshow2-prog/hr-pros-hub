@@ -3,10 +3,11 @@ import {
   contactItems, isHidden, periodOf, visibleBullets,
 } from "./helpers";
 import {
-  createBuilder, urlToDataUrl, textHeightMm, ptToMm,
+  createBuilder, urlToDataUrl, textHeightMm, ptToMm, wrapLines,
   INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W,
   type PdfmeBuilder,
 } from "./core";
+
 
 /* ============================================================
  * Per-template pdfme exporters that mirror the wizard previews
@@ -61,6 +62,23 @@ function periodRow(
   b.cursorY = py + h + (opts.spaceAfter ?? 0.5);
 }
 
+/**
+ * Render a single bullet row with FULLY DETERMINISTIC layout.
+ *
+ * The key technique: we pre-wrap the bullet text into visual lines ourselves
+ * using wrapLines(), then emit ONE single-line pdfme text block per visual
+ * line at an exact Y coordinate. pdfme therefore never re-wraps the text —
+ * what we measure is what gets rendered — so we know with certainty that:
+ *   - a 1-line bullet occupies exactly lineStep mm of vertical space,
+ *   - a 2-line bullet occupies exactly 2 * lineStep mm,
+ *   - no phantom empty rows can appear,
+ *   - no two bullets can overlap.
+ *
+ * A fixed small gap (BULLET_GAP_MM) is added after each bullet.
+ * Page breaks happen between bullets, never inside a bullet's own lines.
+ */
+const BULLET_GAP_MM = 0.6;
+
 function bullet(
   ctx: Ctx,
   glyph: string,
@@ -73,22 +91,59 @@ function bullet(
   const gw = opts.glyphW ?? 4.4;
   const tw = b.contentW - gw;
   const lineStep = ptToMm(fs) * lh;
-  const lineCount = Math.max(1, Math.ceil(textHeightMm(text, tw, fs, lh) / lineStep - 0.01));
-  const wrapGuard = lineCount > 1 ? 1.2 : 0.25;
-  const h = lineStep * lineCount + wrapGuard;
-  b.ensure(h + 0.35);
+
+  // Pre-wrap into exact visual lines. This is the SAME function used for
+  // measurement, so emitted geometry == predicted geometry.
+  const lines = wrapLines(text, tw, fs, {});
+  const blockH = lines.length * lineStep;
+
+  // Page break check — keep the whole bullet together when possible. If the
+  // bullet alone is taller than a page, allow line-by-line break (rare).
+  b.ensure(blockH);
+
   const py = b.cursorY;
+
+  // Glyph rendered as its own single-line block on the first visual line.
   b.addText({
-    value: glyph, x: b.margin, y: py, width: gw,
-    fontSize: fs, color: opts.glyphColor ?? ctx.primary, lineHeight: lh,
+    value: glyph,
+    x: b.margin,
+    y: py,
+    width: gw,
+    fontSize: fs,
+    color: opts.glyphColor ?? ctx.primary,
+    lineHeight: lh,
     bold: opts.glyphBold ?? true,
   });
-  b.addText({
-    value: text, x: b.margin + gw, y: py, width: tw,
-    fontSize: fs, color: opts.textColor ?? SUBINK, lineHeight: lh,
-  });
-  b.cursorY = py + h + 0.35;
+
+  // Each pre-wrapped line is rendered as its own single-line text block at
+  // an exact Y. pdfme cannot re-wrap (one line fits trivially in the box),
+  // so the next bullet sits exactly lineStep mm below.
+  for (let i = 0; i < lines.length; i += 1) {
+    const lineY = py + i * lineStep;
+    if (lineY + lineStep > b.PAGE_H - b.bottom) {
+      // Extremely long bullet that spills past the page: break here, redraw
+      // the glyph column-less continuation on the next page.
+      b.cursorY = lineY;
+      b.newPage();
+      const remaining = lines.slice(i).join(" ");
+      // Recursive call with the remainder — keeps the deterministic flow.
+      bullet(ctx, "", remaining, { ...opts });
+      return;
+    }
+    b.addText({
+      value: lines[i],
+      x: b.margin + gw,
+      y: lineY,
+      width: tw,
+      fontSize: fs,
+      color: opts.textColor ?? SUBINK,
+      lineHeight: lh,
+    });
+  }
+
+  b.cursorY = py + blockH + BULLET_GAP_MM;
 }
+
 
 
 interface HeaderOpts {
