@@ -747,7 +747,8 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
   const padX = 3;
   const padY = 1.6;
   const lh = 1.2;
-  const singleLineH = ptToMm(fs) * lh + padY * 2;
+  const lineH = ptToMm(fs) * lh;
+  const singleLineH = lineH + padY * 2;
   const gap = 2;
   let x = b.margin;
   let y = b.cursorY;
@@ -771,7 +772,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
     }
     const lines = wrapLines(it, innerW, fs);
     const chipW = Math.min(b.contentW, innerW + padX * 2);
-    const chipH = ptToMm(fs) * lh * lines.length + padY * 2;
+    const chipH = lineH * lines.length + padY * 2 + 0.4;
 
     if (x !== b.margin && x + chipW > maxX) {
       x = b.margin;
@@ -788,14 +789,16 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
       color: "#f4efe6", borderColor: HAIRLINE, borderWidth: 0.3,
       radius: singleLineH / 2,
     });
-    b.addText({
-      value: lines.join("\n"),
-      x: x + padX,
-      y: y + padY * 0.65,
-      width: chipW - padX * 2,
-      fontSize: fs,
-      color: INK,
-      lineHeight: lh,
+    lines.forEach((line, index) => {
+      b.addText({
+        value: line,
+        x: x + padX,
+        y: y + padY * 0.75 + index * lineH,
+        width: chipW - padX * 2 - 0.6,
+        fontSize: fs,
+        color: INK,
+        lineHeight: lh,
+      });
     });
     x += chipW + gap;
     if (lines.length > 1) {
