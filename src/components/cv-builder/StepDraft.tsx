@@ -434,13 +434,13 @@ export function LivePreview() {
       </p>
       <div className="max-h-[520px] overflow-y-auto rounded bg-clay/40 p-3">
         <div className="mx-auto" style={{ width: 794 * scale }}>
-          <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
-            <PdfmePreview
-              cv={state.generatedCV}
-              template={state.selectedTemplate}
-              photoUrl={photoUrl}
-            />
-          </div>
+          <PdfmePreview
+            cv={state.generatedCV}
+            template={state.selectedTemplate}
+            photoUrl={photoUrl}
+            pageWidth={794 * scale}
+            gap={24 * scale}
+          />
         </div>
       </div>
     </div>
