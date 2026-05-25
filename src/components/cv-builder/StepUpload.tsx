@@ -4,6 +4,7 @@ import { useCVBuilder } from "@/contexts/CVBuilderContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import PhotoCropperDialog from "./PhotoCropperDialog";
+import IntentFields, { isIntentReady } from "./IntentFields";
 
 const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED = ["pdf", "doc", "docx"];
