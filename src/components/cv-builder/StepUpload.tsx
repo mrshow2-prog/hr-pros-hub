@@ -419,6 +419,19 @@ export default function StepUpload() {
         )}
       </section>
 
+      {showIntent && (
+        <section className="mt-10 border-t border-ink/10 pt-8">
+          <div className="mb-6">
+            <p className="font-dm text-xs uppercase tracking-wider2 text-ink/55">A few targeted questions</p>
+            <h3 className="mt-1 font-syne text-xl text-ink">Tell us where this CV is going</h3>
+            <p className="mt-1 font-dm text-sm text-ink/60">
+              A CV reads differently for a Director of Operations than for a Product Designer. These answers shape every choice the builder makes.
+            </p>
+          </div>
+          <IntentFields />
+        </section>
+      )}
+
       <PhotoCropperDialog
         open={cropperOpen}
         source={cropperSource}
@@ -430,17 +443,19 @@ export default function StepUpload() {
         onBack={() => setStep(1)}
         onNext={handleNext}
         nextDisabled={!canContinue}
-        nextLabel="Continue to gaps"
+        nextLabel={showIntent && !intentReady ? "Answer the questions to continue" : "Continue to gaps"}
       />
-      <div className="-mt-4 text-center">
-        <button
-          type="button"
-          onClick={handleScratch}
-          className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
-        >
-          No CV to upload? Start from scratch →
-        </button>
-      </div>
+      {!scratchMode && state.uploadedFiles.length === 0 && (
+        <div className="-mt-4 text-center">
+          <button
+            type="button"
+            onClick={handleScratch}
+            className="font-dm text-xs text-ink/55 underline-offset-4 hover:text-sienna hover:underline"
+          >
+            No CV to upload? Start from scratch →
+          </button>
+        </div>
+      )}
     </>
   );
 }
