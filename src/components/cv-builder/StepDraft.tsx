@@ -427,18 +427,25 @@ export function LivePreview() {
 
   if (!state.generatedCV || !state.selectedTemplate) return null;
 
+  const scale = 0.36;
   return (
     <div className="rounded-md border border-ink/10 bg-paper p-3">
       <p className="mb-2 font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
         Live preview · {state.selectedTemplate}
       </p>
-      <ScaledPreview scale={0.36} className="h-[420px] rounded">
-        <CVRenderer
-          cv={state.generatedCV}
-          template={state.selectedTemplate}
-          photoUrl={photoUrl}
-        />
-      </ScaledPreview>
+      <div className="max-h-[520px] overflow-y-auto rounded bg-clay/40 p-3">
+        <div className="mx-auto" style={{ width: 794 * scale }}>
+          <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
+            <Paginator>
+              <CVRenderer
+                cv={state.generatedCV}
+                template={state.selectedTemplate}
+                photoUrl={photoUrl}
+              />
+            </Paginator>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
