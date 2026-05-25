@@ -24,8 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { StepFooter, StepHeader } from "./WizardShell";
 import { cn } from "@/lib/utils";
-import CVRenderer from "./templates/CVRenderer";
-import Paginator from "./templates/Paginator";
+import PdfmePreview from "./templates/PdfmePreview";
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
   "Basic",
@@ -436,13 +435,11 @@ export function LivePreview() {
       <div className="max-h-[520px] overflow-y-auto rounded bg-clay/40 p-3">
         <div className="mx-auto" style={{ width: 794 * scale }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 794 }}>
-            <Paginator>
-              <CVRenderer
-                cv={state.generatedCV}
-                template={state.selectedTemplate}
-                photoUrl={photoUrl}
-              />
-            </Paginator>
+            <PdfmePreview
+              cv={state.generatedCV}
+              template={state.selectedTemplate}
+              photoUrl={photoUrl}
+            />
           </div>
         </div>
       </div>
