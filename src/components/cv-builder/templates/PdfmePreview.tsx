@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { generateCvPdfmeBlob } from "@/lib/cv/pdfme/exportModernPdfme";
 import * as pdfjs from "pdfjs-dist";
