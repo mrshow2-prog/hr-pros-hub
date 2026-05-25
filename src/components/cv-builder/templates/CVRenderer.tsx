@@ -94,5 +94,8 @@ export const SAMPLE_CV: GeneratedCV = {
     { id: "l2", name: "English", level: "Fluent" },
     { id: "l3", name: "French", level: "Conversational" },
   ],
+  achievements: [],
+  certifications: [],
+  customSections: [],
   hiddenSections: [],
 };

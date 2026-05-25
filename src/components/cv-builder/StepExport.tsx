@@ -145,7 +145,7 @@ export default function StepExport() {
       </div>
 
 
-      <StepFooter onBack={() => setStep(6)} />
+      <StepFooter onBack={() => setStep(4)} />
     </>
   );
 }

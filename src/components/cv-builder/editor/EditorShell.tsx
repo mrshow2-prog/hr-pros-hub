@@ -334,7 +334,7 @@ export default function EditorShell() {
           </button>
 
           <button
-            onClick={() => setStep(7)}
+            onClick={() => setStep(5)}
             className="inline-flex items-center gap-1 rounded-sm bg-sienna px-3 py-1.5 font-dm text-xs font-medium text-paper hover:opacity-90"
           >
             Continue <ChevronRight size={12} />

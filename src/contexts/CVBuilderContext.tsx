@@ -52,13 +52,18 @@ export type SectionKey =
   | "skills"
   | "education"
   | "competencies"
-  | "languages";
+  | "languages"
+  | "achievements"
+  | "certifications"
+  | "custom";
 
 export interface UploadedFile {
   path: string;
   name: string;
   size: number;
 }
+
+export type PhotoShape = "circle" | "square" | "none";
 
 export interface IntentForm {
   targetRoles: string[];
@@ -70,6 +75,10 @@ export interface IntentForm {
   tone: Tone;
   /** null = unlimited pages */
   pageLimit: number | null;
+  /** Photo shape rendered in the CV (defaults per-template if unset). */
+  photoShape: PhotoShape;
+  /** Selected colour palette id (see src/lib/cv/palettes.ts). */
+  colorPalette: string;
 }
 
 export interface Gap {
@@ -137,6 +146,19 @@ export interface ContactInfo {
   photoPath: string | null;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+}
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  bullets: string[];
+}
+
 export interface GeneratedCV {
   contact: ContactInfo;
   summary: string;
@@ -145,6 +167,9 @@ export interface GeneratedCV {
   education: CVEducation[];
   competencyClusters: CompetencyCluster[];
   languages: LanguageEntry[];
+  achievements: string[];
+  certifications: Certification[];
+  customSections: CustomSection[];
   hiddenSections: SectionKey[];
 }
 
@@ -180,10 +205,21 @@ export interface AtsScore {
   sectionScores?: { label: string; score: number }[];
 }
 
+/**
+ * Wizard steps:
+ *   1 = Template
+ *   2 = Build (upload + intent)
+ *   3 = Gaps
+ *   4 = Draft / editor
+ *   5 = Export
+ * Payment is a modal triggered from step 5, not a step itself.
+ */
+export type WizardStep = 1 | 2 | 3 | 4 | 5;
+
 export interface CVBuilderState {
   sessionId: string;
   anonToken: string;
-  currentStep: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  currentStep: WizardStep;
   uploadedFiles: UploadedFile[];
   parsedText: string;
   photoPath: string | null;
@@ -196,6 +232,21 @@ export interface CVBuilderState {
   atsScore: AtsScore | null;
   lastSavedAt: number | null;
   lastScoredAt: number | null;
+}
+
+/** Maps any legacy persisted step value to the new 1-5 range. */
+export function migrateStep(raw: unknown): WizardStep {
+  const n = typeof raw === "number" ? raw : Number(raw);
+  // Old: 1 Upload, 2 Intent, 3 Gaps, 4 Template, 5 Payment, 6 Editor, 7 Export
+  // New: 1 Template, 2 Build, 3 Gaps, 4 Editor, 5 Export
+  if (n === 7) return 5;
+  if (n === 6) return 4;
+  if (n === 5) return 4;
+  if (n === 4) return 1;
+  if (n === 3) return 3;
+  if (n === 2) return 2;
+  if (n === 1) return 2;
+  return 1;
 }
 
 // ---------- Defaults & storage ----------
@@ -215,6 +266,8 @@ const defaultIntent: IntentForm = {
   cvType: "",
   tone: "",
   pageLimit: null,
+  photoShape: "circle",
+  colorPalette: "sienna",
 };
 
 const emptyContact: ContactInfo = {
@@ -267,6 +320,18 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       id: l.id ?? newId("lang"),
       name: l.name ?? "",
       level: l.level ?? "Professional",
+    })),
+    achievements: raw?.achievements ?? [],
+    certifications: (raw?.certifications ?? []).map((c) => ({
+      id: c.id ?? newId("cert"),
+      name: c.name ?? "",
+      issuer: c.issuer ?? "",
+      date: c.date ?? "",
+    })),
+    customSections: (raw?.customSections ?? []).map((s) => ({
+      id: s.id ?? newId("cs"),
+      title: s.title ?? "",
+      bullets: s.bullets ?? [],
     })),
     hiddenSections: raw?.hiddenSections ?? [],
   };
@@ -331,6 +396,15 @@ interface CVBuilderContextValue {
   addCluster: () => void;
   removeCluster: (clId: string) => void;
   setLanguages: (languages: LanguageEntry[]) => void;
+  setAchievements: (items: string[]) => void;
+  setCertifications: (items: Certification[]) => void;
+  addCertification: () => void;
+  removeCertification: (id: string) => void;
+  patchCertification: (id: string, patch: Partial<Certification>) => void;
+  setCustomSections: (items: CustomSection[]) => void;
+  addCustomSection: () => void;
+  removeCustomSection: (id: string) => void;
+  patchCustomSection: (id: string, patch: Partial<CustomSection>) => void;
   toggleSection: (key: SectionKey) => void;
 
   setAts: (ats: AtsScore | null) => void;
@@ -358,10 +432,12 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       if (!active) return;
       if (!error && data?.state) {
-        const remote = data.state as Partial<CVBuilderState>;
+        const remote = data.state as Partial<CVBuilderState> & { currentStep?: unknown };
         setState((prev) => ({
           ...prev,
           ...remote,
+          currentStep: remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep,
+          intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
           generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
           sessionId: prev.sessionId,
           anonToken: prev.anonToken,
@@ -592,6 +668,45 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
           competencyClusters: cv.competencyClusters.filter((c) => c.id !== clId),
         })),
       setLanguages: (languages) => patchCV((cv) => ({ ...cv, languages })),
+      setAchievements: (items) => patchCV((cv) => ({ ...cv, achievements: items })),
+      setCertifications: (items) => patchCV((cv) => ({ ...cv, certifications: items })),
+      addCertification: () =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: [
+            ...cv.certifications,
+            { id: newId("cert"), name: "", issuer: "", date: "" },
+          ],
+        })),
+      removeCertification: (id) =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: cv.certifications.filter((c) => c.id !== id),
+        })),
+      patchCertification: (id, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          certifications: cv.certifications.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+        })),
+      setCustomSections: (items) => patchCV((cv) => ({ ...cv, customSections: items })),
+      addCustomSection: () =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: [
+            ...cv.customSections,
+            { id: newId("cs"), title: "New section", bullets: [] },
+          ],
+        })),
+      removeCustomSection: (id) =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: cv.customSections.filter((s) => s.id !== id),
+        })),
+      patchCustomSection: (id, patch) =>
+        patchCV((cv) => ({
+          ...cv,
+          customSections: cv.customSections.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+        })),
       toggleSection: (key) =>
         patchCV((cv) => ({
           ...cv,

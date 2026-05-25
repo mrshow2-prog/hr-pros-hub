@@ -1,70 +1,113 @@
 
-# Landing page overhaul — adapt competitor wins
+# CV Builder overhaul
 
-The current `src/pages/Landing.tsx` is 40 lines: headline, sub, two buttons, footer. Both competitors win on the landing because they **show the product, prove trust, and surface pricing**. This plan adapts the highest-impact items from the earlier review while keeping the People Studio voice and the MENA/GCC wedge.
+Nine asks, grouped by where they land. I'll keep changes additive where possible — no template or PDF rewrites beyond what's listed.
 
-## Scope (in)
+## 1. New wizard flow & step bar
 
-Rebuild `src/pages/Landing.tsx` into a sectioned page:
+New order (visible numbered steps):
 
-1. **Hero with live CV preview**
-   - Left: existing headline + sub + CTAs, plus a new "ATS 92 · UAE-ready" badge row.
-   - Right: floating CV card mock (real typography from the Dubai template, subtle shadow, slight tilt). Static SVG/JSX — no PDF render on landing, keeps it fast.
-   - Below CTAs: small "Trusted by candidates hired at …" logo strip (greyscale wordmarks; placeholders until real logos are confirmed).
+```
+1 Template   →   2 Build (Upload OR Start from scratch + intent)   →   3 Gaps   →   4 Draft (multi-section)   →   5 Export
+```
 
-2. **Live activity strip** (borrowed from MyPerfectCV's counter)
-   - One-line band under hero: "Built on People Studio HR's recruiting practice — thousands of CVs reviewed."
-   - No fake live counter. Uses parent-brand trust instead of a number we can't verify.
+- Unlock/payment becomes a **modal**, not a step. Triggered the moment the user clicks **Export** if `paymentStatus !== "paid"`. After successful payment, export proceeds.
+- Step bar removes the "Free / Paid" tier labels and the Unlock pill entirely.
+- "Start from scratch" on step 2 skips file upload, seeds an empty `parsedText`/empty `GeneratedCV`, and still collects intent answers.
+- On step 2, intent questions appear **inline below** the upload zone the moment a file finishes uploading (or immediately if "Start from scratch" is chosen). No more separate intent step.
 
-3. **How it works — 3 steps**
-   - Upload → Rewrite & score → Export ATS-ready PDF/DOCX.
-   - Icon + 1-line copy each, in a 3-column grid.
+## 2. Split Draft (current step 6) into a section-by-section sub-wizard
 
-4. **Template gallery**
-   - 6 of the 7 templates as cards (Dubai, London, Zurich, Singapore, Berlin, Riyadh — Geneva linked from "See all").
-   - Each card: template thumbnail (reuse the `Template*.tsx` selector visuals scaled down), name, one-line tag ("Most picked", "Recruiter favourite", etc.), hover lift.
-   - CTA below: "Browse all templates →" deep-links into the builder template step.
+Step 4 (Draft) becomes its own mini-wizard with a left rail of sections and Next/Prev between them. One section visible at a time, live preview stays on the right.
 
-5. **Why People Studio CV — GCC/MENA wedge**
-   - 3-up feature grid: ATS-tuned for regional formats, UAE/GCC photo guidance, Arabic-name handling.
-   - This is the differentiator neither competitor touches.
+Order:
 
-6. **Pricing strip**
-   - Single transparent band: "Free draft · Pay once per export · No subscription" (final wording to confirm with you — see open question).
-   - Money-back / refund link to existing `/refunds` route.
+1. **Hero** — name, job title, contact details, photo (re-uses `ContactBlock`)
+2. **Work experience**
+3. **Education**
+4. **Skills**
+5. **Achievements** *(new optional section)*
+6. **Certifications & courses** *(new optional section, split off from education)*
+7. **Languages**
+8. **Summary** — last, with an "Write with AI" button that uses everything above + the parsed CV
+9. **Custom sections** — user can add titled free-form sections (title + bullets)
 
-7. **FAQ**
-   - 6 questions in an accordion (shadcn `Accordion`): ATS compatibility, file formats, data privacy, regional fit, refunds, cover letters.
-   - SEO body content — directly addresses the "MyPerfectCV ranks because of content depth" gap.
+Implementation:
+- Extract each existing block from `StepDraft.tsx` (`ContactBlock`, `ExperienceList`, `EducationBlock`, `SkillsBlock`, `LanguagesBlock`, `SummaryBlock`) into a new `src/components/cv-builder/draft/` directory, one file per section.
+- New `DraftWizard.tsx` orchestrates them with a sticky sub-step rail, Next/Prev footer, and the existing `LivePreview` + `AtsPanel` aside.
+- Add `achievements: string[]`, `certifications: { id; name; issuer; date }[]`, `customSections: { id; title; bullets: string[] }[]` to `GeneratedCV`. Hydrator gets defaults. PDF/DOCX exporters render them after Languages.
+- Generation prompt (`generate-cv` edge function) updated to also populate `achievements` and `certifications` when found in source; `customSections` stays empty by default.
 
-8. **Final CTA band + existing `SiteFooter`**.
+## 3. Template step changes
 
-## Scope (out, deferred)
+- **Remove the Light/Dark toggle** entirely (drop `typeOption` from the UI, keep the field in state for back-compat but ignore it).
+- **Photo shape picker**: 3 options — Circle · Square · Hide photo. Lives next to the page-limit control. Persisted as `intentForm.photoShape: "circle" | "square" | "none"`.
+- **Colour palette picker**: 6 curated presets, each a single accent + ink + paper trio. Renders as a row of swatch chips. Persisted as `intentForm.colorPalette: PaletteId`.
 
-- New regional landing routes (`/cv-builder-uae`, `/cv-builder-gcc`). Mentioned as a follow-up; not in this pass.
-- Real testimonial collection. Will use 3 short, generic, honestly-attributed quotes ("HR consultant, Dubai" etc.) as placeholders you can swap. Won't fabricate named people.
-- Free TXT taster export.
-- Mobile app badges.
-- Any builder/template/PDF code — this is landing-only.
+Presets (sienna stays default):
 
-## Files
+| id | name | accent | ink |
+|---|---|---|---|
+| sienna | Sienna (default) | #9c5643 | #1a1a1a |
+| navy | Navy | #1e3a5f | #0f1b3d |
+| forest | Forest | #2d5a3d | #1a2e1f |
+| charcoal | Charcoal | #2d2d2d | #0d0d0d |
+| burgundy | Burgundy | #6b1f2a | #2a0d11 |
+| teal | Teal | #14595a | #0a2a2b |
 
-- **Edit** `src/pages/Landing.tsx` — full rebuild, sectioned.
-- **New** `src/components/landing/HeroCvPreview.tsx` — static JSX CV card.
-- **New** `src/components/landing/HowItWorks.tsx`
-- **New** `src/components/landing/TemplateGallery.tsx` — reuses existing `Template*.tsx` thumbs from `src/components/cv-builder/templates/`.
-- **New** `src/components/landing/Faq.tsx` — shadcn Accordion.
-- **New** `src/components/landing/PricingStrip.tsx`
-- **New** `src/components/landing/TrustStrip.tsx`
-- Update `SEO` title/desc on `Landing.tsx` to include "UAE / GCC" keywords.
+`getTemplateConfig()` is extended to read `intentForm.colorPalette` and override `primaryColor` (and a new `headingColor`) so the wizard preview, PDF export, and DOCX export all stay in sync.
 
-No changes to routing, auth, builder, PDF/DOCX, or backend.
+## 4. Job title polish
 
-## Design notes
+In every template renderer (`Template*.tsx`) and the pdfme export (`exportModernPdfme.ts`):
+- Role line: bump weight to `Helvetica-Bold` / `font-bold` (where it isn't already), nudge size +0.5pt, and colour with the active palette's accent (`headingColor`).
+- Add a small `2pt` top margin above each role block so it doesn't read as a continuation of the previous bullet list.
 
-Uses existing tokens only: `bg-paper`, `text-ink`, `text-sienna`, `font-syne`, `font-dm`, `tracking-wider2`. Sections separated by `border-ink/10` hairlines, generous vertical rhythm (`py-20 md:py-28`), single accent (sienna) consistent with current header CTA. No new colors, no gradient, no new fonts.
+## 5. State / context changes
 
-## Two quick questions before I build
+- `IntentForm` gains `photoShape` and `colorPalette` with defaults `"circle"` and `"sienna"`.
+- `GeneratedCV` gains `achievements`, `certifications`, `customSections`.
+- `CVBuilderState.currentStep` shrinks to `1 | 2 | 3 | 4 | 5` (Template, Build, Gaps, Draft, Export). A simple migration in `hydrateGeneratedCV` / state hydration maps the old 1–7 steps to the new 1–5 so in-flight sessions don't break.
+- `WizardShell` STEPS array updated; tier labels removed; unlock no longer rendered.
 
-1. **Pricing model wording** — what should the pricing strip actually say? "Free draft · Pay per export"? "$X one-time"? Subscription? I don't want to invent numbers.
-2. **Logo strip** — okay to ship with 4–5 greyscale placeholder wordmarks ("Emirates", "ADNOC", "Majid Al Futtaim", "Etisalat", "Aramco") behind a small "Candidates we've helped land roles at" caption, or leave the strip out until you provide real ones?
+## 6. Files touched
+
+**New:**
+- `src/components/cv-builder/draft/DraftWizard.tsx`
+- `src/components/cv-builder/draft/HeroSection.tsx`
+- `src/components/cv-builder/draft/ExperienceSection.tsx`
+- `src/components/cv-builder/draft/EducationSection.tsx`
+- `src/components/cv-builder/draft/SkillsSection.tsx`
+- `src/components/cv-builder/draft/AchievementsSection.tsx`
+- `src/components/cv-builder/draft/CertificationsSection.tsx`
+- `src/components/cv-builder/draft/LanguagesSection.tsx`
+- `src/components/cv-builder/draft/SummarySection.tsx`
+- `src/components/cv-builder/draft/CustomSections.tsx`
+- `src/components/cv-builder/PaymentModal.tsx` (extracted from StepPayment)
+- `src/lib/cv/palettes.ts`
+
+**Edited:**
+- `src/contexts/CVBuilderContext.tsx` — new fields, step type, step migration
+- `src/components/cv-builder/WizardShell.tsx` — new STEPS, no tiers, no unlock
+- `src/components/cv-builder/StepTemplate.tsx` — remove light/dark, add photo-shape + palette pickers
+- `src/components/cv-builder/StepUpload.tsx` — becomes "Build" step: upload OR scratch + inline intent
+- `src/components/cv-builder/StepDraft.tsx` — collapsed into thin wrapper around `DraftWizard`
+- `src/components/cv-builder/StepExport.tsx` — gate on `paymentStatus`, open `PaymentModal` if unpaid
+- `src/pages/CvBuilder.tsx` — re-route steps to new IDs (Template=1, Build=2, Gaps=3, Draft=4, Export=5)
+- `src/lib/cvTemplateConfig.ts` — palette-aware `primaryColor` / `headingColor`
+- All `src/components/cv-builder/templates/Template*.tsx` — bolder role, accent colour, top margin
+- `src/lib/cv/pdfme/exportModernPdfme.ts` — same job-title treatment + palette accent
+- `src/lib/docx/*` — palette accent for headings/role
+- `supabase/functions/generate-cv/index.ts` — emit `achievements` / `certifications` when detected
+
+## 7. Out of scope (call out explicitly)
+
+- No new payment provider work — existing `StepPayment` logic is just relocated into a modal.
+- I'm **not** rewriting the PDF templates beyond the job-title and palette changes.
+- "Start from scratch" produces an empty `GeneratedCV` skeleton; gap analysis is skipped (auto-advance through step 3) since there's no source CV to compare against.
+- Custom sections render as a simple titled list with bullets in PDF/DOCX — no per-section styling controls in this pass.
+
+Two quick confirmations before I start:
+
+1. For **"Start from scratch"**, OK to skip the Gaps step entirely (since there's nothing to analyse)?
+2. For the **payment modal**, OK to keep the existing Stripe flow exactly as-is — just rendered inside a `Dialog` instead of as its own page?
