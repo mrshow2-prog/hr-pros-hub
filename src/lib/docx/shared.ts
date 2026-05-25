@@ -1,10 +1,16 @@
 import {
   Paragraph,
   TextRun,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  VerticalAlign,
   AlignmentType,
   LevelFormat,
   BorderStyle,
   ImageRun,
+  ShadingType,
   Footer,
   PageNumber,
 } from "docx";
@@ -12,7 +18,7 @@ import type { GeneratedCV, CVExperience, SectionKey } from "@/contexts/CVBuilder
 import { getTemplateConfig, type TemplateConfig } from "@/lib/cvTemplateConfig";
 import type { TemplateId } from "@/contexts/CVBuilderContext";
 
-/* ---------- font / color mapping (mirrors PDF templates) ---------- */
+/* ---------- font / color mapping (mirrors PDF / preview templates) ---------- */
 const FONT_MAP: Record<string, string> = {
   "Times-Roman": "Georgia",
   "Times-Bold": "Georgia",
@@ -20,6 +26,11 @@ const FONT_MAP: Record<string, string> = {
   Helvetica: "Calibri",
 };
 const mapFont = (f: string) => FONT_MAP[f] || "Calibri";
+
+/** Brand sienna — matches preview + pdfme across every template. */
+export const SIENNA = "9C5643";
+export const INK_HEX = "1A1714";
+export const HAIRLINE = "C8C0B8";
 
 export interface DocxTheme {
   cfg: TemplateConfig;
@@ -36,9 +47,9 @@ export function getTheme(template: TemplateId): DocxTheme {
     cfg,
     heading: mapFont(cfg.headingFont),
     body: mapFont(cfg.bodyFont),
-    primary: cfg.primaryColor.replace("#", "").toUpperCase(),
-    muted: "6B7280",
-    subInk: "374151",
+    primary: SIENNA,
+    muted: "5C5249",
+    subInk: "1A1714",
   };
 }
 
