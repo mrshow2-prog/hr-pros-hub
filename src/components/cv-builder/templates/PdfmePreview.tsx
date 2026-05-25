@@ -14,6 +14,7 @@ interface Props {
   gap?: number;
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }
 
 export default function PdfmePreview({
@@ -24,6 +25,7 @@ export default function PdfmePreview({
   gap = 24,
   accentHex,
   photoShape,
+  onStatusChange,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
