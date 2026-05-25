@@ -9,7 +9,59 @@ const ALLOWED = ["pdf", "doc", "docx"];
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_FILES = 3;
 const PHOTO_TYPES = ["image/jpeg", "image/png"];
-const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+const PHOTO_HARD_MAX_BYTES = 20 * 1024 * 1024;
+const PHOTO_TARGET_BYTES = 1_000_000;
+const PHOTO_MAX_DIMENSION = 1600;
+
+async function compressImage(
+  file: File,
+  opts: { maxBytes: number; maxDimension: number },
+): Promise<File> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Could not read image."));
+      el.src = url;
+    });
+
+    let { width, height } = img;
+    const scale = Math.min(1, opts.maxDimension / Math.max(width, height));
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+
+    const qualities = [0.85, 0.75, 0.65, 0.55, 0.45];
+    let blob: Blob | null = null;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported.");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      for (const q of qualities) {
+        blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob((b) => resolve(b), "image/jpeg", q),
+        );
+        if (blob && blob.size <= opts.maxBytes) break;
+      }
+      if (blob && blob.size <= opts.maxBytes) break;
+      width = Math.max(400, Math.round(width * 0.7));
+      height = Math.max(400, Math.round(height * 0.7));
+    }
+
+    if (!blob) throw new Error("Could not compress image.");
+    const base = file.name.replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 export default function StepUpload() {
   const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
