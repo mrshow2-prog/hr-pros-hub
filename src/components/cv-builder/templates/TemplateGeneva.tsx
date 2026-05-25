@@ -1,5 +1,5 @@
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { ContactLine, Page, Photo, isVisible } from "./shared";
+import { ContactLine, Page, Photo, isVisible, visibleBullets } from "./shared";
 
 /** Geneva — Editorial timeline template with serif headings. */
 export default function TemplateGeneva({
@@ -66,14 +66,13 @@ export default function TemplateGeneva({
                 <p className="mb-2 text-[13px] font-semibold text-sienna">
                   {[exp.company, exp.location].filter(Boolean).join(" · ")}
                 </p>
-                {exp.bullets.length > 0 && (
+                {visibleBullets(exp).length > 0 && (
                   <ul className="space-y-1.5">
-                    {exp.bullets
-                      .filter((b) => b.status !== "reverted" && b.rewrite)
+                    {visibleBullets(exp)
                       .map((b) => (
                         <li key={b.id} className="relative pl-4 text-[13px] font-light leading-[1.65] text-ink/85">
                           <span className="absolute left-0 top-[2px] text-sienna">—</span>
-                          {b.rewrite}
+                          {b.rewrite || b.original}
                         </li>
                       ))}
                   </ul>
