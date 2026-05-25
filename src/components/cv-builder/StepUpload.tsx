@@ -158,14 +158,25 @@ export default function StepUpload() {
     if (!f) return;
     setPhotoError("");
     if (!PHOTO_TYPES.includes(f.type)) {
-      setPhotoError("Please upload a JPG or PNG image.");
+      setPhotoError("Please upload a JPG or PNG image. (iPhone HEIC photos: re-save as JPG first.)");
       return;
     }
-    if (f.size > PHOTO_MAX_BYTES) {
-      setPhotoError("Photo must be 2MB or smaller.");
+    if (f.size > PHOTO_HARD_MAX_BYTES) {
+      setPhotoError("Photo is too large. Please choose one under 20MB.");
       return;
     }
     setPhotoUploading(true);
+    let toUpload: File = f;
+    try {
+      toUpload = await compressImage(f, {
+        maxBytes: PHOTO_TARGET_BYTES,
+        maxDimension: PHOTO_MAX_DIMENSION,
+      });
+    } catch (err) {
+      setPhotoUploading(false);
+      setPhotoError("Couldn't process this image. Try a different photo.");
+      return;
+    }
     const { data: sess } = await supabase.auth.getSession();
     const uid = sess.session?.user.id;
     if (!uid) {
@@ -173,11 +184,11 @@ export default function StepUpload() {
       setPhotoError("Please sign in to upload a photo.");
       return;
     }
-    const safePhotoName = f.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
+    const safePhotoName = toUpload.name.normalize("NFKD").replace(/[^\w.\-]+/g, "_");
     const path = `${uid}/${state.sessionId}/photo-${Date.now()}-${safePhotoName}`;
     const { error: upErr } = await supabase.storage
       .from("cv-builder-uploads")
-      .upload(path, f, { upsert: true, contentType: f.type });
+      .upload(path, toUpload, { upsert: true, contentType: "image/jpeg" });
     setPhotoUploading(false);
     if (upErr) {
       setPhotoError("Couldn't upload the photo. Try again.");
