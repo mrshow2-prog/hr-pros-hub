@@ -167,10 +167,9 @@ export interface PdfmeBuilder {
 }
 
 export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
-  const margin = opts.margin ?? 16;
+  const initialMargin = opts.margin ?? 16;
   const top = opts.top ?? 16;
   const bottom = opts.bottom ?? 16;
-  const contentW = PAGE_W - margin * 2;
 
   const pages: Array<Array<Schema & { name: string }>> = [[]];
   const inputs: Record<string, string> = {};
@@ -178,17 +177,18 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
   let y = top;
   let counter = 0;
   const uid = (p: string) => `${p}_${counter++}`;
+  let onNewPage: ((b: PdfmeBuilder) => void) | null = null;
 
   const push = (s: Schema & { name: string }, value = "") => {
     pages[pageIdx].push(s);
     inputs[s.name] = value;
   };
 
-  const builder: PdfmeBuilder = {
+  const builder: PdfmeBuilder & { onNewPage: (cb: (b: PdfmeBuilder) => void) => void } = {
     PAGE_W,
     PAGE_H,
-    margin,
-    contentW,
+    margin: initialMargin,
+    contentW: PAGE_W - initialMargin * 2,
     top,
     bottom,
     pageBottom: PAGE_H - bottom,
@@ -205,14 +205,19 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
       pages.push([]);
       pageIdx++;
       y = top;
+      if (onNewPage) onNewPage(this);
     },
     ensure(h: number) {
       if (y + h > PAGE_H - bottom) this.newPage();
     },
+    /** Register a callback invoked after each newPage() (e.g. to redraw a sidebar bg). */
+    onNewPage(cb: (b: PdfmeBuilder) => void) {
+      onNewPage = cb;
+    },
     addText(o: TextOpts) {
       const value = o.uppercase ? o.value.toUpperCase() : o.value;
-      const width = o.width ?? contentW;
-      const x = o.x ?? margin;
+      const width = o.width ?? this.contentW;
+      const x = o.x ?? this.margin;
       const lh = o.lineHeight ?? 1.25;
       const h = Math.max(
         ptToMm(o.fontSize) * lh,
@@ -238,8 +243,6 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           lineHeight: lh,
           characterSpacing: o.letterSpacing ?? 0,
           backgroundColor: o.bgColor ?? "",
-          // Bold is approximated via size/color/spacing — pdfme only ships
-          // a Roboto Regular by default.
         } as Schema & { name: string },
         value,
       );
