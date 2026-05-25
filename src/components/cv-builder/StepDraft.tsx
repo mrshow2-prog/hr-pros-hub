@@ -320,13 +320,25 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
     setPhotoPath(path);
   };
 
+  const { patchIntent } = useCVBuilder();
+  const photoShape = state.intentForm.photoShape;
+  const shapeClass =
+    photoShape === "square"
+      ? "rounded-md"
+      : photoShape === "none"
+        ? "rounded-md opacity-50"
+        : "rounded-full";
+
   const photoRow = (
     <div className="flex items-center gap-4">
       {photoUrl ? (
         <button
           type="button"
           onClick={openEditCurrent}
-          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-ink/10 hover:ring-2 hover:ring-sienna/50"
+          className={cn(
+            "relative h-20 w-20 shrink-0 overflow-hidden border border-ink/10 hover:ring-2 hover:ring-sienna/50",
+            shapeClass,
+          )}
           aria-label="Edit photo"
         >
           <img src={photoUrl} alt="" className="h-full w-full object-cover" />
@@ -338,7 +350,10 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-dashed border-ink/25 bg-clay/30 hover:border-sienna"
+          className={cn(
+            "group relative flex h-20 w-20 shrink-0 items-center justify-center border border-dashed border-ink/25 bg-clay/30 hover:border-sienna",
+            shapeClass,
+          )}
         >
           {uploading ? (
             <span className="font-dm text-[10px] text-ink/65">Uploading…</span>
@@ -351,6 +366,22 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
         </button>
       )}
       <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-1 rounded border border-ink/15 p-0.5">
+          {(["circle", "square", "none"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => patchIntent({ photoShape: s })}
+              className={cn(
+                "rounded px-2 py-0.5 font-dm text-[10px] capitalize",
+                photoShape === s ? "bg-sienna text-paper" : "text-ink/65 hover:text-ink",
+              )}
+              title={`Photo frame: ${s}`}
+            >
+              {s === "none" ? "Hide" : s}
+            </button>
+          ))}
+        </div>
         {photoUrl ? (
           <>
             <button
