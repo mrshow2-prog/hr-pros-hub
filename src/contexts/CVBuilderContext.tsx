@@ -198,6 +198,13 @@ export interface GeneratedCV {
   certifications: Certification[];
   customSections: CustomSection[];
   hiddenSections: SectionKey[];
+  /**
+   * User-defined render order for the reorderable body sections.
+   * Contact and summary are always pinned at the top. Missing keys are
+   * appended in their canonical order at read time, so older CVs continue
+   * to work even when new sections are introduced.
+   */
+  sectionOrder?: SectionKey[];
 }
 
 export type AtsSeverity = "critical" | "warning" | "info";
