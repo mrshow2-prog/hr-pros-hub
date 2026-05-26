@@ -423,6 +423,11 @@ export function renderCompactHtml(
     );
   }
   continuationParts.push(renderEducation(cv));
+  continuationParts.push(renderCompetencies(cv));
+  continuationParts.push(renderAchievements(cv));
+  continuationParts.push(renderCertifications(cv));
+  continuationParts.push(renderCustomSections(cv));
+  void ({} as { _k?: SectionKey }); // keep SectionKey import in case it gets shaken
   const continuation = continuationParts.filter(Boolean).join("");
 
   return `<!DOCTYPE html>
