@@ -143,6 +143,7 @@ export interface ContactInfo {
   phone: string;
   location: string;
   linkedinUrl: string;
+  website: string;
   photoPath: string | null;
 }
 
@@ -280,6 +281,7 @@ const emptyContact: ContactInfo = {
   phone: "",
   location: "",
   linkedinUrl: "",
+  website: "",
   photoPath: null,
 };
 

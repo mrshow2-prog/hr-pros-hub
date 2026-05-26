@@ -43,6 +43,7 @@ export const SAMPLE_CV: GeneratedCV = {
     phone: "+971 50 123 4567",
     location: "Dubai, UAE",
     linkedinUrl: "linkedin.com/in/almansouri",
+    website: "almansouri.com",
     photoPath: null,
   },
   summary:

@@ -1,6 +1,6 @@
 import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
-  contactItems, isHidden, periodOf, visibleBullets,
+  contactItems, isHidden, periodOf, visibleBullets, stripUrlPrefix,
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, ptToMm, wrapLines,
@@ -558,7 +558,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
         fontSize: 11, color: SIENNA,
       });
     }
-    const rows = [cv.contact.location, cv.contact.phone, cv.contact.email, cv.contact.linkedinUrl].filter(Boolean) as string[];
+    const rows = [cv.contact.location, cv.contact.phone, cv.contact.email, stripUrlPrefix(cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.website)].filter(Boolean) as string[];
     const rfs = 8.6;
     let ry = hy0;
     for (const r of rows) {
@@ -885,7 +885,8 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     if (cv.contact.location) sideRow("Location", cv.contact.location);
     if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
     if (cv.contact.email) sideRow("Email", cv.contact.email);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", cv.contact.linkedinUrl);
+    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl));
+    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website));
     sY += 3;
   }
 

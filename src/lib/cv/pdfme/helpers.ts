@@ -1,12 +1,19 @@
 import type { GeneratedCV, CVExperience, SectionKey } from "@/contexts/CVBuilderContext";
 
+/** Strip protocol + leading "www." for compact display. */
+export function stripUrlPrefix(value: string | null | undefined): string {
+  if (!value) return "";
+  return value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
+}
+
 /* Pure helpers used by pdfme builders — no react-pdf dependency. */
 export function contactItems(cv: GeneratedCV): string[] {
   return [
     cv.contact.email,
     cv.contact.phone,
     cv.contact.location,
-    cv.contact.linkedinUrl,
+    stripUrlPrefix(cv.contact.linkedinUrl),
+    stripUrlPrefix(cv.contact.website),
   ].filter(Boolean) as string[];
 }
 

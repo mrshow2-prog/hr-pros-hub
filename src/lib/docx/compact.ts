@@ -5,7 +5,7 @@ import {
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
-  isHidden, periodOf, visibleBullets, noBorders,
+  isHidden, periodOf, visibleBullets, noBorders, stripUrlPrefix,
   blank, txt, sectionHeading, roleRow, companyRow, bulletPara,
 } from "./shared";
 
@@ -67,7 +67,8 @@ export async function buildCompactDoc(
     cv.contact.location,
     cv.contact.phone,
     cv.contact.email,
-    cv.contact.linkedinUrl,
+    stripUrlPrefix(cv.contact.linkedinUrl),
+    stripUrlPrefix(cv.contact.website),
   ].filter(Boolean) as string[];
   headerCells.push(
     new TableCell({

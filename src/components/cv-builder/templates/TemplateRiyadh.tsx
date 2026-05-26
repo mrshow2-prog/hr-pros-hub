@@ -1,5 +1,6 @@
+import { MapPin, Phone, Mail, Linkedin, Globe } from "lucide-react";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { isVisible, visibleBullets } from "./shared";
+import { isVisible, visibleBullets, stripUrlPrefix } from "./shared";
 
 /** Riyadh — Bold sidebar-style template (dark sienna rail). */
 export default function TemplateRiyadh({
@@ -37,20 +38,19 @@ export default function TemplateRiyadh({
         {isVisible(cv, "contact") && (
           <section className="mb-7">
             <SidebarHeading>Contact</SidebarHeading>
-            <ul className="space-y-2.5">
-              {[
-                ["Location", cv.contact.location],
-                ["Phone", cv.contact.phone],
-                ["Email", cv.contact.email],
-                ["LinkedIn", cv.contact.linkedinUrl],
-              ]
+            <ul className="space-y-2">
+              {([
+                [MapPin, cv.contact.location],
+                [Phone, cv.contact.phone],
+                [Mail, cv.contact.email],
+                [Linkedin, stripUrlPrefix(cv.contact.linkedinUrl)],
+                [Globe, stripUrlPrefix(cv.contact.website)],
+              ] as const)
                 .filter(([, v]) => Boolean(v))
-                .map(([k, v]) => (
-                  <li key={k as string}>
-                    <p className="font-dm text-[9px] font-bold uppercase tracking-[0.16em] text-paper/65">
-                      {k}
-                    </p>
-                    <p className="break-words text-[11.5px] leading-snug text-paper">{v as string}</p>
+                .map(([Icon, v], i) => (
+                  <li key={i} className="flex items-start gap-2 text-[11.5px] leading-snug text-paper">
+                    <Icon className="mt-[2px] h-3 w-3 shrink-0 opacity-80" strokeWidth={2} />
+                    <span className="break-words">{v as string}</span>
                   </li>
                 ))}
             </ul>

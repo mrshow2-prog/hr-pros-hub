@@ -176,11 +176,13 @@ function renderHeader(
     photoDataUrl
       ? `<img src="${esc(photoDataUrl)}" alt="" class="cv-photo" width="90" height="90">`
       : "";
+  const stripWww = (s: string) => s.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
   const contactLines = [
     cv.contact.location,
     cv.contact.phone,
     cv.contact.email,
-    cv.contact.linkedinUrl,
+    cv.contact.linkedinUrl ? stripWww(cv.contact.linkedinUrl) : "",
+    cv.contact.website ? stripWww(cv.contact.website) : "",
   ]
     .filter(Boolean)
     .map((l) => esc(l as string))
