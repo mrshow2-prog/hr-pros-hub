@@ -13,7 +13,10 @@ export type TemplateId =
   | "singapore"
   | "berlin"
   | "riyadh"
-  | "geneva";
+  | "geneva"
+  | "casablanca"
+  | "tokyo"
+  | "milano";
 
 /** Legacy IDs persisted in old sessions. */
 export type LegacyTemplateId =
