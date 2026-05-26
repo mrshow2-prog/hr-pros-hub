@@ -92,12 +92,23 @@ export default function TemplateMilano({
             >
               Curriculum Vitae
             </p>
-            <h1 className="font-syne text-[52px] font-bold leading-[0.95] tracking-[-0.035em] text-ink">
-              {(cv.contact.name || "Your name").split(" ").slice(0, -1).join(" ") || cv.contact.name || "Your"}
-            </h1>
-            <h1 className="font-syne text-[52px] font-bold italic leading-[0.95] tracking-[-0.035em]" style={{ color: accent as string }}>
-              {(cv.contact.name || "Your name").split(" ").slice(-1).join(" ") || "name"}
-            </h1>
+            {(() => {
+              const tokens = (cv.contact.name || "Your name").trim().split(/\s+/);
+              const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
+              const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
+              return (
+                <>
+                  <h1 className="font-syne text-[52px] font-bold leading-[0.95] tracking-[-0.035em] text-ink">
+                    {first}
+                  </h1>
+                  {last && (
+                    <h1 className="font-syne text-[52px] font-bold italic leading-[0.95] tracking-[-0.035em]" style={{ color: accent as string }}>
+                      {last}
+                    </h1>
+                  )}
+                </>
+              );
+            })()}
             {cv.contact.jobTitle && (
               <p className="mt-3 font-dm text-[14px] font-medium uppercase tracking-[0.24em] text-ink/70">
                 {cv.contact.jobTitle}

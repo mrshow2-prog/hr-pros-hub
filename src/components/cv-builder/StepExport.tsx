@@ -61,12 +61,14 @@ export default function StepExport() {
     if (!cv) return;
     setBusy("docx");
     try {
-      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl);
+      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl, exportOpts);
       toast.success("Word file downloaded");
     } catch (e) {
       console.error(e); toast.error("Could not generate Word file");
     } finally { setBusy(null); }
   };
+
+  const previewOnly = template === "vibrant" || template === "gradient" || template === "creative";
 
   const requestExport = (fmt: "pdf" | "docx") => {
     if (!paid) {
@@ -98,6 +100,14 @@ export default function StepExport() {
         {disabled && (
           <div className="mb-6 rounded-md border border-ink/15 bg-clay/40 p-4 font-dm text-sm text-ink/70">
             No CV draft found. Go back to the draft step to generate one first.
+          </div>
+        )}
+
+        {!disabled && previewOnly && (
+          <div className="mb-6 rounded-md border border-sienna/30 bg-sienna/5 p-4 font-dm text-sm text-ink/75">
+            <strong className="font-semibold text-ink">Heads-up:</strong> this template's downloaded
+            file uses a close-matching classic layout. The exact preview design is being prepared
+            for download — switch to any other template for pixel-perfect export.
           </div>
         )}
 
