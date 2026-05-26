@@ -190,6 +190,21 @@ export async function buildCompactDoc(
     });
   }
 
+  const headingForBlock = (label: string) => sectionHeading(label, t, "underline");
+  if (shouldRender(cv, "competencies")) {
+    competenciesBlock(cv, t, headingForBlock).forEach((p) => below.push(p));
+  }
+  if (shouldRender(cv, "achievements")) {
+    achievementsBlock(cv, t, headingForBlock).forEach((p) => below.push(p));
+  }
+  if (shouldRender(cv, "certifications")) {
+    certificationsBlock(cv, t, headingForBlock, CONTENT_W).forEach((p) => below.push(p));
+  }
+  if (shouldRender(cv, "custom")) {
+    customSectionsBlock(cv, t, headingForBlock).forEach((p) => below.push(p));
+  }
+
+
   return new Document({
     creator: cv.contact.name || "CV Builder",
     title: `${cv.contact.name || "CV"} — ${cv.contact.jobTitle || ""}`.trim(),
