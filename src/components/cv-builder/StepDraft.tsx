@@ -9,6 +9,8 @@ import {
   RefreshCw,
   X,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Loader2,
   Pencil,
 } from "lucide-react";
