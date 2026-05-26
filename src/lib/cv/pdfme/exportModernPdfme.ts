@@ -1056,7 +1056,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += h + 1.6;
   };
 
-  if (!isHidden(cv, "contact")) {
+  if (shouldRender(cv, "contact")) {
     sideHeading("Contact");
     if (cv.contact.location) sideRow("Location", cv.contact.location);
     if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
@@ -1066,13 +1066,10 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 3;
   }
 
-  if (!isHidden(cv, "skills") && cv.skills.length) {
+  if (shouldRender(cv, "skills")) {
     sideHeading("Skills");
     for (const sk of cv.skills) {
       const tw = SIDEBAR_W - PADX * 2 - 3;
-      // Use bold:true in the height prediction as extra safety: caps-heavy
-      // skill names render wider than mixed case and we'd rather over-
-      // reserve a hair than overlap into the next item.
       const h = textHeightMm(sk, tw, 8.6, 1.5, { bold: true });
       b.addText({ value: "▪", x: PADX, y: sY, width: 3, fontSize: 8.6, color: SIENNA, bold: true });
       b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
@@ -1081,8 +1078,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 3;
   }
 
-
-  if (!isHidden(cv, "languages") && cv.languages.length) {
+  if (shouldRender(cv, "languages")) {
     sideHeading("Languages");
     for (const l of cv.languages) {
       const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
@@ -1096,7 +1092,6 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   b.cursorY = 16;
   const ctx2: Ctx = { cv, primary: SIENNA, b };
 
-  // Name + title
   b.addText({
     value: cv.contact.name || "Your name",
     fontSize: 24, color: INK, bold: true, letterSpacing: -0.4, lineHeight: 1.05,
@@ -1121,31 +1116,67 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     b.cursorY += 3.4;
   };
 
-
-  if (!isHidden(cv, "summary") && cv.summary) {
+  if (shouldRender(cv, "summary")) {
     mainHeading("Profile");
     b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5 });
   }
 
-  if (!isHidden(cv, "experience") && cv.experience.length) {
-    mainHeading("Experience");
-    for (const exp of cv.experience) {
-      periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
-      const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
-      for (const bul of visibleBullets(exp)) {
-        bullet(ctx2, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
+  const mainRenderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      mainHeading("Experience");
+      for (const exp of cv.experience) {
+        periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+        const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
+        deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
+        for (const bul of visibleBullets(exp)) {
+          bullet(ctx2, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
+        }
+        b.cursorY += 2.4;
       }
-      b.cursorY += 2.4;
-    }
-  }
+    },
+    education: () => {
+      mainHeading("Education");
+      for (const ed of cv.education) {
+        periodRow(ctx2, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
+        if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
+      }
+    },
+    competencies: () => {
+      mainHeading("Core Competencies");
+      for (const c of cv.competencyClusters) {
+        if (c.title) deterministicLine(ctx2, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
+        deterministicLine(ctx2, c.items.filter(Boolean).join(" · "), { fs: 9.6, color: SUBINK, spaceAfter: 2 });
+      }
+    },
+    achievements: () => {
+      mainHeading("Achievements");
+      for (const a of cv.achievements.filter(Boolean)) {
+        bullet(ctx2, "•", a, { fs: 9.4, glyphColor: SIENNA });
+      }
+      b.cursorY += 2;
+    },
+    certifications: () => {
+      mainHeading("Certifications");
+      for (const c of cv.certifications) {
+        const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
+        periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false });
+      }
+      b.cursorY += 2;
+    },
+    custom: () => {
+      for (const s of cv.customSections) {
+        mainHeading(s.title || "Additional");
+        for (const it of s.bullets.filter(Boolean)) {
+          bullet(ctx2, "•", it, { fs: 9.4, glyphColor: SIENNA });
+        }
+        b.cursorY += 2;
+      }
+    },
+  };
 
-  if (!isHidden(cv, "education") && cv.education.length) {
-    mainHeading("Education");
-    for (const ed of cv.education) {
-      periodRow(ctx2, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
-      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
-    }
+  for (const k of getSectionOrder(cv)) {
+    if (k === "skills" || k === "languages") continue; // pinned in sidebar
+    if (shouldRender(cv, k)) mainRenderers[k]?.();
   }
 
   return b;
