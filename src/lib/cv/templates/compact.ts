@@ -1,6 +1,8 @@
 import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
+import { shouldRender } from "@/lib/cv/sectionVisibility";
 
 export type CompactMode = "preview" | "pdf" | "docx";
+
 
 const esc = (s: string) =>
   (s ?? "")
