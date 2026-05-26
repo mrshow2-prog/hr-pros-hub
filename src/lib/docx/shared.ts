@@ -241,8 +241,13 @@ export function jobTitlePara(cv: GeneratedCV, t: DocxTheme) {
   });
 }
 
+export function stripUrlPrefix(value: string | null | undefined): string {
+  if (!value) return "";
+  return value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
+}
+
 export function contactLinePara(cv: GeneratedCV, t: DocxTheme, alignment?: any) {
-  const items = [cv.contact.location, cv.contact.phone, cv.contact.email, cv.contact.linkedinUrl].filter(Boolean);
+  const items = [cv.contact.location, cv.contact.phone, cv.contact.email, stripUrlPrefix(cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.website)].filter(Boolean);
   if (items.length === 0) return null;
   return new Paragraph({
     spacing: { after: 120 },
