@@ -152,23 +152,26 @@ export default function TemplateMilano({
           <section className="mb-9">
             <SH num="02">Experience</SH>
             <div className="space-y-6">
-              {cv.experience.map((exp, i) => {
-                const year = (exp.endDate || exp.startDate || exp.period || "—")
-                  .match(/\d{4}/)?.[0] ?? String(2025 - i);
+              {cv.experience.map((exp) => {
+                const endYear = (exp.endDate || exp.period || "").match(/\d{4}/)?.[0] ?? null;
+                const startYear = (exp.startDate || "").match(/\d{4}/)?.[0] ?? null;
+                const displayYear = endYear ?? startYear;
                 return (
                   <article key={exp.id} className="grid grid-cols-[88px_1fr] gap-5">
                     <div>
-                      <p
-                        className="font-syne text-[40px] font-bold leading-none tracking-tight"
-                        style={{ color: accent as string }}
-                      >
-                        {year}
-                      </p>
-                      <p className="mt-1 font-dm text-[10px] uppercase tracking-[0.2em] text-ink/55">
-                        {(exp.startDate || "").match(/\d{4}/)?.[0] !== year
-                          ? `from ${(exp.startDate || "").match(/\d{4}/)?.[0] ?? ""}`
-                          : ""}
-                      </p>
+                      {displayYear ? (
+                        <>
+                          <p
+                            className="font-syne text-[40px] font-bold leading-none tracking-tight"
+                            style={{ color: accent as string }}
+                          >
+                            {displayYear}
+                          </p>
+                          <p className="mt-1 font-dm text-[10px] uppercase tracking-[0.2em] text-ink/55">
+                            {startYear && startYear !== displayYear ? `from ${startYear}` : ""}
+                          </p>
+                        </>
+                      ) : null}
                     </div>
                     <div>
                       <p className="font-syne text-[18px] font-bold leading-snug text-ink">
