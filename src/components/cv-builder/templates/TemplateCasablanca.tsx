@@ -114,11 +114,11 @@ export default function TemplateCasablanca({
           <section className="mb-7">
             <SideH icon={Sparkles}>Skills</SideH>
             <ul className="space-y-2.5">
-              {cv.skills.slice(0, 10).map((s, i) => {
+              {cv.skills.map((s, i) => {
                 // Visual variety: alternate "Expert / Advanced / Proficient" bar widths
                 const widths = [92, 88, 96, 84, 90, 86, 94, 82, 88, 90];
                 return (
-                  <li key={s}>
+                  <li key={`${s}-${i}`}>
                     <div className="mb-1 flex items-center justify-between text-[11.5px] text-paper">
                       <span className="font-medium">{s}</span>
                     </div>
