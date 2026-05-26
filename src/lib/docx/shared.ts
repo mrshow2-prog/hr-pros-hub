@@ -32,6 +32,14 @@ export const SIENNA = "9C5643";
 export const INK_HEX = "1A1714";
 export const HAIRLINE = "C8C0B8";
 
+/** Per-export accent override (set by router before building). */
+let ACCENT_OVERRIDE: string | null = null;
+export function setDocxAccent(hex: string | null | undefined) {
+  if (!hex) { ACCENT_OVERRIDE = null; return; }
+  const clean = hex.trim().replace(/^#/, "").toUpperCase();
+  ACCENT_OVERRIDE = /^[0-9A-F]{6}$/.test(clean) ? clean : null;
+}
+
 export interface DocxTheme {
   cfg: TemplateConfig;
   heading: string;
@@ -47,7 +55,7 @@ export function getTheme(template: TemplateId): DocxTheme {
     cfg,
     heading: mapFont(cfg.headingFont),
     body: mapFont(cfg.bodyFont),
-    primary: SIENNA,
+    primary: ACCENT_OVERRIDE ?? SIENNA,
     muted: "5C5249",
     subInk: "1A1714",
   };

@@ -61,12 +61,14 @@ export default function StepExport() {
     if (!cv) return;
     setBusy("docx");
     try {
-      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl);
+      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl, exportOpts);
       toast.success("Word file downloaded");
     } catch (e) {
       console.error(e); toast.error("Could not generate Word file");
     } finally { setBusy(null); }
   };
+
+  const previewOnly = template === "vibrant" || template === "gradient" || template === "creative";
 
   const requestExport = (fmt: "pdf" | "docx") => {
     if (!paid) {

@@ -45,11 +45,16 @@ export async function exportCVToDocx(
   fileName: string,
   template: TemplateId = "simple",
   photoUrl: string | null = null,
+  opts?: { accentHex?: string | null; photoShape?: "circle" | "square" | "none" },
 ) {
+  // Honour photoShape for the detailed/compact docx renderer too.
+  let effectivePhoto = photoUrl;
+  if (opts?.photoShape === "none") effectivePhoto = null;
+
   if (template === "detailed") {
-    return exportCompactDocx(cv, photoUrl, fileName);
+    return exportCompactDocx(cv, effectivePhoto, fileName);
   }
-  const doc = await buildDocxByTemplate(cv, template, photoUrl);
+  const doc = await buildDocxByTemplate(cv, template, effectivePhoto, opts);
   const blob = await Packer.toBlob(doc);
   saveAs(blob, fileName);
 }
