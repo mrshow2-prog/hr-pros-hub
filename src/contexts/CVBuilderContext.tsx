@@ -281,6 +281,7 @@ const emptyContact: ContactInfo = {
   phone: "",
   location: "",
   linkedinUrl: "",
+  website: "",
   photoPath: null,
 };
 
