@@ -46,11 +46,23 @@ export default function StepExport() {
     photoShape: state.intentForm.photoShape,
   };
 
+  /** Re-sign the photo URL just before export so a stale/expired token never silently drops the photo. */
+  const getFreshPhotoUrl = async (): Promise<string | null> => {
+    if (!state.photoPath) return null;
+    const { data } = await supabase.storage
+      .from("cv-builder-uploads")
+      .createSignedUrl(state.photoPath, 60 * 60);
+    const url = data?.signedUrl ?? null;
+    if (url) setPhotoUrl(url);
+    return url ?? photoUrl;
+  };
+
   const doPdf = async () => {
     if (!cv) return;
     setBusy("pdf");
     try {
-      await exportCVToPdf(cv, template, photoUrl, `${baseName}-cv.pdf`, exportOpts);
+      const url = await getFreshPhotoUrl();
+      await exportCVToPdf(cv, template, url, `${baseName}-cv.pdf`, exportOpts);
       toast.success("PDF downloaded");
     } catch (e) {
       console.error(e); toast.error("Could not generate PDF");
@@ -61,7 +73,8 @@ export default function StepExport() {
     if (!cv) return;
     setBusy("docx");
     try {
-      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, photoUrl, exportOpts);
+      const url = await getFreshPhotoUrl();
+      await exportCVToDocx(cv, `${baseName}-cv.docx`, template, url, exportOpts);
       toast.success("Word file downloaded");
     } catch (e) {
       console.error(e); toast.error("Could not generate Word file");
