@@ -18,6 +18,10 @@ export function buildDocxByTemplate(
     case "berlin":    return buildBerlinDoc(cv, photoUrl);
     case "riyadh":    return buildRiyadhDoc(cv, photoUrl);
     case "geneva":    return buildGenevaDoc(cv, photoUrl);
+    // New templates route to the closest existing docx builder.
+    case "casablanca": return buildRiyadhDoc(cv, photoUrl);
+    case "tokyo":     return buildDubaiDoc(cv, photoUrl);
+    case "milano":    return buildGenevaDoc(cv, photoUrl);
     case "dubai":
     default:          return buildDubaiDoc(cv, photoUrl);
   }
