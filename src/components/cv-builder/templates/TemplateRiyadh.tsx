@@ -1,5 +1,6 @@
+import { MapPin, Phone, Mail, Linkedin, Globe } from "lucide-react";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { isVisible, visibleBullets } from "./shared";
+import { isVisible, visibleBullets, stripUrlPrefix } from "./shared";
 
 /** Riyadh — Bold sidebar-style template (dark sienna rail). */
 export default function TemplateRiyadh({
