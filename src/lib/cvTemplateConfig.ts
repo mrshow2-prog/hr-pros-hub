@@ -16,8 +16,8 @@ export interface TemplateConfig {
 const SIENNA = "#9c5643";
 
 export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
-  // London — traditional serif, single column, underline headings, circle photo
-  london: {
+  // Traditional — traditional serif, single column, underline headings, circle photo
+  traditional: {
     primaryColor: SIENNA,
     headingFont: "Times-Roman",
     bodyFont: "Times-Roman",
@@ -27,8 +27,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: true,
   },
-  // Dubai — clean contemporary, accent bar, square photo
-  dubai: {
+  // Simple — clean contemporary, accent bar, square photo
+  simple: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -38,8 +38,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: true,
   },
-  // Singapore — dense, two-column information-rich
-  singapore: {
+  // Detailed — dense, two-column information-rich
+  detailed: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -49,8 +49,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  // Berlin — skills-led with pill chips
-  berlin: {
+  // Skills — skills-led with pill chips
+  skills: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -60,8 +60,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  // Zurich — premium executive serif
-  zurich: {
+  // Executive — premium executive serif
+  executive: {
     primaryColor: SIENNA,
     headingFont: "Times-Bold",
     bodyFont: "Times-Roman",
@@ -71,8 +71,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  // Riyadh — bold dark sidebar
-  riyadh: {
+  // Bold — bold dark sidebar
+  bold: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -82,8 +82,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "sidebar",
     headingUppercase: true,
   },
-  // Geneva — editorial timeline, serif headings
-  geneva: {
+  // Editorial — editorial timeline, serif headings
+  editorial: {
     primaryColor: SIENNA,
     headingFont: "Times-Bold",
     bodyFont: "Helvetica",
@@ -93,8 +93,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  // Casablanca — modern two-column with rich coloured sidebar
-  casablanca: {
+  // Vibrant — modern two-column with rich coloured sidebar
+  vibrant: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -104,8 +104,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "sidebar",
     headingUppercase: true,
   },
-  // Tokyo — gradient header band with overlapping photo
-  tokyo: {
+  // Gradient — gradient header band with overlapping photo
+  gradient: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Helvetica",
@@ -115,8 +115,8 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
-  // Milano — editorial creative with monogram and year markers
-  milano: {
+  // Creative — editorial creative with monogram and year markers
+  creative: {
     primaryColor: SIENNA,
     headingFont: "Helvetica-Bold",
     bodyFont: "Times-Roman",
