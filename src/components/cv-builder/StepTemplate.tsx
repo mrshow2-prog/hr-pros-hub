@@ -39,9 +39,18 @@ const TEMPLATES: TemplateMeta[] = [
   { id: "riyadh", name: "Riyadh", badge: "New · Bold", isNew: true,
     description: "Striking dark sidebar with photo and skills next to a clean main column.",
     features: ["Dark sidebar", "Photo rail", "High contrast", "ATS-friendly"], ats: 93 },
-  { id: "geneva", name: "Geneva", badge: "New · Premium", isNew: true,
+  { id: "geneva", name: "Geneva", badge: "Premium",
     description: "Editorial layout with serif headlines and a vertical career timeline.",
     features: ["Career timeline", "Serif headlines", "Numbered eyebrows", "Magazine spacing"], ats: 94 },
+  { id: "casablanca", name: "Casablanca", badge: "New · Top pick", isNew: true,
+    description: "Rich coloured sidebar with photo, contact icons, skill bars and a timeline body. Most loved layout in the market.",
+    features: ["Coloured sidebar", "Skill bars", "Language dots", "Icon-led sections"], ats: 93 },
+  { id: "tokyo", name: "Tokyo", badge: "New · Modern", isNew: true,
+    description: "Bold gradient header band with overlapping photo and pill contact tags. Clean modern body.",
+    features: ["Gradient header", "Overlapping photo", "Pill contacts", "Two-column footer"], ats: 92 },
+  { id: "milano", name: "Milano", badge: "New · Creative", isNew: true,
+    description: "Editorial creative with monogram, oversized year markers and italic accents. For standout candidates.",
+    features: ["Bold monogram", "Year-marker timeline", "Italic display type", "Chip-style skills"], ats: 90 },
 ];
 
 const PHOTO_SHAPES: { id: PhotoShape; label: string; Icon: typeof Circle }[] = [
