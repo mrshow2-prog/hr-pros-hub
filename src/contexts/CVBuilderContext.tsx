@@ -22,6 +22,7 @@ export type TemplateId =
 export type LegacyTemplateId =
   | "modern"
   | "classic"
+  | "executive"
   | "compact"
   | "skills-first"
   | "dubai"
