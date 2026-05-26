@@ -22,7 +22,6 @@ export type TemplateId =
 export type LegacyTemplateId =
   | "modern"
   | "classic"
-  | "executive"
   | "compact"
   | "skills-first"
   | "dubai"
@@ -40,7 +39,6 @@ const LEGACY_TEMPLATE_MAP: Record<LegacyTemplateId, TemplateId> = {
   // Very old descriptive names
   modern: "simple",
   classic: "traditional",
-  executive: "executive",
   compact: "detailed",
   "skills-first": "skills",
   // Recent city-name IDs
