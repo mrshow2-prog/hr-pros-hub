@@ -20,7 +20,7 @@ export default function StepExport() {
   const [pendingFormat, setPendingFormat] = useState<"pdf" | "docx" | null>(null);
 
   const cv = state.generatedCV;
-  const template = state.selectedTemplate ?? "dubai";
+  const template = state.selectedTemplate ?? "simple";
   const baseName = slugify(cv?.contact.name || "cv");
   const paid = state.paymentStatus === "paid";
 

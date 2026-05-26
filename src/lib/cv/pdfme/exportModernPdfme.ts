@@ -1157,18 +1157,18 @@ export async function generateCvPdfmeBlob(
   }
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
-    case "london":     b = await buildClassic(cv, effectivePhoto); break;
-    case "zurich":     b = await buildExecutive(cv, effectivePhoto); break;
-    case "singapore":  b = await buildCompact(cv, effectivePhoto); break;
-    case "berlin":     b = await buildSkillsFirst(cv, effectivePhoto); break;
-    case "riyadh":     b = await buildRiyadh(cv, effectivePhoto); break;
-    case "geneva":     b = await buildGeneva(cv, effectivePhoto); break;
+    case "traditional":  b = await buildClassic(cv, effectivePhoto); break;
+    case "executive":    b = await buildExecutive(cv, effectivePhoto); break;
+    case "detailed":     b = await buildCompact(cv, effectivePhoto); break;
+    case "skills":       b = await buildSkillsFirst(cv, effectivePhoto); break;
+    case "bold":         b = await buildRiyadh(cv, effectivePhoto); break;
+    case "editorial":    b = await buildGeneva(cv, effectivePhoto); break;
     // New templates currently route to the closest existing PDF builder.
-    case "casablanca": b = await buildRiyadh(cv, effectivePhoto); break;
-    case "tokyo":      b = await buildModern(cv, effectivePhoto); break;
-    case "milano":     b = await buildGeneva(cv, effectivePhoto); break;
-    case "dubai":
-    default:           b = await buildModern(cv, effectivePhoto);
+    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto); break;
+    case "gradient":     b = await buildModern(cv, effectivePhoto); break;
+    case "creative":     b = await buildGeneva(cv, effectivePhoto); break;
+    case "simple":
+    default:             b = await buildModern(cv, effectivePhoto);
   }
   return b.toBlob();
 }

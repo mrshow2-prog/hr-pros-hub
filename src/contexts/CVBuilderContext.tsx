@@ -7,6 +7,24 @@ export type Seniority = "" | "graduate" | "mid" | "senior" | "director" | "execu
 export type CVType = "" | "chronological" | "skills" | "hybrid";
 export type Tone = "" | "conservative" | "balanced" | "modern";
 export type TemplateId =
+  | "simple"
+  | "traditional"
+  | "executive"
+  | "detailed"
+  | "skills"
+  | "bold"
+  | "editorial"
+  | "vibrant"
+  | "gradient"
+  | "creative";
+
+/** Legacy IDs persisted in old sessions (both very old descriptive names and recent city names). */
+export type LegacyTemplateId =
+  | "modern"
+  | "classic"
+  | "executive"
+  | "compact"
+  | "skills-first"
   | "dubai"
   | "london"
   | "zurich"
@@ -18,32 +36,36 @@ export type TemplateId =
   | "tokyo"
   | "milano";
 
-/** Legacy IDs persisted in old sessions. */
-export type LegacyTemplateId =
-  | "modern"
-  | "classic"
-  | "executive"
-  | "compact"
-  | "skills-first";
-
 const LEGACY_TEMPLATE_MAP: Record<LegacyTemplateId, TemplateId> = {
-  modern: "dubai",
-  classic: "london",
-  executive: "zurich",
-  compact: "singapore",
-  "skills-first": "berlin",
+  // Very old descriptive names
+  modern: "simple",
+  classic: "traditional",
+  executive: "executive",
+  compact: "detailed",
+  "skills-first": "skills",
+  // Recent city-name IDs
+  dubai: "simple",
+  london: "traditional",
+  zurich: "executive",
+  singapore: "detailed",
+  berlin: "skills",
+  riyadh: "bold",
+  geneva: "editorial",
+  casablanca: "vibrant",
+  tokyo: "gradient",
+  milano: "creative",
 };
 
 /** Maps any legacy or current template id to a canonical current id. */
 export function normalizeTemplateId(
   id: TemplateId | LegacyTemplateId | string | null | undefined,
 ): TemplateId {
-  if (!id) return "dubai";
+  if (!id) return "simple";
   if ((LEGACY_TEMPLATE_MAP as Record<string, TemplateId>)[id]) {
     return (LEGACY_TEMPLATE_MAP as Record<string, TemplateId>)[id];
   }
-  const valid: TemplateId[] = ["dubai", "london", "zurich", "singapore", "berlin", "riyadh", "geneva", "casablanca", "tokyo", "milano"];
-  return (valid as string[]).includes(id) ? (id as TemplateId) : "dubai";
+  const valid: TemplateId[] = ["simple", "traditional", "executive", "detailed", "skills", "bold", "editorial", "vibrant", "gradient", "creative"];
+  return (valid as string[]).includes(id) ? (id as TemplateId) : "simple";
 }
 export type TypeOption = "light" | "dark";
 export type PaymentStatus = "unpaid" | "pending" | "paid";

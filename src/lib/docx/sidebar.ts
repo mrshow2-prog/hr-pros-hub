@@ -15,7 +15,7 @@ export async function buildRiyadhDoc(
   cv: GeneratedCV,
   photoUrl: string | null,
 ): Promise<Document> {
-  const t = getTheme("riyadh");
+  const t = getTheme("bold");
   const SIDEBAR_W = Math.round(CONTENT_W * 0.32);
   const MAIN_W = CONTENT_W - SIDEBAR_W;
   const SIENNA_HEX = "9C5643";

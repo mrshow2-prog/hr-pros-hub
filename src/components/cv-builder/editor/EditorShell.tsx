@@ -47,13 +47,13 @@ import { getPalette } from "@/lib/cv/palettes";
 import { ChevronDown } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
-  { id: "dubai", label: "Dubai" },
-  { id: "london", label: "London" },
-  { id: "zurich", label: "Zurich" },
-  { id: "singapore", label: "Singapore" },
-  { id: "berlin", label: "Berlin" },
-  { id: "riyadh", label: "Riyadh" },
-  { id: "geneva", label: "Geneva" },
+  { id: "simple", label: "Simple" },
+  { id: "traditional", label: "Traditional" },
+  { id: "executive", label: "Executive" },
+  { id: "detailed", label: "Detailed" },
+  { id: "skills", label: "Skills-Based" },
+  { id: "bold", label: "Bold" },
+  { id: "editorial", label: "Editorial" },
 ];
 
 type SectionDef = { key: SectionKey; label: string };
@@ -286,7 +286,7 @@ export default function EditorShell() {
 
         <div className="flex items-center gap-2">
           <select
-            value={state.selectedTemplate ?? "dubai"}
+            value={state.selectedTemplate ?? "simple"}
             onChange={(e) => {
               setTemplateChanging(true);
               setTemplate(e.target.value as TemplateId);

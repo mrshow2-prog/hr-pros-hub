@@ -2,7 +2,7 @@ import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import { buildFlowingDoc } from "./flow";
 
 export const buildDubaiDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "dubai", {
+  buildFlowingDoc(cv, "simple", {
     headingVariant: "bar",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 100, shape: "square" },
@@ -10,7 +10,7 @@ export const buildDubaiDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   });
 
 export const buildLondonDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "london", {
+  buildFlowingDoc(cv, "traditional", {
     headingVariant: "underline",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 90, shape: "circle" },
@@ -19,7 +19,7 @@ export const buildLondonDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   });
 
 export const buildZurichDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "zurich", {
+  buildFlowingDoc(cv, "executive", {
     headingVariant: "none",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 110, shape: "square" },
@@ -33,7 +33,7 @@ export const buildZurichDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   });
 
 export const buildBerlinDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "berlin", {
+  buildFlowingDoc(cv, "skills", {
     headingVariant: "none",
     sections: ["summary", "skills-pills", "experience", "education", "languages"],
     photo: { url: photoUrl, size: 90, shape: "circle" },
@@ -42,7 +42,7 @@ export const buildBerlinDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   });
 
 export const buildGenevaDoc = (cv: GeneratedCV, photoUrl: string | null) =>
-  buildFlowingDoc(cv, "geneva", {
+  buildFlowingDoc(cv, "editorial", {
     headingVariant: "underline",
     sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 100, shape: "circle" },

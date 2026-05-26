@@ -20,7 +20,7 @@ export async function buildCompactDoc(
   cv: GeneratedCV,
   photoUrl: string | null,
 ): Promise<Document> {
-  const t = getTheme("singapore");
+  const t = getTheme("detailed");
   const LEFT_W = Math.round(CONTENT_W * 0.62);
   const RIGHT_W = CONTENT_W - LEFT_W;
 
