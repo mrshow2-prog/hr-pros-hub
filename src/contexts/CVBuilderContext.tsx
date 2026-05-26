@@ -42,7 +42,7 @@ export function normalizeTemplateId(
   if ((LEGACY_TEMPLATE_MAP as Record<string, TemplateId>)[id]) {
     return (LEGACY_TEMPLATE_MAP as Record<string, TemplateId>)[id];
   }
-  const valid: TemplateId[] = ["dubai", "london", "zurich", "singapore", "berlin", "riyadh", "geneva"];
+  const valid: TemplateId[] = ["dubai", "london", "zurich", "singapore", "berlin", "riyadh", "geneva", "casablanca", "tokyo", "milano"];
   return (valid as string[]).includes(id) ? (id as TemplateId) : "dubai";
 }
 export type TypeOption = "light" | "dark";
