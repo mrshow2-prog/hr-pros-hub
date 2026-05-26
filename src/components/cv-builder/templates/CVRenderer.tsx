@@ -6,6 +6,9 @@ import TemplateSkillsFirst from "./TemplateSkillsFirst";
 import TemplateExecutive from "./TemplateExecutive";
 import TemplateRiyadh from "./TemplateRiyadh";
 import TemplateGeneva from "./TemplateGeneva";
+import TemplateCasablanca from "./TemplateCasablanca";
+import TemplateTokyo from "./TemplateTokyo";
+import TemplateMilano from "./TemplateMilano";
 
 export interface CVRendererProps {
   cv: GeneratedCV;
@@ -29,6 +32,12 @@ export default function CVRenderer({ cv, template, photoUrl }: CVRendererProps) 
       return <TemplateRiyadh cv={cv} photoUrl={photoUrl} />;
     case "geneva":
       return <TemplateGeneva cv={cv} photoUrl={photoUrl} />;
+    case "casablanca":
+      return <TemplateCasablanca cv={cv} photoUrl={photoUrl} />;
+    case "tokyo":
+      return <TemplateTokyo cv={cv} photoUrl={photoUrl} />;
+    case "milano":
+      return <TemplateMilano cv={cv} photoUrl={photoUrl} />;
     default:
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
   }
