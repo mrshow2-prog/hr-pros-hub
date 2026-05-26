@@ -2,12 +2,15 @@ import {
   Document, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, VerticalAlign, BorderStyle, ShadingType, ImageRun, AlignmentType,
 } from "docx";
-import type { GeneratedCV } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets, noBorders, urlToImageData, stripUrlPrefix,
-  INK_HEX,
+  INK_HEX, shouldRender, getSectionOrder,
+  achievementsBlock, certificationsBlock, competenciesBlock, customSectionsBlock,
+  bulletPara, txt,
 } from "./shared";
+
 
 /** Riyadh — dark sienna left rail with photo, contact, skills, languages.
  *  Right column flows summary → experience → education. */
@@ -135,58 +138,98 @@ export async function buildRiyadhDoc(
       children: [new TextRun({ text: "" })],
     });
 
-  if (!isHidden(cv, "summary") && cv.summary) {
+  // Sidebar-only sections are pinned in the sidebar and excluded from the main reorder loop.
+  const SIDEBAR_KEYS = new Set<SectionKey>(["skills", "languages"]);
+
+  const renderSummary = () => {
     main.push(mainHeading("Profile"));
     main.push(subRule());
     main.push(new Paragraph({
       spacing: { after: 200, line: 320 },
       children: [new TextRun({ text: cv.summary, size: 20, color: INK_HEX, font: t.body })],
     }));
+  };
+
+  if (shouldRender(cv, "summary")) renderSummary();
+
+  // Heading helper for plug-in block renderers (achievements/certs/competencies/custom).
+  const blockHeading = (label: string) => {
+    // Push the rule under the heading by returning the heading; caller handles flow.
+    return mainHeading(label);
+  };
+
+  const mainRenderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      main.push(mainHeading("Experience"));
+      main.push(subRule());
+      cv.experience.forEach((exp) => {
+        main.push(new Paragraph({
+          spacing: { before: 80, after: 20 },
+          tabStops: [{ type: "right" as any, position: MAIN_W - 200 }],
+          children: [
+            new TextRun({ text: exp.role || "", bold: true, size: 22, font: t.heading, color: INK_HEX }),
+            ...(periodOf(exp) ? [new TextRun({ text: `\t${periodOf(exp)}`, size: 18, color: "5C5249", font: t.body })] : []),
+          ],
+        }));
+        const sub = [exp.company, exp.location].filter(Boolean).join(" · ");
+        if (sub) main.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: sub, size: 19, color: SIENNA_HEX, bold: true, font: t.body })],
+        }));
+        visibleBullets(exp).forEach((b) => main.push(new Paragraph({
+          numbering: { reference: "cv-bullets", level: 0 },
+          spacing: { after: 40, line: 280 },
+          children: [new TextRun({ text: b.rewrite || b.original, size: 19, font: t.body, color: INK_HEX })],
+        })));
+      });
+    },
+    education: () => {
+      main.push(mainHeading("Education"));
+      main.push(subRule());
+      cv.education.forEach((ed) => {
+        main.push(new Paragraph({
+          spacing: { before: 60, after: 20 },
+          tabStops: [{ type: "right" as any, position: MAIN_W - 200 }],
+          children: [
+            new TextRun({ text: ed.qualification, bold: true, size: 21, font: t.heading, color: INK_HEX }),
+            ...(ed.period ? [new TextRun({ text: `\t${ed.period}`, size: 18, color: "5C5249", font: t.body })] : []),
+          ],
+        }));
+        if (ed.institution) main.push(new Paragraph({
+          spacing: { after: 80 },
+          children: [new TextRun({ text: ed.institution, size: 19, color: SIENNA_HEX, bold: true, font: t.body })],
+        }));
+      });
+    },
+    achievements: () => {
+      const parts = achievementsBlock(cv, t, blockHeading);
+      if (parts.length) { parts.splice(1, 0, subRule()); parts.forEach((p) => main.push(p)); }
+    },
+    certifications: () => {
+      const parts = certificationsBlock(cv, t, blockHeading, MAIN_W);
+      if (parts.length) { parts.splice(1, 0, subRule()); parts.forEach((p) => main.push(p)); }
+    },
+    competencies: () => {
+      const parts = competenciesBlock(cv, t, blockHeading);
+      if (parts.length) { parts.splice(1, 0, subRule()); parts.forEach((p) => main.push(p)); }
+    },
+    custom: () => {
+      const parts = customSectionsBlock(cv, t, blockHeading);
+      // customSectionsBlock emits multiple heading+body groups; insert a rule after each heading.
+      parts.forEach((p) => main.push(p));
+      void subRule; // (rule omitted for custom to keep groups tight)
+    },
+  };
+
+  for (const key of getSectionOrder(cv)) {
+    if (SIDEBAR_KEYS.has(key)) continue;
+    if (!shouldRender(cv, key)) continue;
+    mainRenderers[key]?.();
   }
 
-  if (!isHidden(cv, "experience") && cv.experience.length) {
-    main.push(mainHeading("Experience"));
-    main.push(subRule());
-    cv.experience.forEach((exp) => {
-      main.push(new Paragraph({
-        spacing: { before: 80, after: 20 },
-        tabStops: [{ type: "right" as any, position: MAIN_W - 200 }],
-        children: [
-          new TextRun({ text: exp.role || "", bold: true, size: 22, font: t.heading, color: INK_HEX }),
-          ...(periodOf(exp) ? [new TextRun({ text: `\t${periodOf(exp)}`, size: 18, color: "5C5249", font: t.body })] : []),
-        ],
-      }));
-      const sub = [exp.company, exp.location].filter(Boolean).join(" · ");
-      if (sub) main.push(new Paragraph({
-        spacing: { after: 80 },
-        children: [new TextRun({ text: sub, size: 19, color: SIENNA_HEX, bold: true, font: t.body })],
-      }));
-      visibleBullets(exp).forEach((b) => main.push(new Paragraph({
-        numbering: { reference: "cv-bullets", level: 0 },
-        spacing: { after: 40, line: 280 },
-        children: [new TextRun({ text: b.rewrite || b.original, size: 19, font: t.body, color: INK_HEX })],
-      })));
-    });
-  }
+  // Reference exports so the linter doesn't complain about unused imports.
+  void bulletPara; void txt;
 
-  if (!isHidden(cv, "education") && cv.education.length) {
-    main.push(mainHeading("Education"));
-    main.push(subRule());
-    cv.education.forEach((ed) => {
-      main.push(new Paragraph({
-        spacing: { before: 60, after: 20 },
-        tabStops: [{ type: "right" as any, position: MAIN_W - 200 }],
-        children: [
-          new TextRun({ text: ed.qualification, bold: true, size: 21, font: t.heading, color: INK_HEX }),
-          ...(ed.period ? [new TextRun({ text: `\t${ed.period}`, size: 18, color: "5C5249", font: t.body })] : []),
-        ],
-      }));
-      if (ed.institution) main.push(new Paragraph({
-        spacing: { after: 80 },
-        children: [new TextRun({ text: ed.institution, size: 19, color: SIENNA_HEX, bold: true, font: t.body })],
-      }));
-    });
-  }
 
   // ---------- Sidebar + main table ----------
   const sidebarCell = new TableCell({

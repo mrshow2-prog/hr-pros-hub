@@ -478,3 +478,83 @@ export const A4_PAGE = {
 };
 /** Content width inside A4 with the above margins. */
 export const CONTENT_W = 11906 - 800 - 800; // 10306 DXA
+
+/* ---------- shared visibility / ordering helpers ---------- */
+export { getSectionOrder, hasContent, shouldRender } from "@/lib/cv/sectionVisibility";
+
+/* ---------- block renderers for newly-optional sections ---------- */
+export function achievementsBlock(
+  cv: GeneratedCV,
+  t: DocxTheme,
+  heading: (label: string) => Paragraph,
+  label = "Key Achievements",
+): Array<Paragraph> {
+  const items = cv.achievements.filter((a) => (a || "").trim());
+  if (!items.length) return [];
+  const out: Paragraph[] = [heading(label)];
+  items.forEach((a) => out.push(bulletPara(a, t)));
+  return out;
+}
+
+export function certificationsBlock(
+  cv: GeneratedCV,
+  t: DocxTheme,
+  heading: (label: string) => Paragraph,
+  contentW: number,
+  label = "Certifications",
+): Array<Paragraph> {
+  const items = cv.certifications.filter(
+    (c) => (c.name || "").trim() || (c.issuer || "").trim(),
+  );
+  if (!items.length) return [];
+  const out: Paragraph[] = [heading(label)];
+  items.forEach((c) => {
+    out.push(roleRow(c.name || "", c.date || "", t, contentW));
+    if (c.issuer) {
+      out.push(txt(c.issuer, t, { size: 19, color: t.primary, bold: true, after: 80 }));
+    }
+  });
+  return out;
+}
+
+export function competenciesBlock(
+  cv: GeneratedCV,
+  t: DocxTheme,
+  heading: (label: string) => Paragraph,
+  label = "Core Competencies",
+): Array<Paragraph> {
+  const clusters = cv.competencyClusters.filter((c) =>
+    c.items.some((i) => (i || "").trim()),
+  );
+  if (!clusters.length) return [];
+  const out: Paragraph[] = [heading(label)];
+  clusters.forEach((c) => {
+    if (c.title) {
+      out.push(txt(c.title, t, { size: 20, bold: true, color: INK_HEX, after: 40 }));
+    }
+    c.items
+      .filter((i) => (i || "").trim())
+      .forEach((i) => out.push(bulletPara(i, t)));
+  });
+  return out;
+}
+
+export function customSectionsBlock(
+  cv: GeneratedCV,
+  t: DocxTheme,
+  heading: (label: string) => Paragraph,
+): Array<Paragraph> {
+  const sections = cv.customSections.filter(
+    (s) => (s.title || "").trim() || s.bullets.some((b) => (b || "").trim()),
+  );
+  if (!sections.length) return [];
+  const out: Paragraph[] = [];
+  sections.forEach((s) => {
+    out.push(heading(s.title || "Additional Information"));
+    s.bullets
+      .filter((b) => (b || "").trim())
+      .forEach((b) => out.push(bulletPara(b, t)));
+  });
+  return out;
+}
+

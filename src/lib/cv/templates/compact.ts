@@ -1,6 +1,8 @@
 import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
+import { shouldRender } from "@/lib/cv/sectionVisibility";
 
 export type CompactMode = "preview" | "pdf" | "docx";
+
 
 const esc = (s: string) =>
   (s ?? "")
@@ -130,6 +132,79 @@ function renderEducation(cv: GeneratedCV) {
       ${items}
     </div>`;
 }
+
+function renderAchievements(cv: GeneratedCV) {
+  if (!shouldRender(cv, "achievements")) return "";
+  const items = cv.achievements
+    .filter((a) => (a || "").trim())
+    .map((a) => `<li>${esc(a)}</li>`)
+    .join("");
+  return `
+    <div class="cv-section">
+      <h2 class="cv-section-header">Key Achievements</h2>
+      <ul class="cv-job-achievements">${items}</ul>
+    </div>`;
+}
+
+function renderCertifications(cv: GeneratedCV) {
+  if (!shouldRender(cv, "certifications")) return "";
+  const items = cv.certifications
+    .filter((c) => (c.name || "").trim() || (c.issuer || "").trim())
+    .map(
+      (c) => `
+      <div class="cv-edu-item">
+        <div class="cv-edu-header">
+          <div class="cv-degree">${esc(c.name || "")}</div>
+          <div class="cv-job-date">${esc(c.date || "")}</div>
+        </div>
+        ${c.issuer ? `<div class="cv-school">${esc(c.issuer)}</div>` : ""}
+      </div>`,
+    )
+    .join("");
+  return `
+    <div class="cv-section">
+      <h2 class="cv-section-header">Certifications</h2>
+      ${items}
+    </div>`;
+}
+
+function renderCompetencies(cv: GeneratedCV) {
+  if (!shouldRender(cv, "competencies")) return "";
+  const groups = cv.competencyClusters
+    .filter((c) => c.items.some((i) => (i || "").trim()))
+    .map((c) => {
+      const lis = c.items
+        .filter((i) => (i || "").trim())
+        .map((i) => `<li>${esc(i)}</li>`)
+        .join("");
+      return `${c.title ? `<div class="cv-job-company">${esc(c.title)}</div>` : ""}<ul class="cv-job-achievements">${lis}</ul>`;
+    })
+    .join("");
+  return `
+    <div class="cv-section">
+      <h2 class="cv-section-header">Core Competencies</h2>
+      ${groups}
+    </div>`;
+}
+
+function renderCustomSections(cv: GeneratedCV) {
+  if (!shouldRender(cv, "custom")) return "";
+  return cv.customSections
+    .filter((s) => (s.title || "").trim() || s.bullets.some((b) => (b || "").trim()))
+    .map((s) => {
+      const lis = s.bullets
+        .filter((b) => (b || "").trim())
+        .map((b) => `<li>${esc(b)}</li>`)
+        .join("");
+      return `
+        <div class="cv-section">
+          <h2 class="cv-section-header">${esc(s.title || "Additional Information")}</h2>
+          ${lis ? `<ul class="cv-job-achievements">${lis}</ul>` : ""}
+        </div>`;
+    })
+    .join("");
+}
+
 
 function renderSkills(cv: GeneratedCV, mode: CompactMode) {
   if (hidden(cv, "skills") || !cv.skills.length) return "";
@@ -348,6 +423,11 @@ export function renderCompactHtml(
     );
   }
   continuationParts.push(renderEducation(cv));
+  continuationParts.push(renderCompetencies(cv));
+  continuationParts.push(renderAchievements(cv));
+  continuationParts.push(renderCertifications(cv));
+  continuationParts.push(renderCustomSections(cv));
+  void ({} as { _k?: SectionKey }); // keep SectionKey import in case it gets shaken
   const continuation = continuationParts.filter(Boolean).join("");
 
   return `<!DOCTYPE html>
