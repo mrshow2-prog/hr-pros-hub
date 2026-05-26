@@ -93,6 +93,39 @@ export const TEMPLATE_CONFIG: Record<TemplateId, TemplateConfig> = {
     layoutStyle: "single-column",
     headingUppercase: false,
   },
+  // Casablanca — modern two-column with rich coloured sidebar
+  casablanca: {
+    primaryColor: SIENNA,
+    headingFont: "Helvetica-Bold",
+    bodyFont: "Helvetica",
+    sectionDividerStyle: "bar",
+    photoStyle: "circle",
+    photoPosition: "top-left",
+    layoutStyle: "sidebar",
+    headingUppercase: true,
+  },
+  // Tokyo — gradient header band with overlapping photo
+  tokyo: {
+    primaryColor: SIENNA,
+    headingFont: "Helvetica-Bold",
+    bodyFont: "Helvetica",
+    sectionDividerStyle: "bar",
+    photoStyle: "circle",
+    photoPosition: "top-left",
+    layoutStyle: "single-column",
+    headingUppercase: false,
+  },
+  // Milano — editorial creative with monogram and year markers
+  milano: {
+    primaryColor: SIENNA,
+    headingFont: "Helvetica-Bold",
+    bodyFont: "Times-Roman",
+    sectionDividerStyle: "bar",
+    photoStyle: "square",
+    photoPosition: "top-left",
+    layoutStyle: "single-column",
+    headingUppercase: true,
+  },
 };
 
 export function getTemplateConfig(id: TemplateId | string | null | undefined): TemplateConfig {
