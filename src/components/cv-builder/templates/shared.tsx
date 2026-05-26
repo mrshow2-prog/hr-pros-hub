@@ -1,6 +1,13 @@
 import { ReactNode } from "react";
+import { MapPin, Phone, Mail, Linkedin, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
+
+/** Strip protocol and leading "www." for compact display. */
+export function stripUrlPrefix(value: string | null | undefined): string {
+  if (!value) return "";
+  return value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
+}
 
 export type PhotoShape = "circle" | "square-sm" | "square";
 export type PhotoPos = "left" | "right";
