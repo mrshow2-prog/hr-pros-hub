@@ -57,18 +57,19 @@ const TEMPLATES: { id: TemplateId; label: string }[] = [
 ];
 
 type SectionDef = { key: SectionKey; label: string };
-const SECTIONS: SectionDef[] = [
-  { key: "contact", label: "Contact" },
-  { key: "summary", label: "Summary" },
-  { key: "experience", label: "Experience" },
-  { key: "skills", label: "Skills" },
-  { key: "education", label: "Education" },
-  { key: "competencies", label: "Competencies" },
-  { key: "languages", label: "Languages" },
-  { key: "achievements", label: "Achievements" },
-  { key: "certifications", label: "Certifications" },
-  { key: "custom", label: "Custom sections" },
-];
+const SECTION_LABELS: Record<SectionKey, string> = {
+  contact: "Contact",
+  summary: "Summary",
+  experience: "Experience",
+  skills: "Skills",
+  education: "Education",
+  competencies: "Competencies",
+  languages: "Languages",
+  achievements: "Achievements",
+  certifications: "Certifications",
+  custom: "Custom sections",
+};
+const PINNED: SectionKey[] = ["contact", "summary"];
 
 
 export default function EditorShell() {
