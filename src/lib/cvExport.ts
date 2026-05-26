@@ -43,10 +43,10 @@ export async function exportNodeToPdf(_node: HTMLElement, fileName: string) {
 export async function exportCVToDocx(
   cv: GeneratedCV,
   fileName: string,
-  template: TemplateId = "dubai",
+  template: TemplateId = "simple",
   photoUrl: string | null = null,
 ) {
-  if (template === "singapore") {
+  if (template === "detailed") {
     return exportCompactDocx(cv, photoUrl, fileName);
   }
   const doc = await buildDocxByTemplate(cv, template, photoUrl);

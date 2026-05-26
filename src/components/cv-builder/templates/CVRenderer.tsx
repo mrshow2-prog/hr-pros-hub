@@ -18,25 +18,25 @@ export interface CVRendererProps {
 
 export default function CVRenderer({ cv, template, photoUrl }: CVRendererProps) {
   switch (normalizeTemplateId(template)) {
-    case "london":
+    case "traditional":
       return <TemplateClassic cv={cv} photoUrl={photoUrl} />;
-    case "dubai":
+    case "simple":
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
-    case "singapore":
+    case "detailed":
       return <TemplateCompact cv={cv} photoUrl={photoUrl} />;
-    case "berlin":
+    case "skills":
       return <TemplateSkillsFirst cv={cv} photoUrl={photoUrl} />;
-    case "zurich":
+    case "executive":
       return <TemplateExecutive cv={cv} photoUrl={photoUrl} />;
-    case "riyadh":
+    case "bold":
       return <TemplateRiyadh cv={cv} photoUrl={photoUrl} />;
-    case "geneva":
+    case "editorial":
       return <TemplateGeneva cv={cv} photoUrl={photoUrl} />;
-    case "casablanca":
+    case "vibrant":
       return <TemplateCasablanca cv={cv} photoUrl={photoUrl} />;
-    case "tokyo":
+    case "gradient":
       return <TemplateTokyo cv={cv} photoUrl={photoUrl} />;
-    case "milano":
+    case "creative":
       return <TemplateMilano cv={cv} photoUrl={photoUrl} />;
     default:
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;

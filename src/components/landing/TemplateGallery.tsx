@@ -8,13 +8,13 @@ const SAMPLE_PHOTO_URL =
   "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces";
 
 const ITEMS: { id: TemplateId; name: string; tag: string }[] = [
-  { id: "dubai", name: "Dubai", tag: "Most picked" },
-  { id: "london", name: "London", tag: "Recruiter favourite" },
-  { id: "zurich", name: "Zurich", tag: "Executive" },
-  { id: "singapore", name: "Singapore", tag: "Information-dense" },
-  { id: "berlin", name: "Berlin", tag: "Career change" },
-  { id: "riyadh", name: "Riyadh", tag: "New · Bold" },
-  { id: "geneva", name: "Geneva", tag: "New · Premium" },
+  { id: "simple", name: "Simple", tag: "Most picked" },
+  { id: "traditional", name: "Traditional", tag: "Recruiter favourite" },
+  { id: "executive", name: "Executive", tag: "C-Suite" },
+  { id: "detailed", name: "Detailed", tag: "Information-dense" },
+  { id: "skills", name: "Skills-Based", tag: "Career change" },
+  { id: "bold", name: "Bold", tag: "New · High contrast" },
+  { id: "editorial", name: "Editorial", tag: "New · Premium" },
 ];
 
 export default function TemplateGallery() {

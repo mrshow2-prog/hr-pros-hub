@@ -21,7 +21,7 @@ export default function HeroCvPreview() {
       >
         <ScaledPreview scale={0.5} visibleHeight={560}>
           <div style={{ ['--accent' as never]: accent } as React.CSSProperties}>
-            <CVRenderer cv={SAMPLE_CV} template="dubai" photoUrl={SAMPLE_PHOTO_URL} />
+            <CVRenderer cv={SAMPLE_CV} template="simple" photoUrl={SAMPLE_PHOTO_URL} />
           </div>
         </ScaledPreview>
       </div>
