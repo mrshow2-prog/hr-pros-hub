@@ -757,6 +757,26 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
             ? cv.hiddenSections.filter((k) => k !== key)
             : [...cv.hiddenSections, key],
         })),
+      moveSection: (key, direction) =>
+        patchCV((cv) => {
+          const REORDERABLE: SectionKey[] = [
+            "experience", "skills", "education", "competencies",
+            "languages", "achievements", "certifications", "custom",
+          ];
+          if (!REORDERABLE.includes(key)) return cv;
+          // Materialise current order from cv.sectionOrder + defaults
+          const current = (cv.sectionOrder ?? []).filter((k) => REORDERABLE.includes(k));
+          for (const k of REORDERABLE) {
+            if (!current.includes(k)) current.push(k);
+          }
+          const idx = current.indexOf(key);
+          if (idx < 0) return cv;
+          const swap = direction === "up" ? idx - 1 : idx + 1;
+          if (swap < 0 || swap >= current.length) return cv;
+          const next = [...current];
+          [next[idx], next[swap]] = [next[swap], next[idx]];
+          return { ...cv, sectionOrder: next };
+        }),
 
       setAts: (ats) =>
         setState((s) => ({ ...s, atsScore: ats, lastScoredAt: ats ? Date.now() : s.lastScoredAt })),
