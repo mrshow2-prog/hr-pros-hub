@@ -5,7 +5,7 @@ import {
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
-  isHidden, periodOf, visibleBullets, noBorders, urlToImageData,
+  isHidden, periodOf, visibleBullets, noBorders, urlToImageData, stripUrlPrefix,
   INK_HEX,
 } from "./shared";
 
