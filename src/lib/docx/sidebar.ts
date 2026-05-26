@@ -65,7 +65,8 @@ export async function buildRiyadhDoc(
       ["Location", cv.contact.location],
       ["Phone", cv.contact.phone],
       ["Email", cv.contact.email],
-      ["LinkedIn", cv.contact.linkedinUrl],
+      ["LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl)],
+      ["Website", stripUrlPrefix(cv.contact.website)],
     ];
     contactRows.forEach(([k, v], i) => {
       if (!v) return;
