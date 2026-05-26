@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
 import { getSectionOrder, hasContent } from "@/lib/cv/sectionVisibility";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "simple", label: "Simple" },
