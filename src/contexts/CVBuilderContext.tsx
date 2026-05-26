@@ -448,6 +448,7 @@ interface CVBuilderContextValue {
   removeCustomSection: (id: string) => void;
   patchCustomSection: (id: string, patch: Partial<CustomSection>) => void;
   toggleSection: (key: SectionKey) => void;
+  moveSection: (key: SectionKey, direction: "up" | "down") => void;
 
   setAts: (ats: AtsScore | null) => void;
   resetSession: () => void;
