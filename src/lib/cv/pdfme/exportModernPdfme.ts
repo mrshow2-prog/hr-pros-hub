@@ -1247,84 +1247,114 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     b.cursorY += 2;
   };
 
-  if (!isHidden(cv, "summary") && cv.summary) {
+  if (shouldRender(cv, "summary")) {
     sectionTitle("Profile");
     b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6 });
   }
 
-  if (!isHidden(cv, "experience") && cv.experience.length) {
-    sectionTitle("Career Timeline");
-    const railX = b.margin + 1.2;
-    const indent = 6;
-    const startY = b.cursorY;
-    cv.experience.forEach((exp, idx) => {
-      // Dot
-      b.ensure(8);
-      const dotY = b.cursorY + 1.2;
-      b.addRect({
-        x: railX - 1.4, y: dotY, width: 2.8, height: 2.8,
-        color: PAPER, borderColor: SIENNA, borderWidth: 0.6, radius: 1.4,
+  const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      sectionTitle("Career Timeline");
+      const railX = b.margin + 1.2;
+      const indent = 6;
+      const startY = b.cursorY;
+      cv.experience.forEach((exp, idx) => {
+        b.ensure(8);
+        const dotY = b.cursorY + 1.2;
+        b.addRect({
+          x: railX - 1.4, y: dotY, width: 2.8, height: 2.8,
+          color: PAPER, borderColor: SIENNA, borderWidth: 0.6, radius: 1.4,
+        });
+        const savedMargin = (b as unknown as { margin: number }).margin;
+        const savedContentW = (b as unknown as { contentW: number }).contentW;
+        (b as unknown as { margin: number }).margin = savedMargin + indent;
+        (b as unknown as { contentW: number }).contentW = savedContentW - indent;
+
+        periodRow({ cv, primary: SIENNA, b }, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
+        const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
+        deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
+        for (const bul of visibleBullets(exp)) {
+          bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+        }
+
+        (b as unknown as { margin: number }).margin = savedMargin;
+        (b as unknown as { contentW: number }).contentW = savedContentW;
+        if (idx < cv.experience.length - 1) b.cursorY += 3.6;
       });
-      // Push content to the right of the rail
-      const savedMargin = (b as unknown as { margin: number }).margin;
-      const savedContentW = (b as unknown as { contentW: number }).contentW;
-      (b as unknown as { margin: number }).margin = savedMargin + indent;
-      (b as unknown as { contentW: number }).contentW = savedContentW - indent;
-
-      periodRow({ cv, primary: SIENNA, b }, exp.role || "", periodOf(exp), { leftFs: 11.5, bold: true });
-      const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
-      for (const bul of visibleBullets(exp)) {
-        bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+      const endY = b.cursorY;
+      b.addLine({ x: railX, y: startY + 2.6, width: 0.3, height: endY - startY - 4, color: "#d8cfc1" });
+      b.cursorY += 4;
+    },
+    education: () => {
+      sectionTitle("Education");
+      for (const ed of cv.education) {
+        periodRow(ctx, ed.qualification, ed.period, { leftFs: 11, bold: true });
+        if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
       }
-
-      (b as unknown as { margin: number }).margin = savedMargin;
-      (b as unknown as { contentW: number }).contentW = savedContentW;
-      if (idx < cv.experience.length - 1) b.cursorY += 3.6;
-    });
-    // Draw the vertical rail spanning all experience entries
-    const endY = b.cursorY;
-    b.addLine({ x: railX, y: startY + 2.6, width: 0.3, height: endY - startY - 4, color: "#d8cfc1" });
-    b.cursorY += 4;
-  }
-
-  if (!isHidden(cv, "education") && cv.education.length) {
-    sectionTitle("Education");
-    for (const ed of cv.education) {
-      periodRow(ctx, ed.qualification, ed.period, { leftFs: 11, bold: true });
-      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
-    }
-  }
-
-  if (!isHidden(cv, "skills") && cv.skills.length) {
-    sectionTitle("Skills");
-    // Two-column plain dot list
-    const colW = (b.contentW - 8) / 2;
-    const fs = 9.6;
-    const lh = 1.5;
-    for (let i = 0; i < cv.skills.length; i += 2) {
-      const l = cv.skills[i];
-      const r = cv.skills[i + 1];
-      const h = Math.max(textHeightMm(l, colW, fs, lh), r ? textHeightMm(r, colW, fs, lh) : 0, ptToMm(fs) * lh);
-      b.ensure(h + 0.5);
-      const py = b.cursorY;
-      b.addText({ value: "·", x: b.margin, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
-      b.addText({ value: l, x: b.margin + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
-      if (r) {
-        b.addText({ value: "·", x: b.margin + colW + 8, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
-        b.addText({ value: r, x: b.margin + colW + 8 + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
+    },
+    skills: () => {
+      sectionTitle("Skills");
+      const colW = (b.contentW - 8) / 2;
+      const fs = 9.6;
+      const lh = 1.5;
+      for (let i = 0; i < cv.skills.length; i += 2) {
+        const l = cv.skills[i];
+        const r = cv.skills[i + 1];
+        const h = Math.max(textHeightMm(l, colW, fs, lh), r ? textHeightMm(r, colW, fs, lh) : 0, ptToMm(fs) * lh);
+        b.ensure(h + 0.5);
+        const py = b.cursorY;
+        b.addText({ value: "·", x: b.margin, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
+        b.addText({ value: l, x: b.margin + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
+        if (r) {
+          b.addText({ value: "·", x: b.margin + colW + 8, y: py, width: 3, fontSize: fs, color: SIENNA, bold: true });
+          b.addText({ value: r, x: b.margin + colW + 8 + 3, y: py, width: colW - 3, fontSize: fs, color: SUBINK, lineHeight: lh });
+        }
+        b.cursorY = py + h + 0.8;
       }
-      b.cursorY = py + h + 0.8;
-    }
-    b.cursorY += 3;
-  }
+      b.cursorY += 3;
+    },
+    competencies: () => {
+      sectionTitle("Core Competencies");
+      for (const c of cv.competencyClusters) {
+        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
+        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+      }
+    },
+    languages: () => {
+      sectionTitle("Languages");
+      b.addText({
+        value: cv.languages.map((l) => l.level?.trim() ? `${l.name} — ${l.level}` : l.name).join("       "),
+        fontSize: 9.8, color: SUBINK,
+      });
+    },
+    achievements: () => {
+      sectionTitle("Achievements");
+      for (const a of cv.achievements.filter(Boolean)) {
+        bullet(ctx, "—", a, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+      }
+      b.cursorY += 2;
+    },
+    certifications: () => {
+      sectionTitle("Certifications");
+      for (const c of cv.certifications) {
+        const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false });
+      }
+      b.cursorY += 2;
+    },
+    custom: () => {
+      for (const s of cv.customSections) {
+        sectionTitle(s.title || "Additional");
+        for (const it of s.bullets.filter(Boolean)) {
+          bullet(ctx, "—", it, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+        }
+        b.cursorY += 2;
+      }
+    },
+  };
 
-  if (!isHidden(cv, "languages") && cv.languages.length) {
-    sectionTitle("Languages");
-    b.addText({
-      value: cv.languages.map((l) => l.level?.trim() ? `${l.name} — ${l.level}` : l.name).join("       "),
-      fontSize: 9.8, color: SUBINK,
-    });
+  for (const k of getSectionOrder(cv)) {
+    if (shouldRender(cv, k)) bodyRenderers[k]?.();
   }
   void HAIRLINE;
   return b;
