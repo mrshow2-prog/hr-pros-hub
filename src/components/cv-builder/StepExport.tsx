@@ -201,7 +201,14 @@ export default function StepExport() {
         </button>
       </div>
 
-      <PaymentModal open={payOpen} onOpenChange={setPayOpen} onPaid={onPaid} />
+      <PaymentModal
+        open={payOpen}
+        onOpenChange={(open) => {
+          setPayOpen(open);
+          if (!open) setPendingFormat(null);
+        }}
+        onPaid={onPaid}
+      />
 
       <StepFooter onBack={() => setStep(4)} />
     </>
