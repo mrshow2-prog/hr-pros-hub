@@ -885,7 +885,8 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     if (cv.contact.location) sideRow("Location", cv.contact.location);
     if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
     if (cv.contact.email) sideRow("Email", cv.contact.email);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", cv.contact.linkedinUrl);
+    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl));
+    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website));
     sY += 3;
   }
 
