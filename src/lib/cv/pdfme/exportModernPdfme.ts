@@ -1163,6 +1163,10 @@ export async function generateCvPdfmeBlob(
     case "berlin":     b = await buildSkillsFirst(cv, effectivePhoto); break;
     case "riyadh":     b = await buildRiyadh(cv, effectivePhoto); break;
     case "geneva":     b = await buildGeneva(cv, effectivePhoto); break;
+    // New templates currently route to the closest existing PDF builder.
+    case "casablanca": b = await buildRiyadh(cv, effectivePhoto); break;
+    case "tokyo":      b = await buildModern(cv, effectivePhoto); break;
+    case "milano":     b = await buildGeneva(cv, effectivePhoto); break;
     case "dubai":
     default:           b = await buildModern(cv, effectivePhoto);
   }
