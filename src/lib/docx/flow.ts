@@ -1,16 +1,21 @@
 import { Document, Paragraph, Table, TextRun, BorderStyle } from "docx";
-import type { GeneratedCV } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets,
   txt, sectionHeading, roleRow, companyRow, bulletPara,
   headerTable, chipsParagraph, quoteSummary, INK_HEX,
+  shouldRender, getSectionOrder,
+  achievementsBlock, certificationsBlock, competenciesBlock, customSectionsBlock,
 } from "./shared";
+
+type FlowLabelKey =
+  | "summary" | "experience" | "education" | "skills" | "languages"
+  | "achievements" | "certifications" | "competencies";
 
 /** Single-column flowing layout — used by Dubai, London, Zurich, Berlin, Geneva. */
 export interface FlowOptions {
   headingVariant: "bar" | "underline" | "none";
-  sections: Array<"summary" | "experience" | "education" | "skills" | "skills-pills" | "languages">;
   photo?: { url: string | null; size: number; shape: "circle" | "square" };
   nameSize?: number;
   /** Render summary in a sienna left-bar quote block (Zurich). */
@@ -19,9 +24,10 @@ export interface FlowOptions {
   bottomRule?: boolean;
   /** Geneva-style timeline rail under experience entries. */
   timeline?: boolean;
-  headingMap?: Partial<Record<"summary" | "experience" | "education" | "skills" | "languages", string>>;
+  /** Skills rendered as pills (Berlin) instead of a bullet list. */
+  skillsVariant?: "bullets" | "pills";
+  headingMap?: Partial<Record<FlowLabelKey, string>>;
 }
-
 
 export async function buildFlowingDoc(
   cv: GeneratedCV,
@@ -30,10 +36,11 @@ export async function buildFlowingDoc(
 ): Promise<Document> {
   const t = getTheme(template);
   const blocks: Array<Paragraph | Table> = [];
-  const labelOf = (k: "summary" | "experience" | "education" | "skills" | "languages", fallback: string) =>
+  const labelOf = (k: FlowLabelKey, fallback: string) =>
     opts.headingMap?.[k] ?? fallback;
+  const heading = (label: string) => sectionHeading(label, t, opts.headingVariant);
 
-  // ----- HEADER (photo + name side-by-side) -----
+  // ----- HEADER -----
   if (!isHidden(cv, "contact")) {
     const headerParts = await headerTable(cv, t, {
       photoUrl: opts.photo?.url ?? null,
@@ -46,71 +53,86 @@ export async function buildFlowingDoc(
     blocks.push(...headerParts);
   }
 
-  for (const sec of opts.sections) {
-    if (sec === "summary") {
-      if (!isHidden(cv, "summary") && cv.summary) {
-        blocks.push(sectionHeading(labelOf("summary", "Professional Summary"), t, opts.headingVariant));
-        blocks.push(
-          opts.quoteSummary
-            ? quoteSummary(cv.summary, t)
-            : txt(cv.summary, t, { size: 20, color: t.subInk, after: 120 }),
-        );
-      }
-    } else if (sec === "experience") {
-      if (!isHidden(cv, "experience") && cv.experience.length) {
-        blocks.push(sectionHeading(labelOf("experience", "Work Experience"), t, opts.headingVariant));
-        cv.experience.forEach((exp, idx) => {
-          if (opts.timeline) {
-            // Geneva: a small marker paragraph + left-bordered indent block per role
-            blocks.push(new Paragraph({
-              spacing: { before: idx === 0 ? 60 : 180, after: 20 },
-              children: [new TextRun({ text: "●", size: 18, color: t.primary, font: t.body, bold: true })],
-            }));
-          }
-          blocks.push(roleRow(exp.role || "", periodOf(exp), t, CONTENT_W));
-          const cr = companyRow(exp.company || "", exp.location || "", t);
-          if (cr) blocks.push(cr);
-          visibleBullets(exp).forEach((b) => {
-            blocks.push(bulletPara(b.rewrite || b.original, t));
-          });
-        });
-        void BorderStyle; void INK_HEX;
-      }
+  // ----- SUMMARY (pinned at top) -----
+  if (shouldRender(cv, "summary")) {
+    blocks.push(heading(labelOf("summary", "Professional Summary")));
+    blocks.push(
+      opts.quoteSummary
+        ? quoteSummary(cv.summary, t)
+        : txt(cv.summary, t, { size: 20, color: t.subInk, after: 120 }),
+    );
+  }
 
-    } else if (sec === "education") {
-      if (!isHidden(cv, "education") && cv.education.length) {
-        blocks.push(sectionHeading(labelOf("education", "Education"), t, opts.headingVariant));
-        cv.education.forEach((ed) => {
-          blocks.push(roleRow(ed.qualification, ed.period || "", t, CONTENT_W));
-          if (ed.institution) {
-            blocks.push(txt(ed.institution, t, { size: 19, color: t.primary, bold: true, after: 80 }));
-          }
+  // ----- REORDERABLE BODY SECTIONS -----
+  const renderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      blocks.push(heading(labelOf("experience", "Work Experience")));
+      cv.experience.forEach((exp, idx) => {
+        if (opts.timeline) {
+          blocks.push(new Paragraph({
+            spacing: { before: idx === 0 ? 60 : 180, after: 20 },
+            children: [new TextRun({ text: "●", size: 18, color: t.primary, font: t.body, bold: true })],
+          }));
+        }
+        blocks.push(roleRow(exp.role || "", periodOf(exp), t, CONTENT_W));
+        const cr = companyRow(exp.company || "", exp.location || "", t);
+        if (cr) blocks.push(cr);
+        visibleBullets(exp).forEach((b) => {
+          blocks.push(bulletPara(b.rewrite || b.original, t));
         });
-      }
-    } else if (sec === "skills") {
-      if (!isHidden(cv, "skills") && cv.skills.length) {
-        blocks.push(sectionHeading(labelOf("skills", "Skills & Competencies"), t, opts.headingVariant));
+      });
+      void BorderStyle; void INK_HEX;
+    },
+    education: () => {
+      blocks.push(heading(labelOf("education", "Education")));
+      cv.education.forEach((ed) => {
+        blocks.push(roleRow(ed.qualification, ed.period || "", t, CONTENT_W));
+        if (ed.institution) {
+          blocks.push(txt(ed.institution, t, { size: 19, color: t.primary, bold: true, after: 80 }));
+        }
+      });
+    },
+    skills: () => {
+      const label = labelOf("skills", "Skills & Competencies");
+      blocks.push(heading(label));
+      if (opts.skillsVariant === "pills") {
+        blocks.push(chipsParagraph(cv.skills, t));
+      } else {
         cv.skills.forEach((s) => blocks.push(bulletPara(s, t)));
       }
-    } else if (sec === "skills-pills") {
-      if (!isHidden(cv, "skills") && cv.skills.length) {
-        blocks.push(sectionHeading(labelOf("skills", "Skills & Competencies"), t, opts.headingVariant));
-        blocks.push(chipsParagraph(cv.skills, t));
-      }
-    } else if (sec === "languages") {
-      if (!isHidden(cv, "languages") && cv.languages.length) {
-        blocks.push(sectionHeading(labelOf("languages", "Languages"), t, opts.headingVariant));
-        blocks.push(
-          txt(
-            cv.languages
-              .map((l) => (l.level && l.level.trim() ? `${l.name} (${l.level.trim()})` : l.name))
-              .join("   ·   "),
-            t,
-            { size: 20, color: t.subInk, after: 80 },
-          ),
-        );
-      }
-    }
+    },
+    languages: () => {
+      blocks.push(heading(labelOf("languages", "Languages")));
+      blocks.push(
+        txt(
+          cv.languages
+            .map((l) => (l.level && l.level.trim() ? `${l.name} (${l.level.trim()})` : l.name))
+            .join("   ·   "),
+          t,
+          { size: 20, color: t.subInk, after: 80 },
+        ),
+      );
+    },
+    achievements: () => {
+      achievementsBlock(cv, t, heading, labelOf("achievements", "Key Achievements"))
+        .forEach((p) => blocks.push(p));
+    },
+    certifications: () => {
+      certificationsBlock(cv, t, heading, CONTENT_W, labelOf("certifications", "Certifications"))
+        .forEach((p) => blocks.push(p));
+    },
+    competencies: () => {
+      competenciesBlock(cv, t, heading, labelOf("competencies", "Core Competencies"))
+        .forEach((p) => blocks.push(p));
+    },
+    custom: () => {
+      customSectionsBlock(cv, t, heading).forEach((p) => blocks.push(p));
+    },
+  };
+
+  for (const key of getSectionOrder(cv)) {
+    if (!shouldRender(cv, key)) continue;
+    renderers[key]?.();
   }
 
   return new Document({
