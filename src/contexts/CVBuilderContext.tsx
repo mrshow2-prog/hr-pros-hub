@@ -371,6 +371,11 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
     })),
 
     hiddenSections: raw?.hiddenSections ?? [],
+    sectionOrder: Array.isArray(raw?.sectionOrder)
+      ? (raw!.sectionOrder as SectionKey[]).filter((k) =>
+          ["experience", "skills", "education", "competencies", "languages", "achievements", "certifications", "custom"].includes(k),
+        )
+      : undefined,
   };
 }
 
