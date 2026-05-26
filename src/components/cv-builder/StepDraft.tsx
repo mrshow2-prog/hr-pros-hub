@@ -220,27 +220,66 @@ export function SectionShell({
   sectionKey,
   title,
   children,
+  canMoveUp,
+  canMoveDown,
+  showEmptyHint,
 }: {
   sectionKey: SectionKey;
   title: string;
   children: React.ReactNode;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  /** When true, render a subtle hint that the section won't appear on the CV. */
+  showEmptyHint?: boolean;
 }) {
-  const { state, toggleSection } = useCVBuilder();
+  const { state, toggleSection, moveSection } = useCVBuilder();
   const hidden = state.generatedCV?.hiddenSections.includes(sectionKey);
+  const isReorderable = sectionKey !== "contact" && sectionKey !== "summary";
   return (
     <section className={cn("rounded-md", hidden && "opacity-50")}>
       <header className="mb-4 flex items-center justify-between">
         <h2 className="font-syne text-xl text-ink">{title}</h2>
-        <button
-          type="button"
-          onClick={() => toggleSection(sectionKey)}
-          className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/65 hover:border-ink/30"
-          title={hidden ? "Show section in export" : "Hide section from export"}
-        >
-          {hidden ? <EyeOff size={12} /> : <Eye size={12} />}
-          {hidden ? "Hidden" : "Visible"}
-        </button>
+        <div className="flex items-center gap-1">
+          {isReorderable && (
+            <>
+              <button
+                type="button"
+                onClick={() => moveSection(sectionKey, "up")}
+                disabled={!canMoveUp}
+                className="inline-flex h-7 w-7 items-center justify-center rounded border border-ink/15 text-ink/65 hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+                title="Move section up"
+                aria-label="Move section up"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveSection(sectionKey, "down")}
+                disabled={!canMoveDown}
+                className="inline-flex h-7 w-7 items-center justify-center rounded border border-ink/15 text-ink/65 hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+                title="Move section down"
+                aria-label="Move section down"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => toggleSection(sectionKey)}
+            className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/65 hover:border-ink/30"
+            title={hidden ? "Show section in export" : "Hide section from export"}
+          >
+            {hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+            {hidden ? "Hidden" : "Visible"}
+          </button>
+        </div>
       </header>
+      {showEmptyHint && !hidden && (
+        <p className="mb-3 rounded-sm bg-ink/5 px-3 py-2 font-dm text-[11px] text-ink/60">
+          This section is empty and won't appear on your CV until you add content.
+        </p>
+      )}
       {children}
     </section>
   );
