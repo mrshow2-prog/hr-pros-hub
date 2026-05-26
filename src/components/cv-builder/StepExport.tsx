@@ -103,6 +103,14 @@ export default function StepExport() {
           </div>
         )}
 
+        {!disabled && previewOnly && (
+          <div className="mb-6 rounded-md border border-sienna/30 bg-sienna/5 p-4 font-dm text-sm text-ink/75">
+            <strong className="font-semibold text-ink">Heads-up:</strong> this template's downloaded
+            file uses a close-matching classic layout. The exact preview design is being prepared
+            for download — switch to any other template for pixel-perfect export.
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <button
             type="button"
