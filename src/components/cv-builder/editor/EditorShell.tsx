@@ -380,9 +380,8 @@ export default function EditorShell() {
             >
               <div className="mx-auto max-w-2xl space-y-3">
                 {(() => {
-                  const visible = SECTIONS.filter(
-                    (s) => s.key !== "competencies" || showCompetencies,
-                  );
+                  const visible = SECTIONS;
+                  const reorderableVisible = visible.filter((s) => !PINNED.includes(s.key));
                   const goNext = (key: SectionKey) => {
                     const idx = visible.findIndex((v) => v.key === key);
                     const next = visible[idx + 1];
@@ -412,6 +411,10 @@ export default function EditorShell() {
                     : label;
                   return visible.map((s, i) => {
                     const isLast = i === visible.length - 1;
+                    const rIdx = reorderableVisible.findIndex((v) => v.key === s.key);
+                    const canMoveUp = rIdx > 0;
+                    const canMoveDown = rIdx >= 0 && rIdx < reorderableVisible.length - 1;
+                    const empty = !hasContent(cv, s.key);
                     return (
                       <CollapsibleSection
                         key={s.key}
@@ -421,7 +424,13 @@ export default function EditorShell() {
                         onToggle={() => setActiveSection((cur) => (cur === s.key ? ("" as SectionKey) : s.key))}
                         onContinue={isLast ? undefined : () => goNext(s.key)}
                       >
-                        <SectionShell sectionKey={s.key} title={titleFor(s.key, s.label)}>
+                        <SectionShell
+                          sectionKey={s.key}
+                          title={titleFor(s.key, s.label)}
+                          canMoveUp={canMoveUp}
+                          canMoveDown={canMoveDown}
+                          showEmptyHint={empty && !PINNED.includes(s.key)}
+                        >
                           {renderBody(s.key)}
                         </SectionShell>
                       </CollapsibleSection>
@@ -432,6 +441,7 @@ export default function EditorShell() {
               </div>
             </div>
           </ResizablePanel>
+
 
 
 
