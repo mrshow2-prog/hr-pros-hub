@@ -21,6 +21,9 @@ export function isHidden(cv: GeneratedCV, key: SectionKey) {
   return new Set<SectionKey>(cv.hiddenSections).has(key);
 }
 
+/** Re-export the shared visibility helpers so pdfme code has a single import. */
+export { getSectionOrder, hasContent, shouldRender } from "@/lib/cv/sectionVisibility";
+
 export function periodOf(exp: CVExperience) {
   return [exp.startDate, exp.endDate].filter(Boolean).join(" – ") || exp.period || "";
 }
