@@ -7,7 +7,10 @@ import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets, noBorders, stripUrlPrefix,
   blank, txt, sectionHeading, roleRow, companyRow, bulletPara,
+  shouldRender,
+  achievementsBlock, certificationsBlock, competenciesBlock, customSectionsBlock,
 } from "./shared";
+
 
 /** Compact docx: mirrors PdfCompact
  *  Header: name+title left,  contact right (right-aligned text)
