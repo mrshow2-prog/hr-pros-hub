@@ -456,6 +456,13 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
               onChange={(v) => patchContact({ linkedinUrl: v })}
             />
           </div>
+          <div data-field="website" className="sm:col-span-2">
+            <Field
+              label="Personal website / portfolio (optional)"
+              value={contact.website ?? ""}
+              onChange={(v) => patchContact({ website: v })}
+            />
+          </div>
         </div>
       </div>
       {err && (
