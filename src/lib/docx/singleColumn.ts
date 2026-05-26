@@ -4,7 +4,6 @@ import { buildFlowingDoc } from "./flow";
 export const buildDubaiDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   buildFlowingDoc(cv, "simple", {
     headingVariant: "bar",
-    sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 100, shape: "square" },
     nameSize: 48,
   });
@@ -12,7 +11,6 @@ export const buildDubaiDoc = (cv: GeneratedCV, photoUrl: string | null) =>
 export const buildLondonDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   buildFlowingDoc(cv, "traditional", {
     headingVariant: "underline",
-    sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 90, shape: "circle" },
     nameSize: 44,
     bottomRule: true,
@@ -21,7 +19,6 @@ export const buildLondonDoc = (cv: GeneratedCV, photoUrl: string | null) =>
 export const buildZurichDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   buildFlowingDoc(cv, "executive", {
     headingVariant: "none",
-    sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 110, shape: "square" },
     nameSize: 56,
     quoteSummary: true,
@@ -35,7 +32,7 @@ export const buildZurichDoc = (cv: GeneratedCV, photoUrl: string | null) =>
 export const buildBerlinDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   buildFlowingDoc(cv, "skills", {
     headingVariant: "none",
-    sections: ["summary", "skills-pills", "experience", "education", "languages"],
+    skillsVariant: "pills",
     photo: { url: photoUrl, size: 90, shape: "circle" },
     nameSize: 40,
     bottomRule: true,
@@ -44,7 +41,6 @@ export const buildBerlinDoc = (cv: GeneratedCV, photoUrl: string | null) =>
 export const buildGenevaDoc = (cv: GeneratedCV, photoUrl: string | null) =>
   buildFlowingDoc(cv, "editorial", {
     headingVariant: "underline",
-    sections: ["summary", "experience", "education", "skills", "languages"],
     photo: { url: photoUrl, size: 100, shape: "circle" },
     nameSize: 52,
     timeline: true,
@@ -53,4 +49,3 @@ export const buildGenevaDoc = (cv: GeneratedCV, photoUrl: string | null) =>
       experience: "Career Timeline",
     },
   });
-
