@@ -198,6 +198,13 @@ export interface GeneratedCV {
   certifications: Certification[];
   customSections: CustomSection[];
   hiddenSections: SectionKey[];
+  /**
+   * User-defined render order for the reorderable body sections.
+   * Contact and summary are always pinned at the top. Missing keys are
+   * appended in their canonical order at read time, so older CVs continue
+   * to work even when new sections are introduced.
+   */
+  sectionOrder?: SectionKey[];
 }
 
 export type AtsSeverity = "critical" | "warning" | "info";
@@ -364,6 +371,11 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
     })),
 
     hiddenSections: raw?.hiddenSections ?? [],
+    sectionOrder: Array.isArray(raw?.sectionOrder)
+      ? (raw!.sectionOrder as SectionKey[]).filter((k) =>
+          ["experience", "skills", "education", "competencies", "languages", "achievements", "certifications", "custom"].includes(k),
+        )
+      : undefined,
   };
 }
 
@@ -436,6 +448,7 @@ interface CVBuilderContextValue {
   removeCustomSection: (id: string) => void;
   patchCustomSection: (id: string, patch: Partial<CustomSection>) => void;
   toggleSection: (key: SectionKey) => void;
+  moveSection: (key: SectionKey, direction: "up" | "down") => void;
 
   setAts: (ats: AtsScore | null) => void;
   resetSession: () => void;
@@ -744,6 +757,26 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
             ? cv.hiddenSections.filter((k) => k !== key)
             : [...cv.hiddenSections, key],
         })),
+      moveSection: (key, direction) =>
+        patchCV((cv) => {
+          const REORDERABLE: SectionKey[] = [
+            "experience", "skills", "education", "competencies",
+            "languages", "achievements", "certifications", "custom",
+          ];
+          if (!REORDERABLE.includes(key)) return cv;
+          // Materialise current order from cv.sectionOrder + defaults
+          const current = (cv.sectionOrder ?? []).filter((k) => REORDERABLE.includes(k));
+          for (const k of REORDERABLE) {
+            if (!current.includes(k)) current.push(k);
+          }
+          const idx = current.indexOf(key);
+          if (idx < 0) return cv;
+          const swap = direction === "up" ? idx - 1 : idx + 1;
+          if (swap < 0 || swap >= current.length) return cv;
+          const next = [...current];
+          [next[idx], next[swap]] = [next[swap], next[idx]];
+          return { ...cv, sectionOrder: next };
+        }),
 
       setAts: (ats) =>
         setState((s) => ({ ...s, atsScore: ats, lastScoredAt: ats ? Date.now() : s.lastScoredAt })),

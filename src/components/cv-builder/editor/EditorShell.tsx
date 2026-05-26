@@ -44,6 +44,7 @@ import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
+import { getSectionOrder, hasContent } from "@/lib/cv/sectionVisibility";
 import { ChevronDown } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
@@ -57,18 +58,19 @@ const TEMPLATES: { id: TemplateId; label: string }[] = [
 ];
 
 type SectionDef = { key: SectionKey; label: string };
-const SECTIONS: SectionDef[] = [
-  { key: "contact", label: "Contact" },
-  { key: "summary", label: "Summary" },
-  { key: "experience", label: "Experience" },
-  { key: "skills", label: "Skills" },
-  { key: "education", label: "Education" },
-  { key: "competencies", label: "Competencies" },
-  { key: "languages", label: "Languages" },
-  { key: "achievements", label: "Achievements" },
-  { key: "certifications", label: "Certifications" },
-  { key: "custom", label: "Custom sections" },
-];
+const SECTION_LABELS: Record<SectionKey, string> = {
+  contact: "Contact",
+  summary: "Summary",
+  experience: "Experience",
+  skills: "Skills",
+  education: "Education",
+  competencies: "Competencies",
+  languages: "Languages",
+  achievements: "Achievements",
+  certifications: "Certifications",
+  custom: "Custom sections",
+};
+const PINNED: SectionKey[] = ["contact", "summary"];
 
 
 export default function EditorShell() {
@@ -263,12 +265,21 @@ export default function EditorShell() {
   const showCompetencies =
     state.intentForm.cvType === "skills" || state.intentForm.cvType === "hybrid";
 
+  // Build the ordered section list: contact + summary pinned at top,
+  // then the user's customised body order from cv.sectionOrder.
+  const orderedBody = getSectionOrder(cv);
+  const orderedKeys: SectionKey[] = [...PINNED, ...orderedBody];
+  const visibleKeys: SectionKey[] = orderedKeys.filter(
+    (k) => k !== "competencies" || showCompetencies,
+  );
+  const SECTIONS: SectionDef[] = visibleKeys.map((k) => ({ key: k, label: SECTION_LABELS[k] }));
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-paper">
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-ink/10 bg-paper/95 px-3 py-2 backdrop-blur">
         <nav className="flex flex-1 flex-wrap items-center gap-1 overflow-x-auto">
-          {SECTIONS.filter((s) => s.key !== "competencies" || showCompetencies).map((s) => (
+          {SECTIONS.map((s) => (
             <button
               key={s.key}
               onClick={() => scrollToSection(s.key)}
@@ -369,9 +380,8 @@ export default function EditorShell() {
             >
               <div className="mx-auto max-w-2xl space-y-3">
                 {(() => {
-                  const visible = SECTIONS.filter(
-                    (s) => s.key !== "competencies" || showCompetencies,
-                  );
+                  const visible = SECTIONS;
+                  const reorderableVisible = visible.filter((s) => !PINNED.includes(s.key));
                   const goNext = (key: SectionKey) => {
                     const idx = visible.findIndex((v) => v.key === key);
                     const next = visible[idx + 1];
@@ -401,6 +411,10 @@ export default function EditorShell() {
                     : label;
                   return visible.map((s, i) => {
                     const isLast = i === visible.length - 1;
+                    const rIdx = reorderableVisible.findIndex((v) => v.key === s.key);
+                    const canMoveUp = rIdx > 0;
+                    const canMoveDown = rIdx >= 0 && rIdx < reorderableVisible.length - 1;
+                    const empty = !hasContent(cv, s.key);
                     return (
                       <CollapsibleSection
                         key={s.key}
@@ -410,7 +424,13 @@ export default function EditorShell() {
                         onToggle={() => setActiveSection((cur) => (cur === s.key ? ("" as SectionKey) : s.key))}
                         onContinue={isLast ? undefined : () => goNext(s.key)}
                       >
-                        <SectionShell sectionKey={s.key} title={titleFor(s.key, s.label)}>
+                        <SectionShell
+                          sectionKey={s.key}
+                          title={titleFor(s.key, s.label)}
+                          canMoveUp={canMoveUp}
+                          canMoveDown={canMoveDown}
+                          showEmptyHint={empty && !PINNED.includes(s.key)}
+                        >
                           {renderBody(s.key)}
                         </SectionShell>
                       </CollapsibleSection>
@@ -421,6 +441,7 @@ export default function EditorShell() {
               </div>
             </div>
           </ResizablePanel>
+
 
 
 
