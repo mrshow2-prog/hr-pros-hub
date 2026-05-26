@@ -35,16 +35,21 @@ export function visibleBullets(exp: GeneratedCV["experience"][number]) {
 }
 
 export function ContactLine({ cv, className }: { cv: GeneratedCV; className?: string }) {
-  const items = [
-    cv.contact.location,
-    cv.contact.phone,
-    cv.contact.email,
-    cv.contact.linkedinUrl,
-  ].filter(Boolean);
+  const items: { icon: typeof MapPin; label: string }[] = [];
+  if (cv.contact.location) items.push({ icon: MapPin, label: cv.contact.location });
+  if (cv.contact.phone) items.push({ icon: Phone, label: cv.contact.phone });
+  if (cv.contact.email) items.push({ icon: Mail, label: cv.contact.email });
+  if (cv.contact.linkedinUrl)
+    items.push({ icon: Linkedin, label: stripUrlPrefix(cv.contact.linkedinUrl) });
+  if (cv.contact.website)
+    items.push({ icon: Globe, label: stripUrlPrefix(cv.contact.website) });
   return (
     <div className={cn("flex flex-wrap gap-x-5 gap-y-1", className)}>
-      {items.map((it) => (
-        <span key={it}>{it}</span>
+      {items.map(({ icon: Icon, label }) => (
+        <span key={label} className="inline-flex items-center gap-1.5">
+          <Icon className="h-3 w-3 shrink-0 opacity-70" strokeWidth={2} />
+          <span>{label}</span>
+        </span>
       ))}
     </div>
   );
