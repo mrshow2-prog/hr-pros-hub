@@ -265,12 +265,21 @@ export default function EditorShell() {
   const showCompetencies =
     state.intentForm.cvType === "skills" || state.intentForm.cvType === "hybrid";
 
+  // Build the ordered section list: contact + summary pinned at top,
+  // then the user's customised body order from cv.sectionOrder.
+  const orderedBody = getSectionOrder(cv);
+  const orderedKeys: SectionKey[] = [...PINNED, ...orderedBody];
+  const visibleKeys: SectionKey[] = orderedKeys.filter(
+    (k) => k !== "competencies" || showCompetencies,
+  );
+  const SECTIONS: SectionDef[] = visibleKeys.map((k) => ({ key: k, label: SECTION_LABELS[k] }));
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-paper">
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-ink/10 bg-paper/95 px-3 py-2 backdrop-blur">
         <nav className="flex flex-1 flex-wrap items-center gap-1 overflow-x-auto">
-          {SECTIONS.filter((s) => s.key !== "competencies" || showCompetencies).map((s) => (
+          {SECTIONS.map((s) => (
             <button
               key={s.key}
               onClick={() => scrollToSection(s.key)}
