@@ -710,7 +710,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
 
   // ---- LEFT: Summary ----
   let lY = topY;
-  if (!isHidden(cv, "summary") && cv.summary) {
+  if (shouldRender(cv, "summary")) {
     b.cursorY = lY;
     tinyTitle("Summary", leftX, leftColW);
     lY = b.cursorY;
@@ -721,9 +721,9 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     lY += sh + 4;
   }
 
-  // ---- RIGHT: Skills + Languages ----
+  // ---- RIGHT: Skills + Languages (these stay pinned in the sidebar) ----
   let rY = topY;
-  if (!isHidden(cv, "skills") && cv.skills.length > 0) {
+  if (shouldRender(cv, "skills")) {
     b.cursorY = rY;
     tinyTitle("Skills", rightX, rightColW);
     rY = b.cursorY;
@@ -739,7 +739,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     }
     rY += 3;
   }
-  if (!isHidden(cv, "languages") && cv.languages.length > 0) {
+  if (shouldRender(cv, "languages")) {
     b.cursorY = rY;
     tinyTitle("Languages", rightX, rightColW);
     rY = b.cursorY;
@@ -752,23 +752,61 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
 
   b.cursorY = Math.max(lY, rY) + 5;
 
-  // ---- Full-width Experience ----
-  if (!isHidden(cv, "experience") && cv.experience.length > 0) {
-    fullSectionTitle("Work Experience");
-    for (const exp of cv.experience) {
-      periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 10.5, bold: true });
-      const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
-      deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
-      for (const bul of visibleBullets(exp)) bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
-      b.cursorY += 1.8;
-    }
-  }
-  if (!isHidden(cv, "education") && cv.education.length > 0) {
-    fullSectionTitle("Education");
-    for (const ed of cv.education) {
-      periodRow(ctx, ed.qualification, ed.period, { leftFs: 10, bold: true });
-      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.8, color: SIENNA, spaceAfter: 3 });
-    }
+  // ---- Full-width body (ordered) ----
+  const fullWidthRenderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      fullSectionTitle("Work Experience");
+      for (const exp of cv.experience) {
+        periodRow(ctx, exp.role || "", periodOf(exp), { leftFs: 10.5, bold: true });
+        const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
+        deterministicLine(ctx, comp, { fs: 9.8, color: SIENNA, spaceAfter: 1.5 });
+        for (const bul of visibleBullets(exp)) bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.4, glyphColor: SIENNA });
+        b.cursorY += 1.8;
+      }
+    },
+    education: () => {
+      fullSectionTitle("Education");
+      for (const ed of cv.education) {
+        periodRow(ctx, ed.qualification, ed.period, { leftFs: 10, bold: true });
+        if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.8, color: SIENNA, spaceAfter: 3 });
+      }
+    },
+    competencies: () => {
+      fullSectionTitle("Core Competencies");
+      for (const c of cv.competencyClusters) {
+        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
+        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+      }
+    },
+    achievements: () => {
+      fullSectionTitle("Achievements");
+      for (const a of cv.achievements.filter(Boolean)) {
+        bullet(ctx, "•", a, { fs: 9.4, glyphColor: SIENNA });
+      }
+      b.cursorY += 2;
+    },
+    certifications: () => {
+      fullSectionTitle("Certifications");
+      for (const c of cv.certifications) {
+        const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false });
+      }
+      b.cursorY += 2;
+    },
+    custom: () => {
+      for (const s of cv.customSections) {
+        fullSectionTitle(s.title || "Additional");
+        for (const it of s.bullets.filter(Boolean)) {
+          bullet(ctx, "•", it, { fs: 9.4, glyphColor: SIENNA });
+        }
+        b.cursorY += 2;
+      }
+    },
+  };
+
+  for (const k of getSectionOrder(cv)) {
+    if (k === "skills" || k === "languages") continue; // pinned in sidebar
+    if (shouldRender(cv, k)) fullWidthRenderers[k]?.();
   }
   return b;
 }
