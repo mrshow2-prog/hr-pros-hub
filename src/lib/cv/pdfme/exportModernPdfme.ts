@@ -1,6 +1,7 @@
-import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
+import { normalizeTemplateId, type GeneratedCV, type SectionKey, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
   contactItems, isHidden, periodOf, visibleBullets, stripUrlPrefix,
+  getSectionOrder, shouldRender,
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, ptToMm, wrapLines,
