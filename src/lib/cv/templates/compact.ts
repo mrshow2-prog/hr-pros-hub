@@ -1,4 +1,4 @@
-import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV } from "@/contexts/CVBuilderContext";
 import { shouldRender } from "@/lib/cv/sectionVisibility";
 
 export type CompactMode = "preview" | "pdf" | "docx";
