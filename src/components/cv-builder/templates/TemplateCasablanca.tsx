@@ -82,8 +82,8 @@ export default function TemplateCasablanca({
           aria-hidden
         />
 
-        {/* Photo */}
-        {photoUrl && (
+        {/* Photo — tied to contact visibility for consistency with other templates */}
+        {photoUrl && isVisible(cv, "contact") && (
           <div className="mb-7 flex justify-center">
             <div
               className="rounded-full p-[3px]"
