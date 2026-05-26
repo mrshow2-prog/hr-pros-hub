@@ -558,7 +558,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
         fontSize: 11, color: SIENNA,
       });
     }
-    const rows = [cv.contact.location, cv.contact.phone, cv.contact.email, cv.contact.linkedinUrl].filter(Boolean) as string[];
+    const rows = [cv.contact.location, cv.contact.phone, cv.contact.email, stripUrlPrefix(cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.website)].filter(Boolean) as string[];
     const rfs = 8.6;
     let ry = hy0;
     for (const r of rows) {
