@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
 import { getSectionOrder, hasContent } from "@/lib/cv/sectionVisibility";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "simple", label: "Simple" },
@@ -415,6 +415,7 @@ export default function EditorShell() {
                     const canMoveUp = rIdx > 0;
                     const canMoveDown = rIdx >= 0 && rIdx < reorderableVisible.length - 1;
                     const empty = !hasContent(cv, s.key);
+                    const isReorderable = !PINNED.includes(s.key);
                     return (
                       <CollapsibleSection
                         key={s.key}
@@ -423,6 +424,8 @@ export default function EditorShell() {
                         isOpen={activeSection === s.key}
                         onToggle={() => setActiveSection((cur) => (cur === s.key ? ("" as SectionKey) : s.key))}
                         onContinue={isLast ? undefined : () => goNext(s.key)}
+                        canMoveUp={isReorderable ? canMoveUp : undefined}
+                        canMoveDown={isReorderable ? canMoveDown : undefined}
                       >
                         <SectionShell
                           sectionKey={s.key}
@@ -430,6 +433,8 @@ export default function EditorShell() {
                           canMoveUp={canMoveUp}
                           canMoveDown={canMoveDown}
                           showEmptyHint={empty && !PINNED.includes(s.key)}
+                          hideMoveControls
+                          hideVisibilityControl
                         >
                           {renderBody(s.key)}
                         </SectionShell>
@@ -765,6 +770,8 @@ function CollapsibleSection({
   isOpen,
   onToggle,
   onContinue,
+  canMoveUp,
+  canMoveDown,
   children,
 }: {
   sectionKey: SectionKey;
@@ -772,28 +779,74 @@ function CollapsibleSection({
   isOpen: boolean;
   onToggle: () => void;
   onContinue?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
   children: React.ReactNode;
 }) {
+  const { state, toggleSection, moveSection } = useCVBuilder();
+  const hidden = state.generatedCV?.hiddenSections.includes(sectionKey);
+  const showArrows = canMoveUp !== undefined || canMoveDown !== undefined;
+  const isPinned = sectionKey === "contact" || sectionKey === "summary";
   return (
     <div
       data-section={sectionKey}
       className={cn(
         "rounded-md border border-ink/10 bg-paper transition",
         isOpen ? "shadow-sm" : "hover:border-ink/25",
+        hidden && "opacity-60",
       )}
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left"
-        aria-expanded={isOpen}
-      >
-        <span className="font-syne text-base text-ink">{title}</span>
-        <ChevronDown
-          size={16}
-          className={cn("text-ink/55 transition-transform", isOpen && "rotate-180")}
-        />
-      </button>
+      <div className="flex w-full items-center gap-2 px-5 py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex flex-1 items-center justify-between gap-3 text-left"
+          aria-expanded={isOpen}
+        >
+          <span className="font-syne text-base text-ink">{title}</span>
+          <ChevronDown
+            size={16}
+            className={cn("text-ink/55 transition-transform", isOpen && "rotate-180")}
+          />
+        </button>
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          {showArrows && (
+            <>
+              <button
+                type="button"
+                onClick={() => moveSection(sectionKey, "up")}
+                disabled={!canMoveUp}
+                className="inline-flex h-7 w-7 items-center justify-center rounded border border-ink/15 text-ink/65 hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+                title="Move section up"
+                aria-label="Move section up"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveSection(sectionKey, "down")}
+                disabled={!canMoveDown}
+                className="inline-flex h-7 w-7 items-center justify-center rounded border border-ink/15 text-ink/65 hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+                title="Move section down"
+                aria-label="Move section down"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </>
+          )}
+          {!isPinned && (
+            <button
+              type="button"
+              onClick={() => toggleSection(sectionKey)}
+              className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/65 hover:border-ink/30"
+              title={hidden ? "Show section in export" : "Hide section from export"}
+            >
+              {hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+              {hidden ? "Hidden" : "Visible"}
+            </button>
+          )}
+        </div>
+      </div>
       {isOpen && (
         <div className="border-t border-ink/10 px-5 py-5">
           {children}
