@@ -67,7 +67,8 @@ export async function buildCompactDoc(
     cv.contact.location,
     cv.contact.phone,
     cv.contact.email,
-    cv.contact.linkedinUrl,
+    stripUrlPrefix(cv.contact.linkedinUrl),
+    stripUrlPrefix(cv.contact.website),
   ].filter(Boolean) as string[];
   headerCells.push(
     new TableCell({
