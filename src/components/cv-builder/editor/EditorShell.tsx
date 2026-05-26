@@ -415,6 +415,7 @@ export default function EditorShell() {
                     const canMoveUp = rIdx > 0;
                     const canMoveDown = rIdx >= 0 && rIdx < reorderableVisible.length - 1;
                     const empty = !hasContent(cv, s.key);
+                    const isReorderable = !PINNED.includes(s.key);
                     return (
                       <CollapsibleSection
                         key={s.key}
@@ -423,6 +424,8 @@ export default function EditorShell() {
                         isOpen={activeSection === s.key}
                         onToggle={() => setActiveSection((cur) => (cur === s.key ? ("" as SectionKey) : s.key))}
                         onContinue={isLast ? undefined : () => goNext(s.key)}
+                        canMoveUp={isReorderable ? canMoveUp : undefined}
+                        canMoveDown={isReorderable ? canMoveDown : undefined}
                       >
                         <SectionShell
                           sectionKey={s.key}
@@ -430,6 +433,8 @@ export default function EditorShell() {
                           canMoveUp={canMoveUp}
                           canMoveDown={canMoveDown}
                           showEmptyHint={empty && !PINNED.includes(s.key)}
+                          hideMoveControls
+                          hideVisibilityControl
                         >
                           {renderBody(s.key)}
                         </SectionShell>
