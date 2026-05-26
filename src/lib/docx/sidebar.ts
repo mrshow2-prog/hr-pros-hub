@@ -2,12 +2,15 @@ import {
   Document, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, VerticalAlign, BorderStyle, ShadingType, ImageRun, AlignmentType,
 } from "docx";
-import type { GeneratedCV } from "@/contexts/CVBuilderContext";
+import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
   isHidden, periodOf, visibleBullets, noBorders, urlToImageData, stripUrlPrefix,
-  INK_HEX,
+  INK_HEX, shouldRender, getSectionOrder,
+  achievementsBlock, certificationsBlock, competenciesBlock, customSectionsBlock,
+  bulletPara, txt,
 } from "./shared";
+
 
 /** Riyadh — dark sienna left rail with photo, contact, skills, languages.
  *  Right column flows summary → experience → education. */
