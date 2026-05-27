@@ -45,13 +45,18 @@ function periodRow(
   ctx: Ctx,
   left: string,
   right: string,
-  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number },
+  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number; periodW?: number },
 ) {
   const { b } = ctx;
   const leftFs = opts.leftFs;
   const rightFs = opts.rightFs ?? 8.8;
-  const periodW = 52;
-  const leftW = b.contentW - periodW - 2;
+  // Reserve only what the date string actually needs (+ small padding) so the
+  // job title gets the rest of the line instead of wrapping into 3 narrow rows.
+  const measuredRightW = right
+    ? Math.min(b.contentW * 0.45, Math.ceil(estimatedRightWidthMm(right, rightFs)) + 2)
+    : 0;
+  const periodW = opts.periodW ?? measuredRightW;
+  const leftW = b.contentW - periodW - (periodW ? 2 : 0);
   const lineStep = ptToMm(leftFs) * 1.25;
   const leftLines = wrapLines(left || "", leftW, leftFs, { bold: opts.bold });
   const lineCount = Math.max(1, leftLines.length);
@@ -83,6 +88,20 @@ function periodRow(
     });
   }
   b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5);
+}
+
+/** Width estimate for the right-aligned date string (mm). */
+function estimatedRightWidthMm(text: string, fontSizePt: number) {
+  const PT_PER_MM_LOCAL = 2.8346;
+  const units = Array.from(text).reduce((s, ch) => {
+    if (ch === " ") return s + 0.30;
+    if (/[0-9]/.test(ch)) return s + 0.55;
+    if (/[A-Z]/.test(ch)) return s + 0.60;
+    if (/[a-z]/.test(ch)) return s + 0.50;
+    if (/[-–—]/.test(ch)) return s + 0.40;
+    return s + 0.45;
+  }, 0);
+  return (fontSizePt * units) / PT_PER_MM_LOCAL * 1.05;
 }
 
 function deterministicLine(
@@ -997,7 +1016,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
 const PAPER = "#f5f0e8";
 
 async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
-  const b = createBuilder({ margin: 0, top: 0, bottom: 0 });
+  const b = createBuilder({ margin: 0, top: 0, bottom: 14 });
   const SIDEBAR_W = 64; // mm
   const MAIN_X = SIDEBAR_W;
   const MAIN_W = PAGE_W - SIDEBAR_W;
@@ -1072,8 +1091,10 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sideHeading("Skills");
     for (const sk of cv.skills) {
       const tw = SIDEBAR_W - PADX * 2 - 3;
-      const h = textHeightMm(sk, tw, 8.6, 1.5, { bold: true });
-      b.addText({ value: "▪", x: PADX, y: sY, width: 3, fontSize: 8.6, color: SIENNA, bold: true });
+      // Measure with the SAME options used at render (no bold) so we don't
+      // reserve space for a phantom second line that the renderer never draws.
+      const h = textHeightMm(sk, tw, 8.6, 1.5);
+      b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
       b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
       sY += h + 1.6;
     }
