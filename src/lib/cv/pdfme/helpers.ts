@@ -15,18 +15,6 @@ export function withScheme(value: string | null | undefined): string {
   return `https://${v.replace(/^\/+/, "")}`;
 }
 
-/** Escape characters that have meaning in pdfme's inline-markdown parser. */
-export function escapeMd(s: string): string {
-  return (s ?? "").replace(/([\\\[\]()*_`~])/g, "\\$1");
-}
-
-/** Wrap a display label as a markdown link when uri is present. */
-export function mdLink(label: string, uri: string | null | undefined): string {
-  const safeLabel = escapeMd(label);
-  const href = withScheme(uri || "");
-  return href ? `[${safeLabel}](${href})` : safeLabel;
-}
-
 /* Pure helpers used by pdfme builders — no react-pdf dependency. */
 export function contactItems(cv: GeneratedCV): string[] {
   return [
@@ -38,29 +26,14 @@ export function contactItems(cv: GeneratedCV): string[] {
   ].filter(Boolean) as string[];
 }
 
-/**
- * Same items as contactItems, but URL entries are wrapped as markdown links
- * so a pdfme text schema rendered with textFormat:"inline-markdown" produces
- * a clickable URI link annotation in the exported PDF.
- *
- * Returns the joined markdown string AND the plain-text display version used
- * for width/height measurement (which must not include the URL portion).
- */
-export function contactItemsMd(cv: GeneratedCV, separator = "   ·   "): { md: string; display: string } {
-  const parts: { label: string; uri?: string }[] = [];
-  if (cv.contact.email) parts.push({ label: cv.contact.email, uri: `mailto:${cv.contact.email}` });
-  if (cv.contact.phone) parts.push({ label: cv.contact.phone });
-  if (cv.contact.location) parts.push({ label: cv.contact.location });
-  if (cv.contact.linkedinUrl) {
-    parts.push({ label: stripUrlPrefix(cv.contact.linkedinUrl), uri: cv.contact.linkedinUrl });
-  }
-  if (cv.contact.website) {
-    parts.push({ label: stripUrlPrefix(cv.contact.website), uri: cv.contact.website });
-  }
-  return {
-    md: parts.map((p) => mdLink(p.label, p.uri)).join(separator),
-    display: parts.map((p) => p.label).join(separator),
-  };
+export function contactLinkItems(cv: GeneratedCV): { label: string; uri?: string }[] {
+  return [
+    cv.contact.email ? { label: cv.contact.email, uri: `mailto:${cv.contact.email}` } : null,
+    cv.contact.phone ? { label: cv.contact.phone } : null,
+    cv.contact.location ? { label: cv.contact.location } : null,
+    cv.contact.linkedinUrl ? { label: stripUrlPrefix(cv.contact.linkedinUrl), uri: cv.contact.linkedinUrl } : null,
+    cv.contact.website ? { label: stripUrlPrefix(cv.contact.website), uri: cv.contact.website } : null,
+  ].filter(Boolean) as { label: string; uri?: string }[];
 }
 
 export function isHidden(cv: GeneratedCV, key: SectionKey) {
