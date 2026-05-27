@@ -13,7 +13,9 @@ import {
   ChevronDown,
   Loader2,
   Pencil,
+  CaseSensitive,
 } from "lucide-react";
+import { applyCase, nextCase, type CaseMode } from "@/lib/cv/textCase";
 import {
   useCVBuilder,
   type CVBullet,
@@ -171,7 +173,11 @@ export default function StepDraft() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="space-y-10">
-          <SectionShell sectionKey="contact" title="Contact">
+          <SectionShell
+            sectionKey="contact"
+            title="Contact"
+            headerAction={<ContactCaseToggle />}
+          >
             <ContactBlock contact={cv.contact} />
           </SectionShell>
 
@@ -183,7 +189,11 @@ export default function StepDraft() {
             <ExperienceList experience={cv.experience} />
           </SectionShell>
 
-          <SectionShell sectionKey="skills" title="Skills">
+          <SectionShell
+            sectionKey="skills"
+            title="Skills"
+            headerAction={<SkillsCaseToggle />}
+          >
             <SkillsBlock skills={cv.skills} />
           </SectionShell>
 
@@ -225,6 +235,7 @@ export function SectionShell({
   showEmptyHint,
   hideMoveControls,
   hideVisibilityControl,
+  headerAction,
 }: {
   sectionKey: SectionKey;
   title: string;
@@ -237,19 +248,22 @@ export function SectionShell({
   hideMoveControls?: boolean;
   /** Suppress the visible/hidden toggle (used when the parent renders it in its own header). */
   hideVisibilityControl?: boolean;
+  /** Optional element rendered on the right of the header (before move/visibility controls). */
+  headerAction?: React.ReactNode;
 }) {
   const { state, toggleSection, moveSection } = useCVBuilder();
   const hidden = state.generatedCV?.hiddenSections.includes(sectionKey);
   const isReorderable = sectionKey !== "contact" && sectionKey !== "summary";
   const showArrows = isReorderable && !hideMoveControls;
   const showVis = !hideVisibilityControl;
-  const showHeader = showArrows || showVis;
+  const showHeader = showArrows || showVis || !!headerAction;
   return (
     <section className={cn("rounded-md", hidden && "opacity-50")}>
       {showHeader && (
         <header className="mb-4 flex items-center justify-between">
           <h2 className="font-syne text-xl text-ink">{title}</h2>
           <div className="flex items-center gap-1">
+            {headerAction}
             {showArrows && (
               <>
                 <button
@@ -914,12 +928,68 @@ function BulletRow({
 }
 
 
+/* ---------------- Case toggle button ---------------- */
+
+const CASE_LABEL: Record<CaseMode, string> = {
+  title: "Title Case",
+  upper: "UPPER CASE",
+  lower: "lower case",
+};
+
+function CaseToggleButton({ onApply }: { onApply: (mode: CaseMode) => void }) {
+  const [mode, setMode] = useState<CaseMode>("title");
+  const handleClick = () => {
+    onApply(mode);
+    setMode((m) => nextCase(m));
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/65 hover:border-ink/30"
+      title={`Apply ${CASE_LABEL[mode]} (click to cycle)`}
+      aria-label={`Apply ${CASE_LABEL[mode]}`}
+    >
+      <CaseSensitive size={14} />
+      Aa
+    </button>
+  );
+}
+
+export function ContactCaseToggle() {
+  const { state, patchContact } = useCVBuilder();
+  const contact = state.generatedCV?.contact;
+  if (!contact) return null;
+  return (
+    <CaseToggleButton
+      onApply={(mode) =>
+        patchContact({
+          name: applyCase(contact.name || "", mode),
+          jobTitle: applyCase(contact.jobTitle || "", mode),
+        })
+      }
+    />
+  );
+}
+
+export function SkillsCaseToggle() {
+  const { state, setSkills } = useCVBuilder();
+  const skills = state.generatedCV?.skills;
+  if (!skills?.length) return null;
+  return (
+    <CaseToggleButton
+      onApply={(mode) => setSkills(skills.map((s) => applyCase(s, mode)))}
+    />
+  );
+}
+
 /* ---------------- Skills ---------------- */
 
 export function SkillsBlock({ skills }: { skills: string[] }) {
   const { setSkills } = useCVBuilder();
   return <PillInput values={skills} onChange={setSkills} placeholder="Add a skill and press Enter" />;
 }
+
 
 /* ---------------- Education ---------------- */
 
