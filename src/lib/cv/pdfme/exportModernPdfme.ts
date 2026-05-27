@@ -965,7 +965,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
 
     b.addRect({
       x, y, width: chipW, height: chipH,
-      color: "#f4efe6", borderColor: HAIRLINE, borderWidth: 0.3,
+      color: mixHex(SIENNA, "#ffffff", 0.9), borderColor: mixHex(SIENNA, "#ffffff", 0.65), borderWidth: 0.3,
       radius: singleLineH / 2,
     });
     lines.forEach((line, index) => {
@@ -1038,7 +1038,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
-    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: "#a07a6a" });
+    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
   };
 
@@ -1046,7 +1046,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     if (label) {
       b.addText({
         value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
-        fontSize: 6.8, color: "#e8d9c8", bold: true, letterSpacing: 1.2,
+        fontSize: 6.8, color: mixHex(SIENNA, "#ffffff", 0.8), bold: true, letterSpacing: 1.2,
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
