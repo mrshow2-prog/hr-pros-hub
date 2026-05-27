@@ -425,6 +425,8 @@ export async function headerTable(
 /** Render a list of skills as visual "chips" — TextRuns with shaded backgrounds,
  *  separated by a thin gap. Mirrors the rounded pills in the Skills-First preview. */
 export function chipsParagraph(items: string[], t: DocxTheme): Paragraph {
+  // Tint chip background ~10% accent over white so chips track the palette.
+  const tint = mixHex(`#${t.primary}`, "#ffffff", 0.9, false);
   const runs: TextRun[] = [];
   items.forEach((s, i) => {
     runs.push(
@@ -433,7 +435,7 @@ export function chipsParagraph(items: string[], t: DocxTheme): Paragraph {
         size: 19,
         font: t.body,
         color: INK_HEX,
-        shading: { type: ShadingType.CLEAR, fill: "F4EFE6", color: "auto" },
+        shading: { type: ShadingType.CLEAR, fill: tint, color: "auto" },
       }),
     );
     if (i < items.length - 1) {
