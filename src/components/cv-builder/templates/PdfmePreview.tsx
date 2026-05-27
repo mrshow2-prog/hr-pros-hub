@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { generateCvPdfmeBlob } from "@/lib/cv/pdfme/exportModernPdfme";
+import type { SidebarPlacementMap } from "@/lib/cv/sidebarPlacement";
 import * as pdfjs from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 
@@ -15,6 +16,7 @@ interface Props {
   gap?: number;
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  sidebarPlacement?: SidebarPlacementMap;
   onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }
 
