@@ -704,18 +704,19 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
         fontSize: 11, color: SIENNA,
       });
     }
-    const rows: { display: string; md: string }[] = [
-      ...(cv.contact.location ? [{ display: cv.contact.location, md: cv.contact.location }] : []),
-      ...(cv.contact.phone ? [{ display: cv.contact.phone, md: cv.contact.phone }] : []),
-      ...(cv.contact.email ? [{ display: cv.contact.email, md: mdLink(cv.contact.email, `mailto:${cv.contact.email}`) }] : []),
-      ...(cv.contact.linkedinUrl ? [{ display: stripUrlPrefix(cv.contact.linkedinUrl), md: mdLink(stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl) }] : []),
-      ...(cv.contact.website ? [{ display: stripUrlPrefix(cv.contact.website), md: mdLink(stripUrlPrefix(cv.contact.website), cv.contact.website) }] : []),
+    const rows: { display: string; uri?: string }[] = [
+      ...(cv.contact.location ? [{ display: cv.contact.location }] : []),
+      ...(cv.contact.phone ? [{ display: cv.contact.phone }] : []),
+      ...(cv.contact.email ? [{ display: cv.contact.email, uri: `mailto:${cv.contact.email}` }] : []),
+      ...(cv.contact.linkedinUrl ? [{ display: stripUrlPrefix(cv.contact.linkedinUrl), uri: cv.contact.linkedinUrl }] : []),
+      ...(cv.contact.website ? [{ display: stripUrlPrefix(cv.contact.website), uri: cv.contact.website }] : []),
     ];
     const rfs = 8.6;
     let ry = hy0;
     for (const r of rows) {
       const rh = textHeightMm(r.display, rightW, rfs, 1.45);
-      b.addText({ value: r.md, measureValue: r.display, markdown: true, x: b.margin + b.contentW - rightW, y: ry, width: rightW, fontSize: rfs, color: MUTED, align: "right", lineHeight: 1.45 });
+      b.addText({ value: r.display, x: b.margin + b.contentW - rightW, y: ry, width: rightW, fontSize: rfs, color: MUTED, align: "right", lineHeight: 1.45 });
+      if (r.uri) b.addLink({ x: b.margin + b.contentW - Math.min(textWidthMm(r.display, rfs), rightW), y: ry, width: Math.min(textWidthMm(r.display, rfs), rightW), height: ptToMm(rfs) * 1.45, uri: withScheme(r.uri) });
       ry += rh + 0.4;
     }
     const leftBottom = hy0 + Math.max(
