@@ -35,10 +35,10 @@ export default function TemplateModern({
               {visibleBullets(exp).length > 0 && (
                 <ul className="space-y-1.5">
                   {visibleBullets(exp).map((b) => (
-                    <li key={b.id} className="relative pl-5 text-[14px] font-light leading-[1.6] text-ink/85">
-                      <span className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-sienna" />
-                      {b.rewrite || b.original}
-                    </li>
+                    <li key={b.id} className="flex gap-2 text-[14px] font-light leading-[1.6] text-ink/85">
+              <span className="relative top-[10px] h-1.5 w-1.5 rounded-full bg-sienna shrink-0" />
+              <span className="flex-1">{b.rewrite || b.original}</span>
+            </li>
                   ))}
                 </ul>
               )}
@@ -111,9 +111,9 @@ export default function TemplateModern({
         <SectionHeader>Achievements</SectionHeader>
         <ul className="space-y-1.5">
           {cv.achievements.filter(Boolean).map((a, i) => (
-            <li key={i} className="relative pl-5 text-[14px] font-light leading-[1.6] text-ink/85">
-              <span className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-sienna" />
-              {a}
+            <li key={i} className="flex gap-2 text-[14px] font-light leading-[1.6] text-ink/85">
+              <span className="relative top-[10px] h-1.5 w-1.5 rounded-full bg-sienna shrink-0" />
+              <span className="flex-1">{a}</span>
             </li>
           ))}
         </ul>
@@ -142,10 +142,10 @@ export default function TemplateModern({
             <SectionHeader>{s.title || "Additional"}</SectionHeader>
             <ul className="space-y-1.5">
               {s.bullets.filter(Boolean).map((b, i) => (
-                <li key={i} className="relative pl-5 text-[14px] font-light leading-[1.6] text-ink/85">
-                  <span className="absolute left-0 top-[10px] h-1.5 w-1.5 rounded-full bg-sienna" />
-                  {b}
-                </li>
+                <li key={i} className="flex gap-2 text-[14px] font-light leading-[1.6] text-ink/85">
+              <span className="relative top-[10px] h-1.5 w-1.5 rounded-full bg-sienna shrink-0" />
+              <span className="flex-1">{b}</span>
+            </li>
               ))}
             </ul>
           </section>

@@ -37,10 +37,10 @@ export default function TemplateExecutive({
               {visibleBullets(exp).length > 0 && (
                 <ul className="space-y-2">
                   {visibleBullets(exp).map((b) => (
-                    <li key={b.id} className="relative pl-6 text-[15px] font-light leading-[1.7] text-ink/85">
-                      <span className="absolute left-0 top-[12px] h-0.5 w-2 bg-sienna" />
-                      {b.rewrite || b.original}
-                    </li>
+                    <li key={b.id} className="flex gap-2 text-[15px] font-light leading-[1.7] text-ink/85">
+              <span className="relative top-[12px] h-0.5 w-2 bg-sienna shrink-0" />
+              <span className="flex-1">{b.rewrite || b.original}</span>
+            </li>
                   ))}
                 </ul>
               )}
@@ -110,9 +110,9 @@ export default function TemplateExecutive({
         <SH>Achievements</SH>
         <ul className="space-y-2">
           {cv.achievements.filter(Boolean).map((a, i) => (
-            <li key={i} className="relative pl-6 text-[15px] font-light leading-[1.7] text-ink/85">
-              <span className="absolute left-0 top-[12px] h-0.5 w-2 bg-sienna" />
-              {a}
+            <li key={i} className="flex gap-2 text-[15px] font-light leading-[1.7] text-ink/85">
+              <span className="relative top-[12px] h-0.5 w-2 bg-sienna shrink-0" />
+              <span className="flex-1">{a}</span>
             </li>
           ))}
         </ul>
@@ -141,10 +141,10 @@ export default function TemplateExecutive({
             <SH>{s.title || "Additional"}</SH>
             <ul className="space-y-2">
               {s.bullets.filter(Boolean).map((b, i) => (
-                <li key={i} className="relative pl-6 text-[15px] font-light leading-[1.7] text-ink/85">
-                  <span className="absolute left-0 top-[12px] h-0.5 w-2 bg-sienna" />
-                  {b}
-                </li>
+                <li key={i} className="flex gap-2 text-[15px] font-light leading-[1.7] text-ink/85">
+              <span className="relative top-[12px] h-0.5 w-2 bg-sienna shrink-0" />
+              <span className="flex-1">{b}</span>
+            </li>
               ))}
             </ul>
           </section>
