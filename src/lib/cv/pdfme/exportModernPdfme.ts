@@ -1016,7 +1016,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
 const PAPER = "#f5f0e8";
 
 async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
-  const b = createBuilder({ margin: 0, top: 0, bottom: 0 });
+  const b = createBuilder({ margin: 0, top: 0, bottom: 14 });
   const SIDEBAR_W = 64; // mm
   const MAIN_X = SIDEBAR_W;
   const MAIN_W = PAGE_W - SIDEBAR_W;
