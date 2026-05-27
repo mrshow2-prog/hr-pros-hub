@@ -42,6 +42,8 @@ import {
   SkillsCaseToggle,
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
+import SidebarPlacementToggle from "./SidebarPlacementToggle";
+import { TOGGLEABLE_SECTIONS } from "@/lib/cv/sidebarPlacement";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
@@ -427,7 +429,14 @@ export default function EditorShell() {
                         onContinue={isLast ? undefined : () => goNext(s.key)}
                         canMoveUp={isReorderable ? canMoveUp : undefined}
                         canMoveDown={isReorderable ? canMoveDown : undefined}
-                        headerAction={s.key === "skills" ? <SkillsCaseToggle /> : undefined}
+                        headerAction={
+                          <div className="flex items-center gap-2">
+                            {TOGGLEABLE_SECTIONS.includes(s.key) && (
+                              <SidebarPlacementToggle sectionKey={s.key} />
+                            )}
+                            {s.key === "skills" ? <SkillsCaseToggle /> : null}
+                          </div>
+                        }
                       >
                         <SectionShell
                           sectionKey={s.key}
@@ -532,6 +541,7 @@ function PreviewPane({ onStatusChange }: { onStatusChange?: (status: "loading" |
           gap={24 * scale}
           accentHex={accentHexForPreview}
           photoShape={state.intentForm.photoShape}
+          sidebarPlacement={state.intentForm.sidebarPlacement}
           onStatusChange={onStatusChange}
         />
       </div>

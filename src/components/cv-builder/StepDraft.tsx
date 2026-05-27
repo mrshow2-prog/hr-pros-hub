@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
 import { getPalette } from "@/lib/cv/palettes";
+import SidebarPlacementToggle from "./editor/SidebarPlacementToggle";
 
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
@@ -188,12 +189,21 @@ export default function StepDraft() {
           <SectionShell
             sectionKey="skills"
             title="Skills"
-            headerAction={<SkillsCaseToggle />}
+            headerAction={
+              <div className="flex items-center gap-2">
+                <SidebarPlacementToggle sectionKey="skills" />
+                <SkillsCaseToggle />
+              </div>
+            }
           >
             <SkillsBlock skills={cv.skills} />
           </SectionShell>
 
-          <SectionShell sectionKey="education" title="Education & certifications">
+          <SectionShell
+            sectionKey="education"
+            title="Education & certifications"
+            headerAction={<SidebarPlacementToggle sectionKey="education" />}
+          >
             <EducationBlock education={cv.education} />
           </SectionShell>
 
@@ -203,7 +213,11 @@ export default function StepDraft() {
             </SectionShell>
           )}
 
-          <SectionShell sectionKey="languages" title="Languages">
+          <SectionShell
+            sectionKey="languages"
+            title="Languages"
+            headerAction={<SidebarPlacementToggle sectionKey="languages" />}
+          >
             <LanguagesBlock languages={cv.languages} />
           </SectionShell>
         </div>
@@ -598,6 +612,7 @@ export function LivePreview() {
             gap={24 * scale}
             accentHex={accentHex}
             photoShape={state.intentForm.photoShape}
+            sidebarPlacement={state.intentForm.sidebarPlacement}
           />
         </div>
       </div>
