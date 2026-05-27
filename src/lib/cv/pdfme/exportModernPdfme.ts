@@ -1,10 +1,10 @@
 import { normalizeTemplateId, type GeneratedCV, type SectionKey, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
-  contactItems, contactItemsMd, mdLink, isHidden, periodOf, visibleBullets, stripUrlPrefix,
+  contactItems, contactLinkItems, isHidden, periodOf, visibleBullets, stripUrlPrefix, withScheme,
   getSectionOrder, shouldRender,
 } from "./helpers";
 import {
-  createBuilder, urlToDataUrl, textHeightMm, ptToMm, wrapLines,
+  createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
   INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W,
   type PdfmeBuilder,
 } from "./core";
@@ -32,8 +32,24 @@ interface Ctx {
 function contactLine(cv: GeneratedCV) {
   return contactItems(cv).join("   ·   ");
 }
-function contactLineMd(cv: GeneratedCV) {
-  return contactItemsMd(cv, "   ·   ");
+
+function addContactLinks(
+  b: PdfmeBuilder,
+  runs: { label: string; uri?: string }[],
+  opts: { x: number; y: number; width: number; fontSize: number; lineHeight: number; separator?: string },
+) {
+  const separator = opts.separator ?? "   ·   ";
+  const display = runs.map((r) => r.label).join(separator);
+  for (let i = 0; i < runs.length; i += 1) {
+    const run = runs[i];
+    if (!run.uri) continue;
+    const before = runs.slice(0, i).map((r) => r.label).join(separator) + (i > 0 ? separator : "");
+    const linkX = opts.x + textWidthMm(before, opts.fontSize);
+    const linkW = Math.min(textWidthMm(run.label, opts.fontSize), opts.x + opts.width - linkX);
+    if (linkX >= opts.x && linkW > 1 && textWidthMm(display, opts.fontSize) <= opts.width + 0.5) {
+      b.addLink({ x: linkX, y: opts.y, width: linkW, height: ptToMm(opts.fontSize) * opts.lineHeight, uri: withScheme(run.uri) });
+    }
+  }
 }
 
 /**
