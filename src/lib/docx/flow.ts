@@ -1,4 +1,4 @@
-import { Document, Paragraph, Table, TextRun, BorderStyle } from "docx";
+import { Document, Paragraph, Table, TextRun, BorderStyle, AlignmentType } from "docx";
 import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import {
   A4_PAGE, CONTENT_W, bulletNumbering, footerOf, getTheme,
@@ -59,7 +59,7 @@ export async function buildFlowingDoc(
     blocks.push(
       opts.quoteSummary
         ? quoteSummary(cv.summary, t)
-        : txt(cv.summary, t, { size: 20, color: t.subInk, after: 120 }),
+        : txt(cv.summary, t, { size: 20, color: t.subInk, after: 120, alignment: AlignmentType.JUSTIFIED }),
     );
   }
 

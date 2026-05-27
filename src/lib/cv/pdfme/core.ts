@@ -195,7 +195,7 @@ export interface TextOpts {
   width?: number;
   fontSize: number;
   color?: string;
-  align?: "left" | "right" | "center";
+  align?: "left" | "right" | "center" | "justify";
   lineHeight?: number;
   spaceAfter?: number;
   uppercase?: boolean;

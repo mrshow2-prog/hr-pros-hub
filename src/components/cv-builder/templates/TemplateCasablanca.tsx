@@ -350,7 +350,7 @@ export default function TemplateCasablanca({
         {shouldRender(cv, "summary") && (
           <section className="mb-7">
             <MainH icon={User}>Profile</MainH>
-            <p className="text-[13px] leading-[1.7] text-ink/85">{cv.summary}</p>
+            <p className="text-justify hyphens-auto text-[13px] leading-[1.7] text-ink/85">{cv.summary}</p>
           </section>
         )}
 

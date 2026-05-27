@@ -147,6 +147,7 @@ export async function buildRiyadhDoc(
     main.push(subRule());
     main.push(new Paragraph({
       spacing: { after: 200, line: 320 },
+      alignment: AlignmentType.JUSTIFIED,
       children: [new TextRun({ text: cv.summary, size: 20, color: INK_HEX, font: t.body })],
     }));
   };

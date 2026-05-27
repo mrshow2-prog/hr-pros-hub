@@ -361,7 +361,7 @@ function styles(mode: CompactMode) {
       print-color-adjust: exact; -webkit-print-color-adjust: exact;
     }
 
-    .cv-summary { font-size: 9.5pt; line-height: 1.55; color: #1A1714; }
+    .cv-summary { font-size: 9.5pt; line-height: 1.55; color: #1A1714; text-align: justify; hyphens: auto; }
 
     .cv-job { margin-bottom: 11pt; break-inside: avoid; page-break-inside: avoid; }
     .cv-job:last-child { margin-bottom: 0; }

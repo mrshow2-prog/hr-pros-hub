@@ -285,7 +285,7 @@ export default function TemplateMilano({
         {shouldRender(cv, "summary") && (
           <section className="mb-9">
             <SH num={num()}>Profile</SH>
-            <p className="font-syne text-[15px] italic leading-[1.7] text-ink/85">"{cv.summary}"</p>
+            <p className="font-syne text-justify hyphens-auto text-[15px] italic leading-[1.7] text-ink/85">"{cv.summary}"</p>
           </section>
         )}
 
