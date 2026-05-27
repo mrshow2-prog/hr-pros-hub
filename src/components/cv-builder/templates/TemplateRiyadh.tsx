@@ -89,9 +89,9 @@ export default function TemplateRiyadh({
               {visibleBullets(exp).length > 0 && (
                 <ul className="space-y-1">
                   {visibleBullets(exp).map((b) => (
-                    <li key={b.id} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
-                      <span className="absolute left-0 top-[2px] font-bold text-sienna">•</span>
-                      {b.rewrite || b.original}
+                    <li key={b.id} className="flex gap-2 text-[12.5px] leading-[1.55] text-ink/85">
+                      <span className="relative shrink-0 top-[2px] font-bold text-sienna">•</span>
+                      <span className="flex-1">{b.rewrite || b.original}</span>
                     </li>
                   ))}
                 </ul>
@@ -125,9 +125,9 @@ export default function TemplateRiyadh({
         <MainHeading>Achievements</MainHeading>
         <ul className="space-y-1">
           {cv.achievements.filter(Boolean).map((a, i) => (
-            <li key={i} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
-              <span className="absolute left-0 top-[2px] font-bold text-sienna">•</span>
-              {a}
+            <li key={i} className="flex gap-2 text-[12.5px] leading-[1.55] text-ink/85">
+              <span className="relative shrink-0 top-[2px] font-bold text-sienna">•</span>
+              <span className="flex-1">{a}</span>
             </li>
           ))}
         </ul>
@@ -156,9 +156,9 @@ export default function TemplateRiyadh({
             <MainHeading>{s.title || "Additional"}</MainHeading>
             <ul className="space-y-1">
               {s.bullets.filter(Boolean).map((b, i) => (
-                <li key={i} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
-                  <span className="absolute left-0 top-[2px] font-bold text-sienna">•</span>
-                  {b}
+                <li key={i} className="flex gap-2 text-[12.5px] leading-[1.55] text-ink/85">
+                  <span className="relative shrink-0 top-[2px] font-bold text-sienna">•</span>
+                  <span className="flex-1">{b}</span>
                 </li>
               ))}
             </ul>

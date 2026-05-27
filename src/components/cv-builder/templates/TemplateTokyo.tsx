@@ -71,9 +71,9 @@ export default function TemplateTokyo({
                 {visibleBullets(exp).length > 0 && (
                   <ul className="space-y-1.5">
                     {visibleBullets(exp).map((b) => (
-                      <li key={b.id} className="relative pl-4 text-[12.5px] leading-[1.6] text-ink/85">
-                        <span className="absolute left-0 top-[8px] h-1 w-2 rounded-sm" style={{ background: accent as string }} />
-                        {b.rewrite || b.original}
+                      <li key={b.id} className="flex gap-2 text-[12.5px] leading-[1.6] text-ink/85">
+                        <span className="relative shrink-0 top-[8px] h-1 w-2 rounded-sm" style={{ background: accent as string }} />
+                        <span className="flex-1">{b.rewrite || b.original}</span>
                       </li>
                     ))}
                   </ul>
@@ -145,9 +145,9 @@ export default function TemplateTokyo({
         <SH icon={Award}>Achievements</SH>
         <ul className="space-y-1.5">
           {cv.achievements.filter(Boolean).map((a, i) => (
-            <li key={i} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
-              <span className="absolute left-0 top-[6px] h-1.5 w-1.5 rounded-full" style={{ background: accent as string }} />
-              {a}
+            <li key={i} className="flex gap-2 text-[12.5px] leading-[1.55] text-ink/85">
+              <span className="relative shrink-0 top-[6px] h-1.5 w-1.5 rounded-full" style={{ background: accent as string }} />
+              <span className="flex-1">{a}</span>
             </li>
           ))}
         </ul>
@@ -176,9 +176,9 @@ export default function TemplateTokyo({
             <SH icon={FileText}>{s.title || "Additional"}</SH>
             <ul className="space-y-1.5">
               {s.bullets.filter(Boolean).map((b, i) => (
-                <li key={i} className="relative pl-4 text-[12.5px] leading-[1.55] text-ink/85">
-                  <span className="absolute left-0 top-[6px] h-1.5 w-1.5 rounded-full" style={{ background: accent as string }} />
-                  {b}
+                <li key={i} className="flex gap-2 text-[12.5px] leading-[1.55] text-ink/85">
+                  <span className="relative shrink-0 top-[6px] h-1.5 w-1.5 rounded-full" style={{ background: accent as string }} />
+                  <span className="flex-1">{b}</span>
                 </li>
               ))}
             </ul>
