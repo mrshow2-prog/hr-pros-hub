@@ -329,7 +329,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           lineHeight: lh,
           characterSpacing: o.letterSpacing ?? 0,
           backgroundColor: o.bgColor ?? "",
-          ...(o.markdown ? { textFormat: "inline-markdown" } : {}),
+          ...(o.markdown ? { textFormat: "inline-markdown", readOnly: true } : {}),
         } as Schema & { name: string },
         value,
       );
