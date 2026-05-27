@@ -308,6 +308,7 @@ const defaultIntent: IntentForm = {
   pageLimit: null,
   photoShape: "circle",
   colorPalette: "sienna",
+  sidebarPlacement: {},
 };
 
 const emptyContact: ContactInfo = {
