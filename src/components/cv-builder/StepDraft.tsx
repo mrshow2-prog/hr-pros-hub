@@ -235,6 +235,7 @@ export function SectionShell({
   showEmptyHint,
   hideMoveControls,
   hideVisibilityControl,
+  headerAction,
 }: {
   sectionKey: SectionKey;
   title: string;
@@ -247,13 +248,15 @@ export function SectionShell({
   hideMoveControls?: boolean;
   /** Suppress the visible/hidden toggle (used when the parent renders it in its own header). */
   hideVisibilityControl?: boolean;
+  /** Optional element rendered on the right of the header (before move/visibility controls). */
+  headerAction?: React.ReactNode;
 }) {
   const { state, toggleSection, moveSection } = useCVBuilder();
   const hidden = state.generatedCV?.hiddenSections.includes(sectionKey);
   const isReorderable = sectionKey !== "contact" && sectionKey !== "summary";
   const showArrows = isReorderable && !hideMoveControls;
   const showVis = !hideVisibilityControl;
-  const showHeader = showArrows || showVis;
+  const showHeader = showArrows || showVis || !!headerAction;
   return (
     <section className={cn("rounded-md", hidden && "opacity-50")}>
       {showHeader && (
