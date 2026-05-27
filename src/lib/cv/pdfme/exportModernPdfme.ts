@@ -294,15 +294,18 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
     });
     hy += titleH + 1.4;
   }
-  const { md: cMd, display: cText } = contactLineMd(cv);
+  const contactRuns = contactLinkItems(cv);
+  const cText = contactRuns.map((r) => r.label).join("   ·   ");
   if (cText) {
     const cFs = o.contactFs ?? 8.6;
+    const contactY = hy + 1.4;
     const ch = textHeightMm(cText, textW, cFs, 1.45);
     b.addText({
-      value: cMd, measureValue: cText, markdown: true,
-      x: textX, y: hy + 1.4, width: textW,
+      value: cText,
+      x: textX, y: contactY, width: textW,
       fontSize: cFs, color: o.contactColor ?? MUTED, lineHeight: 1.45,
     });
+    addContactLinks(b, contactRuns, { x: textX, y: contactY, width: textW, fontSize: cFs, lineHeight: 1.45 });
     hy += ch + 1.4;
   }
   const endY = Math.max(hy, hy0 + (hasPhoto ? o.photoSize : 0)) + (o.spaceAfter ?? 4);
