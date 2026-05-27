@@ -9,6 +9,10 @@ import {
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
+import {
+  getSidebarKeys as resolveSidebarKeys,
+  type SidebarPlacementMap,
+} from "@/lib/cv/sidebarPlacement";
 
 
 /* ============================================================
