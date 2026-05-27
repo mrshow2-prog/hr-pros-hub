@@ -324,7 +324,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Professional Summary");
-    b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.6, spaceAfter: 5 });
+    b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.6, spaceAfter: 5, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -451,7 +451,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Professional Summary");
-    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.65, spaceAfter: 5 });
+    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -560,7 +560,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     b.ensure(h + 2);
     const py = b.cursorY;
     b.addLine({ x: b.margin, y: py, width: 0.9, height: h, color: SIENNA });
-    b.addText({ value: cv.summary, x: b.margin + indent, y: py, width: w, fontSize: fs, color: SUBINK, lineHeight: lh });
+    b.addText({ value: cv.summary, x: b.margin + indent, y: py, width: w, fontSize: fs, color: SUBINK, lineHeight: lh, align: "justify" });
     b.cursorY = py + h + 7;
   }
 
@@ -737,7 +737,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     const fs = 9.8;
     const lh = 1.6;
     const sh = textHeightMm(cv.summary, leftColW, fs, lh);
-    b.addText({ value: cv.summary, x: leftX, y: lY, width: leftColW, fontSize: fs, color: SUBINK, lineHeight: lh });
+    b.addText({ value: cv.summary, x: leftX, y: lY, width: leftColW, fontSize: fs, color: SUBINK, lineHeight: lh, align: "justify" });
     lY += sh + 4;
   }
 
@@ -858,7 +858,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Professional Summary");
-    b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.7, spaceAfter: 6 });
+    b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.7, spaceAfter: 6, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -1141,7 +1141,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     mainHeading("Profile");
-    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5 });
+    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
   }
 
   const mainRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -1272,7 +1272,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Profile");
-    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6 });
+    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
