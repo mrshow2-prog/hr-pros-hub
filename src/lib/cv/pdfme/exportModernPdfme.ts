@@ -1004,12 +1004,14 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   const PADX = 10;
   const MAIN_MARGIN = MAIN_X + PADX + 2;
   const MAIN_CONTENT_W = MAIN_W - PADX * 2 - 2;
+  // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
+  const sidebarFill = shadeHex(SIENNA, 0.22);
 
   // Draw sidebar background on every page.
   const drawSidebar = () => {
     b.addRect({
       x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H,
-      color: SIENNA_DARK, borderColor: SIENNA_DARK, borderWidth: 0,
+      color: sidebarFill, borderColor: sidebarFill, borderWidth: 0,
     });
   };
   drawSidebar();
