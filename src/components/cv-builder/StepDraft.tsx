@@ -263,6 +263,7 @@ export function SectionShell({
         <header className="mb-4 flex items-center justify-between">
           <h2 className="font-syne text-xl text-ink">{title}</h2>
           <div className="flex items-center gap-1">
+            {headerAction}
             {showArrows && (
               <>
                 <button
