@@ -18,8 +18,10 @@ import { shadeHex } from "@/lib/cv/palettes";
 export async function buildRiyadhDoc(
   cv: GeneratedCV,
   photoUrl: string | null,
+  sidebarKeys: SectionKey[] = ["skills", "languages", "education"],
 ): Promise<Document> {
   const t = getTheme("bold");
+  const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
   const SIDEBAR_W = Math.round(CONTENT_W * 0.32);
   const MAIN_W = CONTENT_W - SIDEBAR_W;
   const SIENNA_HEX = t.primary;
