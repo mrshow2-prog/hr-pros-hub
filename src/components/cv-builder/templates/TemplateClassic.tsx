@@ -32,7 +32,7 @@ export default function TemplateClassic({ cv, photoUrl }: Props) {
                 {[exp.company, exp.location].filter(Boolean).join(" · ")}
               </p>
               {visibleBullets(exp).length > 0 && (
-                <ul className="ml-5 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
+                <ul className="ml-4 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
                   {visibleBullets(exp).map((b) => (
                     <li key={b.id}>{b.rewrite || b.original}</li>
                   ))}
@@ -101,7 +101,7 @@ export default function TemplateClassic({ cv, photoUrl }: Props) {
     achievements: () => (
       <section className="mb-7">
         <SectionHeader>Achievements</SectionHeader>
-        <ul className="ml-5 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
+        <ul className="ml-4 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
           {cv.achievements.filter(Boolean).map((a, i) => <li key={i}>{a}</li>)}
         </ul>
       </section>
@@ -127,7 +127,7 @@ export default function TemplateClassic({ cv, photoUrl }: Props) {
         {cv.customSections.map((s) => (
           <section key={s.id} className="mb-7">
             <SectionHeader>{s.title || "Additional"}</SectionHeader>
-            <ul className="ml-5 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
+            <ul className="ml-4 list-disc space-y-1 text-[13px] leading-[1.5] text-ink/85 marker:text-sienna">
               {s.bullets.filter(Boolean).map((b, i) => <li key={i}>{b}</li>)}
             </ul>
           </section>
