@@ -1,31 +1,30 @@
-## Goal
-Give the user one-click control over ALL CAPS in two places of the Draft step where the AI often over-capitalizes:
-1. **Contact** — Full name + Job title
-2. **Skills** — every skill pill
+## Three fixes
 
-## UX
-Add a small icon button labeled **"Aa"** with a tooltip "Toggle capitalization" placed:
-- Inline at the top-right of the **Contact** SectionShell header — affects `contact.name` and `contact.jobTitle` together.
-- Inline at the top-right of the **Skills** SectionShell header — affects every entry in `cv.skills`.
+### 1. Make the case-toggle button actually visible
+The Draft step the user sees today is the **editor view** (`EditorShell` + `CollapsibleSection`), not the legacy `SectionShell`. The `SectionShell` in that view is rendered with `hideMoveControls` and `hideVisibilityControl`, so its header is suppressed — that's why the new "Aa" button doesn't show.
 
-Clicking the button cycles the affected text through three states:
-1. **Title Case** (`John Doe`, `Senior Product Manager`, `Stakeholder Management`)
-2. **UPPER CASE** (`JOHN DOE`, …)
-3. **lower case** (`john doe`, …)
+Fix:
+- Add an optional `headerAction?: ReactNode` prop to `CollapsibleSection` (`src/components/cv-builder/editor/EditorShell.tsx`) rendered in the right-side control row, just before the move chevrons.
+- In `EditorShell` pass `headerAction={<SkillsCaseToggle />}` for the `skills` section only.
+- Remove the `headerAction` from the **contact** `SectionShell` call in `StepDraft.tsx` (per the user's new requirement, the contact button should not appear at the section header).
 
-Cycle state is local to the button (not persisted) — each click just transforms the current values and advances the cycle marker. This keeps the data model unchanged (still a plain string field) and works regardless of how the AI generated the values.
+### 2. Move the contact case-toggle to the name + headline fields only
+- Inside `ContactBlock` (`StepDraft.tsx`), inject a small `CaseToggleButton` directly above the two stacked fields **Full name** and **Job title** with a label like "Fix capitalization · name & headline".
+- Wire it to call `patchContact({ name: applyCase(name, mode), jobTitle: applyCase(jobTitle, mode) })`.
+- This works in both the legacy `StepDraft` view and the editor view because the button lives inside the field block, not the section header.
 
-## Implementation
-- New tiny helper `src/lib/cv/textCase.ts` exporting `toTitleCase`, `toUpper`, `toLower`, and a `nextCase(current)` cycler.
-- New component `CaseToggleButton` (in `src/components/cv-builder/StepDraft.tsx` or a sibling file) — accepts `onApply(transform: (s: string) => string)` and tracks the cycle index in local state.
-- Extend `SectionShell` (already in StepDraft.tsx) to accept an optional `headerAction` ReactNode rendered on the right of the title bar. If `SectionShell` doesn't already have a header right-slot, add it.
-- Wire two instances:
-  - **Contact**: applies the transform to `contact.name` and `contact.jobTitle` via `patchContact`.
-  - **Skills**: applies the transform to each entry in `cv.skills` via `setSkills`.
+### 3. Make LinkedIn (and Website) URLs clickable in the exported PDF
+The PDF pipeline (`src/lib/cv/pdfme/exportModernPdfme.ts`) renders the contact line as a single `b.addText({ value: "loc · phone · email · linkedin.com/in/... · site" })` string. pdfme's text schema does not natively emit a PDF link annotation. Plan:
 
-Title-case rule: split on whitespace, lowercase each word, uppercase first letter; preserve common acronyms by leaving any token already containing a digit or 2+ uppercase letters that match a small allowlist (e.g. `HR`, `CEO`, `SQL`, `AI`, `UX`, `UI`, `API`, `B2B`, `CRM`, `ERP`, `KPI`, `SaaS`, `IT`) untouched. Keep the allowlist short and inline.
+- Extend `core.ts`:
+  - Add `addLinkAnnotation({ page, x, y, width, height, uri })` to the builder. Internally store `{ page, rect, uri }[]`.
+  - In `toBlob()`, after `generate(...)` produces the PDF bytes, load the bytes with `PDFDocument.load` (from `@pdfme/pdf-lib`) and call the shipped helper `addUriLinkAnnotation` (`node_modules/@pdfme/schemas/dist/text/linkAnnotation.d.ts`) for each stored annotation, then `pdfDoc.save()` and wrap in a Blob.
+- Add a small wrapper `b.addLinkText(opts)` that does an `addText` and registers a link annotation covering the same rect, returning the same height.
+- In `exportModernPdfme.ts`, refactor the **contact line** in every template so URL tokens (`linkedinUrl`, `website`) are rendered as separate `addLinkText` runs laid out next to the rest of the line using `textWidthMm` (new helper in `core.ts` that uses pdf-lib's font width measurement, mirroring how `textHeightMm` works). This keeps the visual identical but makes only the URL token clickable.
+  - Affected call sites: lines ~278, ~684, ~1085–1086, ~1246 plus any other template that builds a contact line.
+- Where adding side-by-side runs is hard (e.g. multi-column templates), fall back to wrapping the entire contact line in one link annotation only when a single URL is present.
 
-## Out of scope
-- No persistence of the chosen case mode across sessions.
-- Summary, experience bullets, education, and other sections are unchanged.
-- No styling-only/CSS `text-transform` approach — we transform the stored values so PDF/DOCX exports reflect the choice automatically.
+### Out of scope
+- DOCX: Word already hyperlinks URL-looking text by default in most viewers; if not, that's a separate change.
+- No visual changes — fonts, sizes, colours, spacing all preserved.
+- The skills case button keeps the cycle Title → UPPER → lower.

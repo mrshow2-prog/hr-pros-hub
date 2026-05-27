@@ -39,6 +39,7 @@ import {
   CertificationsBlock,
   CustomSectionsBlock,
   SectionShell,
+  SkillsCaseToggle,
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
@@ -426,6 +427,7 @@ export default function EditorShell() {
                         onContinue={isLast ? undefined : () => goNext(s.key)}
                         canMoveUp={isReorderable ? canMoveUp : undefined}
                         canMoveDown={isReorderable ? canMoveDown : undefined}
+                        headerAction={s.key === "skills" ? <SkillsCaseToggle /> : undefined}
                       >
                         <SectionShell
                           sectionKey={s.key}
@@ -772,6 +774,7 @@ function CollapsibleSection({
   onContinue,
   canMoveUp,
   canMoveDown,
+  headerAction,
   children,
 }: {
   sectionKey: SectionKey;
@@ -781,6 +784,7 @@ function CollapsibleSection({
   onContinue?: () => void;
   canMoveUp?: boolean;
   canMoveDown?: boolean;
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const { state, toggleSection, moveSection } = useCVBuilder();
@@ -810,6 +814,7 @@ function CollapsibleSection({
           />
         </button>
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          {headerAction}
           {showArrows && (
             <>
               <button

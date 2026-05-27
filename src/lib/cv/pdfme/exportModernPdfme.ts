@@ -1,6 +1,6 @@
 import { normalizeTemplateId, type GeneratedCV, type SectionKey, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
-  contactItems, isHidden, periodOf, visibleBullets, stripUrlPrefix,
+  contactItems, contactItemsMd, mdLink, isHidden, periodOf, visibleBullets, stripUrlPrefix,
   getSectionOrder, shouldRender,
 } from "./helpers";
 import {
@@ -31,6 +31,9 @@ interface Ctx {
 
 function contactLine(cv: GeneratedCV) {
   return contactItems(cv).join("   ·   ");
+}
+function contactLineMd(cv: GeneratedCV) {
+  return contactItemsMd(cv, "   ·   ");
 }
 
 /**
@@ -275,12 +278,13 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
     });
     hy += titleH + 1.4;
   }
-  const cText = contactLine(cv);
+  const { md: cMd, display: cText } = contactLineMd(cv);
   if (cText) {
     const cFs = o.contactFs ?? 8.6;
     const ch = textHeightMm(cText, textW, cFs, 1.45);
     b.addText({
-      value: cText, x: textX, y: hy + 1.4, width: textW,
+      value: cMd, measureValue: cText, markdown: true,
+      x: textX, y: hy + 1.4, width: textW,
       fontSize: cFs, color: o.contactColor ?? MUTED, lineHeight: 1.45,
     });
     hy += ch + 1.4;
@@ -681,12 +685,18 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
         fontSize: 11, color: SIENNA,
       });
     }
-    const rows = [cv.contact.location, cv.contact.phone, cv.contact.email, stripUrlPrefix(cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.website)].filter(Boolean) as string[];
+    const rows: { display: string; md: string }[] = [
+      ...(cv.contact.location ? [{ display: cv.contact.location, md: cv.contact.location }] : []),
+      ...(cv.contact.phone ? [{ display: cv.contact.phone, md: cv.contact.phone }] : []),
+      ...(cv.contact.email ? [{ display: cv.contact.email, md: mdLink(cv.contact.email, `mailto:${cv.contact.email}`) }] : []),
+      ...(cv.contact.linkedinUrl ? [{ display: stripUrlPrefix(cv.contact.linkedinUrl), md: mdLink(stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl) }] : []),
+      ...(cv.contact.website ? [{ display: stripUrlPrefix(cv.contact.website), md: mdLink(stripUrlPrefix(cv.contact.website), cv.contact.website) }] : []),
+    ];
     const rfs = 8.6;
     let ry = hy0;
     for (const r of rows) {
-      const rh = textHeightMm(r, rightW, rfs, 1.45);
-      b.addText({ value: r, x: b.margin + b.contentW - rightW, y: ry, width: rightW, fontSize: rfs, color: MUTED, align: "right", lineHeight: 1.45 });
+      const rh = textHeightMm(r.display, rightW, rfs, 1.45);
+      b.addText({ value: r.md, measureValue: r.display, markdown: true, x: b.margin + b.contentW - rightW, y: ry, width: rightW, fontSize: rfs, color: MUTED, align: "right", lineHeight: 1.45 });
       ry += rh + 0.4;
     }
     const leftBottom = hy0 + Math.max(
@@ -1061,7 +1071,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 2.4;
   };
 
-  const sideRow = (label: string | null, value: string) => {
+  const sideRow = (label: string | null, value: string, display?: string) => {
     if (label) {
       b.addText({
         value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
@@ -1069,9 +1079,12 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
-    const h = textHeightMm(value, SIDEBAR_W - PADX * 2, 8.4, 1.45);
+    const measure = display ?? value;
+    const isMd = display !== undefined && display !== value;
+    const h = textHeightMm(measure, SIDEBAR_W - PADX * 2, 8.4, 1.45);
     b.addText({
-      value, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      value, measureValue: measure, markdown: isMd,
+      x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
       fontSize: 8.4, color: PAPER, lineHeight: 1.45,
     });
     sY += h + 1.6;
@@ -1081,9 +1094,9 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sideHeading("Contact");
     if (cv.contact.location) sideRow("Location", cv.contact.location);
     if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
-    if (cv.contact.email) sideRow("Email", cv.contact.email);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl));
-    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website));
+    if (cv.contact.email) sideRow("Email", mdLink(cv.contact.email, `mailto:${cv.contact.email}`), cv.contact.email);
+    if (cv.contact.linkedinUrl) sideRow("LinkedIn", mdLink(stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.linkedinUrl));
+    if (cv.contact.website) sideRow("Website", mdLink(stripUrlPrefix(cv.contact.website), cv.contact.website), stripUrlPrefix(cv.contact.website));
     sY += 3;
   }
 
@@ -1243,10 +1256,10 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       });
       ty += ptToMm(11) * 1.25 + 1.6;
     }
-    const contact = contactItems(cv).join("   ·   ");
+    const { md: contactMd, display: contact } = contactLineMd(cv);
     if (contact) {
       const ch = textHeightMm(contact, textW, 8.4, 1.4);
-      b.addText({ value: contact, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
+      b.addText({ value: contactMd, measureValue: contact, markdown: true, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
       ty += ch + 1;
     }
     b.cursorY = Math.max(ty, hy0 + (photoData ? sz : 0)) + 8;

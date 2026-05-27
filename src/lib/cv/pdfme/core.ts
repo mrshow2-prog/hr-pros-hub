@@ -202,6 +202,10 @@ export interface TextOpts {
   letterSpacing?: number;
   bold?: boolean;
   bgColor?: string;
+  /** When true, render text as inline-markdown so [label](https://url) becomes a clickable PDF link. */
+  markdown?: boolean;
+  /** Override the string used to estimate width/height (e.g. visible text when value contains markdown URLs). */
+  measureValue?: string;
 }
 
 export interface LineOpts {
@@ -300,9 +304,10 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
       const width = o.width ?? this.contentW;
       const x = o.x ?? this.margin;
       const lh = o.lineHeight ?? 1.25;
+      const measure = o.measureValue ?? value;
       const h = Math.max(
         ptToMm(o.fontSize) * lh,
-        textHeightMm(value, width, o.fontSize, lh, {
+        textHeightMm(measure, width, o.fontSize, lh, {
           bold: o.bold,
           letterSpacing: o.letterSpacing,
         }),
@@ -324,6 +329,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           lineHeight: lh,
           characterSpacing: o.letterSpacing ?? 0,
           backgroundColor: o.bgColor ?? "",
+          ...(o.markdown ? { textFormat: "inline-markdown" } : {}),
         } as Schema & { name: string },
         value,
       );
