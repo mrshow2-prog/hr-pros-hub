@@ -43,7 +43,9 @@ import {
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import SidebarPlacementToggle from "./SidebarPlacementToggle";
+import TemplatePickerDialog from "./TemplatePickerDialog";
 import { TOGGLEABLE_SECTIONS } from "@/lib/cv/sidebarPlacement";
+import { LayoutTemplate } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
