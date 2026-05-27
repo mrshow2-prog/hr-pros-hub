@@ -1091,7 +1091,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 2.4;
   };
 
-  const sideRow = (label: string | null, value: string, display?: string) => {
+  const sideRow = (label: string | null, value: string, uri?: string) => {
     if (label) {
       b.addText({
         value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
@@ -1099,14 +1099,13 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
-    const measure = display ?? value;
-    const isMd = display !== undefined && display !== value;
-    const h = textHeightMm(measure, SIDEBAR_W - PADX * 2, 8.4, 1.45);
+    const h = textHeightMm(value, SIDEBAR_W - PADX * 2, 8.4, 1.45);
     b.addText({
-      value, measureValue: measure, markdown: isMd,
+      value,
       x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
       fontSize: 8.4, color: PAPER, lineHeight: 1.45,
     });
+    if (uri) b.addLink({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: h, uri: withScheme(uri) });
     sY += h + 1.6;
   };
 
@@ -1114,9 +1113,9 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sideHeading("Contact");
     if (cv.contact.location) sideRow("Location", cv.contact.location);
     if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
-    if (cv.contact.email) sideRow("Email", mdLink(cv.contact.email, `mailto:${cv.contact.email}`), cv.contact.email);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", mdLink(stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl), stripUrlPrefix(cv.contact.linkedinUrl));
-    if (cv.contact.website) sideRow("Website", mdLink(stripUrlPrefix(cv.contact.website), cv.contact.website), stripUrlPrefix(cv.contact.website));
+    if (cv.contact.email) sideRow("Email", cv.contact.email, `mailto:${cv.contact.email}`);
+    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
+    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website), cv.contact.website);
     sY += 3;
   }
 
