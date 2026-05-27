@@ -1123,29 +1123,29 @@ async function buildRiyadh(
 
   const sideHeading = (label: string) => {
     b.addText({
-      value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
-    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
+    b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
   };
 
   const sideRow = (label: string | null, value: string, uri?: string) => {
     if (label) {
       b.addText({
-        value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+        value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
         fontSize: 6.8, color: mixHex(SIENNA, "#ffffff", 0.8), bold: true, letterSpacing: 1.2,
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
-    const h = textHeightMm(value, SIDEBAR_W - PADX * 2, 8.4, 1.45);
+    const h = textHeightMm(value, SIDE_TW, 8.4, 1.45);
     b.addText({
       value,
-      x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      x: PADX, y: sY, width: SIDE_TW,
       fontSize: 8.4, color: PAPER, lineHeight: 1.45,
     });
-    if (uri) b.addLink({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: h, uri: withScheme(uri) });
+    if (uri) b.addLink({ x: PADX, y: sY, width: SIDE_TW, height: h, uri: withScheme(uri) });
     sY += h + 1.6;
   };
 
@@ -1176,7 +1176,7 @@ async function buildRiyadh(
       if (!cv.skills.length) return;
       sideHeading("Skills");
       for (const sk of cv.skills) {
-        const tw = SIDEBAR_W - PADX * 2 - 3;
+        const tw = SIDE_TW - 3;
         const h = textHeightMm(sk, tw, 8.6, 1.5);
         b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
         b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
@@ -1199,13 +1199,13 @@ async function buildRiyadh(
       for (const ed of cv.education) {
         if (ed.qualification) sideRow(null, ed.qualification);
         if (ed.institution) {
-          const tw = SIDEBAR_W - PADX * 2;
+          const tw = SIDE_TW;
           const h = textHeightMm(ed.institution, tw, 7.6, 1.4);
           b.addText({ value: ed.institution, x: PADX, y: sY, width: tw, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
           sY += h + 0.6;
         }
         if (ed.period) {
-          b.addText({ value: ed.period, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+          b.addText({ value: ed.period, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
           sY += ptToMm(7) * 1.4 + 1.4;
         } else {
           sY += 1.2;
@@ -1219,11 +1219,11 @@ async function buildRiyadh(
       for (const c of cv.certifications) {
         if (c.name) sideRow(null, c.name);
         if (c.issuer) {
-          b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
+          b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDE_TW, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
           sY += ptToMm(7.6) * 1.4 + 0.6;
         }
         if (c.date) {
-          b.addText({ value: c.date, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+          b.addText({ value: c.date, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
           sY += ptToMm(7) * 1.4 + 1.4;
         } else {
           sY += 1.2;
