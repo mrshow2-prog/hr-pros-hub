@@ -39,6 +39,7 @@ import {
   CertificationsBlock,
   CustomSectionsBlock,
   SectionShell,
+  SkillsCaseToggle,
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import { cn } from "@/lib/utils";
