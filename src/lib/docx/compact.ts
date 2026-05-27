@@ -107,7 +107,7 @@ export async function buildCompactDoc(
   const leftCol: Paragraph[] = [];
   if (!isHidden(cv, "summary") && cv.summary) {
     leftCol.push(sectionHeading("Summary", t, "underline"));
-    leftCol.push(txt(cv.summary, t, { size: 20, color: t.subInk, after: 40 }));
+    leftCol.push(txt(cv.summary, t, { size: 20, color: t.subInk, after: 40, alignment: AlignmentType.JUSTIFIED }));
   }
   if (!leftCol.length) leftCol.push(new Paragraph({ children: [new TextRun({ text: "" })] }));
 

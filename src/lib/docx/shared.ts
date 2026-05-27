@@ -132,10 +132,11 @@ export function blank(after = 60) {
 export function txt(
   text: string,
   t: DocxTheme,
-  opts: { size?: number; bold?: boolean; italics?: boolean; color?: string; font?: string; after?: number; before?: number } = {},
+  opts: { size?: number; bold?: boolean; italics?: boolean; color?: string; font?: string; after?: number; before?: number; alignment?: any } = {},
 ) {
   return new Paragraph({
     spacing: { after: opts.after ?? 60, before: opts.before ?? 0 },
+    alignment: opts.alignment,
     children: [
       new TextRun({
         text,
@@ -451,6 +452,7 @@ export function quoteSummary(text: string, t: DocxTheme): Paragraph {
   return new Paragraph({
     spacing: { after: 200, line: 340 },
     indent: { left: 200 },
+    alignment: AlignmentType.JUSTIFIED,
     border: {
       left: { style: BorderStyle.SINGLE, size: 18, color: t.primary, space: 8 },
     },
