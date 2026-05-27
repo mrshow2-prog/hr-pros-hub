@@ -205,6 +205,27 @@ export async function buildRiyadhDoc(
         })));
       });
     },
+    skills: () => {
+      if (!cv.skills.length) return;
+      main.push(mainHeading("Skills"));
+      main.push(subRule());
+      main.push(new Paragraph({
+        spacing: { after: 120, line: 280 },
+        children: [new TextRun({ text: cv.skills.join(" · "), size: 19, font: t.body, color: INK_HEX })],
+      }));
+    },
+    languages: () => {
+      if (!cv.languages.length) return;
+      main.push(mainHeading("Languages"));
+      main.push(subRule());
+      main.push(new Paragraph({
+        spacing: { after: 120, line: 280 },
+        children: [new TextRun({
+          text: cv.languages.map((l) => l.level?.trim() ? `${l.name} (${l.level})` : l.name).join("     "),
+          size: 19, font: t.body, color: INK_HEX,
+        })],
+      }));
+    },
     education: () => {
       main.push(mainHeading("Education"));
       main.push(subRule());
@@ -244,7 +265,7 @@ export async function buildRiyadhDoc(
   };
 
   for (const key of getSectionOrder(cv)) {
-    if (SIDEBAR_KEYS.has(key)) continue;
+    if (inSidebar(key)) continue;
     if (!shouldRender(cv, key)) continue;
     mainRenderers[key]?.();
   }
