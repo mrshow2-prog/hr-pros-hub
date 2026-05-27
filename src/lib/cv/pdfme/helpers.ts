@@ -6,12 +6,13 @@ export function stripUrlPrefix(value: string | null | undefined): string {
   return value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
 }
 
-/** Ensure a URL has an http(s):// scheme so pdfme treats it as a valid link target. */
+/** Ensure a URL has a scheme so pdfme treats it as a valid link target. */
 export function withScheme(value: string | null | undefined): string {
   if (!value) return "";
   const v = value.trim();
   if (!v) return "";
-  return /^https?:\/\//i.test(v) ? v : `https://${v.replace(/^\/+/, "")}`;
+  if (/^([a-z]+:)/i.test(v)) return v; // mailto:, tel:, http(s):, etc.
+  return `https://${v.replace(/^\/+/, "")}`;
 }
 
 /** Escape characters that have meaning in pdfme's inline-markdown parser. */
