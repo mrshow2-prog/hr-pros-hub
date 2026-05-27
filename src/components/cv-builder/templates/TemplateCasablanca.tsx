@@ -29,7 +29,7 @@ export default function TemplateCasablanca({
   cv: GeneratedCV;
   photoUrl: string | null;
 }) {
-  const sidebarBg = "#1f2933";
+  const sidebarBg = "color-mix(in srgb, var(--accent, #c9a36a) 18%, #1f2933)";
   const accentBg = "var(--accent, #c9a36a)";
 
   const SideH = ({ icon: Icon, children }: { icon: typeof User; children: React.ReactNode }) => (
