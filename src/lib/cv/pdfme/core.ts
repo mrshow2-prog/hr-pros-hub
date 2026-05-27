@@ -1,6 +1,7 @@
 import { generate } from "@pdfme/generator";
 import { text, image, line, rectangle } from "@pdfme/schemas";
 import type { Template, Schema } from "@pdfme/common";
+import { PDFDocument, PDFName, PDFString } from "@pdfme/pdf-lib";
 import { saveAs } from "file-saver";
 
 /* ============================================================
@@ -58,6 +59,14 @@ function estimatedTextWidthMm(
   // won't re-wrap on us. Bullet rendering pre-wraps with this same function
   // and emits one block per line, so spacing stays deterministic.
   return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.03;
+}
+
+export function textWidthMm(
+  text: string,
+  fontSizePt: number,
+  opts: { bold?: boolean; letterSpacing?: number } = {},
+) {
+  return estimatedTextWidthMm(text, fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
 }
 
 
@@ -227,6 +236,14 @@ export interface RectOpts {
   radius?: number;
 }
 
+export interface LinkOpts {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  uri: string;
+}
+
 export interface PdfmeBuilder {
   PAGE_W: number;
   PAGE_H: number;
@@ -247,6 +264,7 @@ export interface PdfmeBuilder {
   addLine(o: LineOpts): void;
   addRect(o: RectOpts): void;
   addImage(o: { x: number; y: number; w: number; h: number; data: string }): void;
+  addLink(o: LinkOpts): void;
   toBlob(): Promise<Blob>;
   finalize(fileName: string): Promise<void>;
 }
@@ -258,6 +276,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
 
   const pages: Array<Array<Schema & { name: string }>> = [[]];
   const inputs: Record<string, string> = {};
+  const links: Array<LinkOpts & { pageIndex: number }> = [];
   let pageIdx = 0;
   let y = top;
   let counter = 0;
@@ -377,6 +396,11 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
         o.data,
       );
     },
+    addLink(o) {
+      const uri = o.uri.trim();
+      if (!uri || o.width <= 0 || o.height <= 0) return;
+      links.push({ ...o, uri, pageIndex: pageIdx });
+    },
     async toBlob() {
       const template: Template = {
         basePdf: { width: PAGE_W, height: PAGE_H, padding: [0, 0, 0, 0] },
@@ -387,7 +411,33 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
         inputs: [inputs],
         plugins: { text, image, line, rectangle },
       });
-      return new Blob([pdf as unknown as BlobPart], { type: "application/pdf" });
+      let bytes = pdf as unknown as Uint8Array;
+      if (links.length) {
+        const doc = await PDFDocument.load(bytes);
+        const pdfPages = doc.getPages();
+        for (const link of links) {
+          const page = pdfPages[link.pageIndex];
+          if (!page) continue;
+          const x1 = link.x * PT_PER_MM;
+          const y1 = (PAGE_H - link.y - link.height) * PT_PER_MM;
+          const x2 = (link.x + link.width) * PT_PER_MM;
+          const y2 = (PAGE_H - link.y) * PT_PER_MM;
+          const annotation = doc.context.obj({
+            Type: PDFName.of("Annot"),
+            Subtype: PDFName.of("Link"),
+            Rect: [x1, y1, x2, y2],
+            Border: [0, 0, 0],
+            A: {
+              Type: PDFName.of("Action"),
+              S: PDFName.of("URI"),
+              URI: PDFString.of(link.uri),
+            },
+          });
+          page.node.addAnnot(doc.context.register(annotation));
+        }
+        bytes = await doc.save();
+      }
+      return new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
     },
     async finalize(fileName: string) {
       const blob = await this.toBlob();
