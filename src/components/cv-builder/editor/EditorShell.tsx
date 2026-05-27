@@ -490,6 +490,15 @@ export default function EditorShell() {
           />
         )}
       </div>
+
+      <TemplatePickerDialog
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onConfirm={(id) => {
+          setTemplateChanging(true);
+          setTemplate(id);
+        }}
+      />
     </div>
   );
 }
