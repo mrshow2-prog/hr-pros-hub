@@ -13,7 +13,9 @@ import {
   ChevronDown,
   Loader2,
   Pencil,
+  CaseSensitive,
 } from "lucide-react";
+import { applyCase, nextCase, type CaseMode } from "@/lib/cv/textCase";
 import {
   useCVBuilder,
   type CVBullet,
@@ -171,7 +173,11 @@ export default function StepDraft() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="space-y-10">
-          <SectionShell sectionKey="contact" title="Contact">
+          <SectionShell
+            sectionKey="contact"
+            title="Contact"
+            headerAction={<ContactCaseToggle />}
+          >
             <ContactBlock contact={cv.contact} />
           </SectionShell>
 
@@ -183,7 +189,11 @@ export default function StepDraft() {
             <ExperienceList experience={cv.experience} />
           </SectionShell>
 
-          <SectionShell sectionKey="skills" title="Skills">
+          <SectionShell
+            sectionKey="skills"
+            title="Skills"
+            headerAction={<SkillsCaseToggle />}
+          >
             <SkillsBlock skills={cv.skills} />
           </SectionShell>
 
