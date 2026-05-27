@@ -45,13 +45,18 @@ function periodRow(
   ctx: Ctx,
   left: string,
   right: string,
-  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number },
+  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number; periodW?: number },
 ) {
   const { b } = ctx;
   const leftFs = opts.leftFs;
   const rightFs = opts.rightFs ?? 8.8;
-  const periodW = 52;
-  const leftW = b.contentW - periodW - 2;
+  // Reserve only what the date string actually needs (+ small padding) so the
+  // job title gets the rest of the line instead of wrapping into 3 narrow rows.
+  const measuredRightW = right
+    ? Math.min(b.contentW * 0.45, Math.ceil(estimatedRightWidthMm(right, rightFs)) + 2)
+    : 0;
+  const periodW = opts.periodW ?? measuredRightW;
+  const leftW = b.contentW - periodW - (periodW ? 2 : 0);
   const lineStep = ptToMm(leftFs) * 1.25;
   const leftLines = wrapLines(left || "", leftW, leftFs, { bold: opts.bold });
   const lineCount = Math.max(1, leftLines.length);
@@ -83,6 +88,20 @@ function periodRow(
     });
   }
   b.cursorY = py + blockH + (opts.spaceAfter ?? 0.5);
+}
+
+/** Width estimate for the right-aligned date string (mm). */
+function estimatedRightWidthMm(text: string, fontSizePt: number) {
+  const PT_PER_MM_LOCAL = 2.8346;
+  const units = Array.from(text).reduce((s, ch) => {
+    if (ch === " ") return s + 0.30;
+    if (/[0-9]/.test(ch)) return s + 0.55;
+    if (/[A-Z]/.test(ch)) return s + 0.60;
+    if (/[a-z]/.test(ch)) return s + 0.50;
+    if (/[-–—]/.test(ch)) return s + 0.40;
+    return s + 0.45;
+  }, 0);
+  return (fontSizePt * units) / PT_PER_MM_LOCAL * 1.05;
 }
 
 function deterministicLine(
