@@ -81,7 +81,7 @@ export async function buildRiyadhDoc(
     });
   }
 
-  if (!isHidden(cv, "skills") && cv.skills.length) {
+  if (inSidebar("skills") && !isHidden(cv, "skills") && cv.skills.length) {
     sidebar.push(sideHeading("Skills"));
     cv.skills.forEach((s) => sidebar.push(
       new Paragraph({
@@ -95,12 +95,30 @@ export async function buildRiyadhDoc(
     ));
   }
 
-  if (!isHidden(cv, "languages") && cv.languages.length) {
+  if (inSidebar("languages") && !isHidden(cv, "languages") && cv.languages.length) {
     sidebar.push(sideHeading("Languages"));
     cv.languages.forEach((l) => sidebar.push(sideLine(
       l.level?.trim() ? `${l.name} — ${l.level}` : l.name,
       { size: 17, after: 60 },
     )));
+  }
+
+  if (inSidebar("education") && !isHidden(cv, "education") && cv.education.length) {
+    sidebar.push(sideHeading("Education"));
+    cv.education.forEach((ed) => {
+      sidebar.push(sideLine(ed.qualification, { size: 17, bold: true, after: 20 }));
+      if (ed.institution) sidebar.push(sideLine(ed.institution, { size: 15, after: 20 }));
+      if (ed.period) sidebar.push(sideLine(ed.period, { size: 14, after: 80 }));
+    });
+  }
+
+  if (inSidebar("certifications") && !isHidden(cv, "certifications") && cv.certifications.length) {
+    sidebar.push(sideHeading("Certifications"));
+    cv.certifications.forEach((c) => {
+      sidebar.push(sideLine(c.name, { size: 17, bold: true, after: 20 }));
+      if (c.issuer) sidebar.push(sideLine(c.issuer, { size: 15, after: 20 }));
+      if (c.date) sidebar.push(sideLine(c.date, { size: 14, after: 80 }));
+    });
   }
 
   // ---------- Main children ----------
