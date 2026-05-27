@@ -31,7 +31,36 @@ interface Ctx {
   b: PdfmeBuilder;
 }
 
+/* ------------ contact icon helpers ------------ */
+
+const ICON_SVGS = {
+  mapPin: `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>`,
+  phone: `<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>`,
+  mail: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>`,
+  linkedin: `<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>`,
+  globe: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+};
+
+async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): Promise<string> {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  const url = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = url;
+  });
+  const canvas = document.createElement("canvas");
+  canvas.width = sizePx;
+  canvas.height = sizePx;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No 2d context");
+  ctx.drawImage(img, 0, 0, sizePx, sizePx);
+  return canvas.toDataURL("image/png");
+}
+
 /* ------------ shared building blocks ------------ */
+
 
 function contactLine(cv: GeneratedCV) {
   return contactItems(cv).join("   ·   ");
@@ -1119,14 +1148,26 @@ async function buildRiyadh(
   };
 
   if (shouldRender(cv, "contact")) {
-    sideHeading("Contact");
-    if (cv.contact.location) sideRow("Location", cv.contact.location);
-    if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
-    if (cv.contact.email) sideRow("Email", cv.contact.email, `mailto:${cv.contact.email}`);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
-    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website), cv.contact.website);
-    sY += 3;
+    const ICON_MM = 3.2;
+    const TEXT_X = PADX + ICON_MM + 1.8;
+    const TW = SIDEBAR_W - PADX - TEXT_X;
+    const FS = 8.4;
+    const contactRow = async (iconSvg: string, value: string, uri?: string) => {
+      const data = await svgToPngDataUrl(iconSvg);
+      b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data });
+      const h = textHeightMm(value, TW, FS, 1.45);
+      b.addText({ value, x: TEXT_X, y: sY, width: TW, fontSize: FS, color: PAPER, lineHeight: 1.45 });
+      if (uri) b.addLink({ x: TEXT_X, y: sY, width: TW, height: h, uri: withScheme(uri) });
+      sY += Math.max(h, ICON_MM) + 1.8;
+    };
+    if (cv.contact.location) await contactRow(ICON_SVGS.mapPin, cv.contact.location);
+    if (cv.contact.phone) await contactRow(ICON_SVGS.phone, cv.contact.phone);
+    if (cv.contact.email) await contactRow(ICON_SVGS.mail, cv.contact.email, `mailto:${cv.contact.email}`);
+    if (cv.contact.linkedinUrl) await contactRow(ICON_SVGS.linkedin, stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
+    if (cv.contact.website) await contactRow(ICON_SVGS.globe, stripUrlPrefix(cv.contact.website), cv.contact.website);
+    sY += 4;
   }
+
 
   const sideRenderers: Partial<Record<SectionKey, () => void>> = {
     skills: () => {
