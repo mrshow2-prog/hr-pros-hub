@@ -928,12 +928,68 @@ function BulletRow({
 }
 
 
+/* ---------------- Case toggle button ---------------- */
+
+const CASE_LABEL: Record<CaseMode, string> = {
+  title: "Title Case",
+  upper: "UPPER CASE",
+  lower: "lower case",
+};
+
+function CaseToggleButton({ onApply }: { onApply: (mode: CaseMode) => void }) {
+  const [mode, setMode] = useState<CaseMode>("title");
+  const handleClick = () => {
+    onApply(mode);
+    setMode((m) => nextCase(m));
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="inline-flex items-center gap-1.5 rounded border border-ink/15 px-2 py-1 font-dm text-[11px] text-ink/65 hover:border-ink/30"
+      title={`Apply ${CASE_LABEL[mode]} (click to cycle)`}
+      aria-label={`Apply ${CASE_LABEL[mode]}`}
+    >
+      <CaseSensitive size={14} />
+      Aa
+    </button>
+  );
+}
+
+export function ContactCaseToggle() {
+  const { state, patchContact } = useCVBuilder();
+  const contact = state.generatedCV?.contact;
+  if (!contact) return null;
+  return (
+    <CaseToggleButton
+      onApply={(mode) =>
+        patchContact({
+          name: applyCase(contact.name || "", mode),
+          jobTitle: applyCase(contact.jobTitle || "", mode),
+        })
+      }
+    />
+  );
+}
+
+export function SkillsCaseToggle() {
+  const { state, setSkills } = useCVBuilder();
+  const skills = state.generatedCV?.skills;
+  if (!skills?.length) return null;
+  return (
+    <CaseToggleButton
+      onApply={(mode) => setSkills(skills.map((s) => applyCase(s, mode)))}
+    />
+  );
+}
+
 /* ---------------- Skills ---------------- */
 
 export function SkillsBlock({ skills }: { skills: string[] }) {
   const { setSkills } = useCVBuilder();
   return <PillInput values={skills} onChange={setSkills} placeholder="Add a skill and press Enter" />;
 }
+
 
 /* ---------------- Education ---------------- */
 
