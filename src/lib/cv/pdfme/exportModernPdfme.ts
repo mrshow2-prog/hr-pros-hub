@@ -1152,7 +1152,7 @@ async function buildRiyadh(
   if (shouldRender(cv, "contact")) {
     const ICON_MM = 3.2;
     const TEXT_X = PADX + ICON_MM + 1.8;
-    const TW = SIDEBAR_W - PADX - TEXT_X;
+    const TW = SIDEBAR_W - PAD_R - TEXT_X;
     const FS = 8.4;
     const contactRow = async (iconSvg: string, value: string, uri?: string) => {
       const data = await svgToPngDataUrl(iconSvg);
