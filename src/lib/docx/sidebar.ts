@@ -159,8 +159,7 @@ export async function buildRiyadhDoc(
       children: [new TextRun({ text: "" })],
     });
 
-  // Sidebar-only sections are pinned in the sidebar and excluded from the main reorder loop.
-  const SIDEBAR_KEYS = new Set<SectionKey>(["skills", "languages"]);
+  // Sidebar-only sections are pinned in the sidebar (see inSidebar helper).
 
   const renderSummary = () => {
     main.push(mainHeading("Profile"));
