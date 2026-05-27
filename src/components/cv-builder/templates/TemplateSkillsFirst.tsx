@@ -20,7 +20,14 @@ export default function TemplateSkillsFirst({
         <SH>Skills &amp; Competencies</SH>
         <div className="flex flex-wrap gap-2">
           {cv.skills.map((s) => (
-            <span key={s} className="rounded-full border border-ink/10 bg-clay px-3.5 py-1.5 text-[13px] text-ink">
+            <span
+              key={s}
+              className="rounded-full border px-3.5 py-1.5 text-[13px] text-ink"
+              style={{
+                background: "color-mix(in srgb, var(--accent, #9c5643) 10%, white)",
+                borderColor: "color-mix(in srgb, var(--accent, #9c5643) 35%, transparent)",
+              }}
+            >
               {s}
             </span>
           ))}

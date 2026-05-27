@@ -177,7 +177,7 @@ export default function TemplateRiyadh({
       {/* Sidebar */}
       <aside
         className="w-[252px] shrink-0 px-7 py-10 text-paper"
-        style={{ backgroundColor: "#6E3D2F" }}
+        style={{ backgroundColor: "color-mix(in srgb, var(--accent, #9c5643) 78%, #0a0a0a)" }}
       >
         {photoUrl && (
           <div className="mx-auto mb-7 h-28 w-28 overflow-hidden border border-paper/30">

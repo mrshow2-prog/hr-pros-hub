@@ -34,3 +34,42 @@ export const DEFAULT_PALETTE: PaletteId = "sienna";
 export function getPalette(id: PaletteId | string | null | undefined): Palette {
   return PALETTES.find((p) => p.id === id) ?? PALETTES[0];
 }
+
+/* ---------- Hex color helpers (no deps) ---------- */
+
+function clamp(n: number, lo = 0, hi = 255) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+function parseHex(hex: string): [number, number, number] {
+  const clean = hex.trim().replace(/^#/, "");
+  const full = clean.length === 3
+    ? clean.split("").map((c) => c + c).join("")
+    : clean;
+  const n = parseInt(full.slice(0, 6), 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+}
+
+function toHex(rgb: [number, number, number], withHash = true): string {
+  const s = rgb
+    .map((c) => clamp(Math.round(c)).toString(16).padStart(2, "0"))
+    .join("");
+  return withHash ? `#${s}` : s.toUpperCase();
+}
+
+/** Blend two hex colours. amount=0 → a, amount=1 → b. */
+export function mixHex(a: string, b: string, amount: number, withHash = true): string {
+  const [ar, ag, ab] = parseHex(a);
+  const [br, bg, bb] = parseHex(b);
+  const t = clamp(amount, 0, 1);
+  return toHex(
+    [ar + (br - ar) * t, ag + (bg - ag) * t, ab + (bb - ab) * t],
+    withHash,
+  );
+}
+
+/** Darken (positive) or lighten (negative) a hex colour by a 0-1 fraction. */
+export function shadeHex(hex: string, amount: number, withHash = true): string {
+  if (amount >= 0) return mixHex(hex, "#000000", amount, withHash);
+  return mixHex(hex, "#ffffff", -amount, withHash);
+}

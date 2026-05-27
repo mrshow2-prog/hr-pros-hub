@@ -10,6 +10,7 @@ import {
   achievementsBlock, certificationsBlock, competenciesBlock, customSectionsBlock,
   bulletPara, txt,
 } from "./shared";
+import { shadeHex } from "@/lib/cv/palettes";
 
 
 /** Riyadh — dark sienna left rail with photo, contact, skills, languages.
@@ -21,8 +22,8 @@ export async function buildRiyadhDoc(
   const t = getTheme("bold");
   const SIDEBAR_W = Math.round(CONTENT_W * 0.32);
   const MAIN_W = CONTENT_W - SIDEBAR_W;
-  const SIENNA_HEX = "9C5643";
-  const SIENNA_DARK = "6E3D2F";
+  const SIENNA_HEX = t.primary;
+  const SIENNA_DARK = shadeHex(`#${t.primary}`, 0.22, false);
   const PAPER = "F5F0E8";
 
   // ---------- Sidebar children ----------

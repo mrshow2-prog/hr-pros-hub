@@ -8,6 +8,7 @@ import {
   INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W,
   type PdfmeBuilder,
 } from "./core";
+import { shadeHex, mixHex } from "@/lib/cv/palettes";
 
 
 /* ============================================================
@@ -964,7 +965,7 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
 
     b.addRect({
       x, y, width: chipW, height: chipH,
-      color: "#f4efe6", borderColor: HAIRLINE, borderWidth: 0.3,
+      color: mixHex(SIENNA, "#ffffff", 0.9), borderColor: mixHex(SIENNA, "#ffffff", 0.65), borderWidth: 0.3,
       radius: singleLineH / 2,
     });
     lines.forEach((line, index) => {
@@ -993,7 +994,6 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
  *    contact, skills, languages. Right column flows
  *    summary/experience/education with restrained type.
  * ============================================================ */
-const SIENNA_DARK = "#6e3d2f";
 const PAPER = "#f5f0e8";
 
 async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
@@ -1004,12 +1004,14 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   const PADX = 10;
   const MAIN_MARGIN = MAIN_X + PADX + 2;
   const MAIN_CONTENT_W = MAIN_W - PADX * 2 - 2;
+  // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
+  const sidebarFill = shadeHex(SIENNA, 0.22);
 
   // Draw sidebar background on every page.
   const drawSidebar = () => {
     b.addRect({
       x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H,
-      color: SIENNA_DARK, borderColor: SIENNA_DARK, borderWidth: 0,
+      color: sidebarFill, borderColor: sidebarFill, borderWidth: 0,
     });
   };
   drawSidebar();
@@ -1036,7 +1038,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
-    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: "#a07a6a" });
+    b.addLine({ x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
   };
 
@@ -1044,7 +1046,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     if (label) {
       b.addText({
         value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
-        fontSize: 6.8, color: "#e8d9c8", bold: true, letterSpacing: 1.2,
+        fontSize: 6.8, color: mixHex(SIENNA, "#ffffff", 0.8), bold: true, letterSpacing: 1.2,
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
