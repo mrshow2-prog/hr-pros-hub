@@ -6,10 +6,12 @@ import {
 import { buildCompactDoc } from "./compact";
 import { buildRiyadhDoc } from "./sidebar";
 import { setDocxAccent } from "./shared";
+import { getSidebarKeys, type SidebarPlacementMap } from "@/lib/cv/sidebarPlacement";
 
 export interface DocxOptions {
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  sidebarPlacement?: SidebarPlacementMap;
 }
 
 export async function buildDocxByTemplate(
@@ -34,15 +36,17 @@ export async function buildDocxByTemplate(
     }
   }
 
+  const sidebarKeys = getSidebarKeys(opts?.sidebarPlacement);
+
   switch (normalizeTemplateId(template)) {
     case "traditional": return buildLondonDoc(cv, effectivePhoto);
     case "executive":   return buildZurichDoc(cv, effectivePhoto);
     case "detailed":    return buildCompactDoc(cv, effectivePhoto);
     case "skills":      return buildBerlinDoc(cv, effectivePhoto);
-    case "bold":        return buildRiyadhDoc(cv, effectivePhoto);
+    case "bold":        return buildRiyadhDoc(cv, effectivePhoto, sidebarKeys);
     case "editorial":   return buildGenevaDoc(cv, effectivePhoto);
     // New templates route to the closest existing docx builder.
-    case "vibrant":     return buildRiyadhDoc(cv, effectivePhoto);
+    case "vibrant":     return buildRiyadhDoc(cv, effectivePhoto, sidebarKeys);
     case "gradient":    return buildDubaiDoc(cv, effectivePhoto);
     case "creative":    return buildGenevaDoc(cv, effectivePhoto);
     case "simple":

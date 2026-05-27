@@ -102,6 +102,12 @@ export interface IntentForm {
   photoShape: PhotoShape;
   /** Selected colour palette id (see src/lib/cv/palettes.ts). */
   colorPalette: string;
+  /**
+   * For multi-column templates only — per-section override of whether the
+   * section is rendered in the sidebar/banner or in the main body.
+   * Missing keys fall back to per-section defaults (see sidebarPlacement.ts).
+   */
+  sidebarPlacement?: Partial<Record<SectionKey, "sidebar" | "main">>;
 }
 
 export interface Gap {
@@ -302,6 +308,7 @@ const defaultIntent: IntentForm = {
   pageLimit: null,
   photoShape: "circle",
   colorPalette: "sienna",
+  sidebarPlacement: {},
 };
 
 const emptyContact: ContactInfo = {

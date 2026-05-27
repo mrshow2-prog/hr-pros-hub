@@ -4,6 +4,7 @@ import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { buildDocxByTemplate } from "@/lib/docx/router";
 import { exportCompactDocx } from "@/lib/cv/exportCompactDocx";
 import { exportCvPdfme } from "@/lib/cv/pdfme/exportModernPdfme";
+import type { SidebarPlacementMap } from "@/lib/cv/sidebarPlacement";
 
 export function slugify(name: string, fallback = "cv") {
   const s = (name || "")
@@ -15,6 +16,13 @@ export function slugify(name: string, fallback = "cv") {
   return s || fallback;
 }
 
+export interface CvExportOptions {
+  accentHex?: string | null;
+  photoShape?: "circle" | "square" | "none";
+  /** Per-section sidebar/main overrides for multi-column templates. */
+  sidebarPlacement?: SidebarPlacementMap;
+}
+
 /* =========================================================
  * PDF
  * ========================================================= */
@@ -23,7 +31,7 @@ export async function exportCVToPdf(
   template: TemplateId,
   photoUrl: string | null,
   fileName: string,
-  opts?: { accentHex?: string | null; photoShape?: "circle" | "square" | "none" },
+  opts?: CvExportOptions,
 ) {
   return exportCvPdfme(cv, photoUrl, template, fileName, opts);
 }
@@ -45,7 +53,7 @@ export async function exportCVToDocx(
   fileName: string,
   template: TemplateId = "simple",
   photoUrl: string | null = null,
-  opts?: { accentHex?: string | null; photoShape?: "circle" | "square" | "none" },
+  opts?: CvExportOptions,
 ) {
   // Honour photoShape for the detailed/compact docx renderer too.
   let effectivePhoto = photoUrl;

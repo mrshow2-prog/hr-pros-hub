@@ -18,8 +18,10 @@ import { shadeHex } from "@/lib/cv/palettes";
 export async function buildRiyadhDoc(
   cv: GeneratedCV,
   photoUrl: string | null,
+  sidebarKeys: SectionKey[] = ["skills", "languages", "education"],
 ): Promise<Document> {
   const t = getTheme("bold");
+  const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
   const SIDEBAR_W = Math.round(CONTENT_W * 0.32);
   const MAIN_W = CONTENT_W - SIDEBAR_W;
   const SIENNA_HEX = t.primary;
@@ -79,7 +81,7 @@ export async function buildRiyadhDoc(
     });
   }
 
-  if (!isHidden(cv, "skills") && cv.skills.length) {
+  if (inSidebar("skills") && !isHidden(cv, "skills") && cv.skills.length) {
     sidebar.push(sideHeading("Skills"));
     cv.skills.forEach((s) => sidebar.push(
       new Paragraph({
@@ -93,12 +95,30 @@ export async function buildRiyadhDoc(
     ));
   }
 
-  if (!isHidden(cv, "languages") && cv.languages.length) {
+  if (inSidebar("languages") && !isHidden(cv, "languages") && cv.languages.length) {
     sidebar.push(sideHeading("Languages"));
     cv.languages.forEach((l) => sidebar.push(sideLine(
       l.level?.trim() ? `${l.name} — ${l.level}` : l.name,
       { size: 17, after: 60 },
     )));
+  }
+
+  if (inSidebar("education") && !isHidden(cv, "education") && cv.education.length) {
+    sidebar.push(sideHeading("Education"));
+    cv.education.forEach((ed) => {
+      sidebar.push(sideLine(ed.qualification, { size: 17, bold: true, after: 20 }));
+      if (ed.institution) sidebar.push(sideLine(ed.institution, { size: 15, after: 20 }));
+      if (ed.period) sidebar.push(sideLine(ed.period, { size: 14, after: 80 }));
+    });
+  }
+
+  if (inSidebar("certifications") && !isHidden(cv, "certifications") && cv.certifications.length) {
+    sidebar.push(sideHeading("Certifications"));
+    cv.certifications.forEach((c) => {
+      sidebar.push(sideLine(c.name, { size: 17, bold: true, after: 20 }));
+      if (c.issuer) sidebar.push(sideLine(c.issuer, { size: 15, after: 20 }));
+      if (c.date) sidebar.push(sideLine(c.date, { size: 14, after: 80 }));
+    });
   }
 
   // ---------- Main children ----------
@@ -139,8 +159,7 @@ export async function buildRiyadhDoc(
       children: [new TextRun({ text: "" })],
     });
 
-  // Sidebar-only sections are pinned in the sidebar and excluded from the main reorder loop.
-  const SIDEBAR_KEYS = new Set<SectionKey>(["skills", "languages"]);
+  // Sidebar-only sections are pinned in the sidebar (see inSidebar helper).
 
   const renderSummary = () => {
     main.push(mainHeading("Profile"));
@@ -185,6 +204,27 @@ export async function buildRiyadhDoc(
         })));
       });
     },
+    skills: () => {
+      if (!cv.skills.length) return;
+      main.push(mainHeading("Skills"));
+      main.push(subRule());
+      main.push(new Paragraph({
+        spacing: { after: 120, line: 280 },
+        children: [new TextRun({ text: cv.skills.join(" · "), size: 19, font: t.body, color: INK_HEX })],
+      }));
+    },
+    languages: () => {
+      if (!cv.languages.length) return;
+      main.push(mainHeading("Languages"));
+      main.push(subRule());
+      main.push(new Paragraph({
+        spacing: { after: 120, line: 280 },
+        children: [new TextRun({
+          text: cv.languages.map((l) => l.level?.trim() ? `${l.name} (${l.level})` : l.name).join("     "),
+          size: 19, font: t.body, color: INK_HEX,
+        })],
+      }));
+    },
     education: () => {
       main.push(mainHeading("Education"));
       main.push(subRule());
@@ -224,7 +264,7 @@ export async function buildRiyadhDoc(
   };
 
   for (const key of getSectionOrder(cv)) {
-    if (SIDEBAR_KEYS.has(key)) continue;
+    if (inSidebar(key)) continue;
     if (!shouldRender(cv, key)) continue;
     mainRenderers[key]?.();
   }

@@ -9,6 +9,10 @@ import {
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
+import {
+  getSidebarKeys as resolveSidebarKeys,
+  type SidebarPlacementMap,
+} from "@/lib/cv/sidebarPlacement";
 
 
 /* ============================================================
@@ -1045,7 +1049,11 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
  * ============================================================ */
 const PAPER = "#f5f0e8";
 
-async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
+async function buildRiyadh(
+  cv: GeneratedCV,
+  photoUrl: string | null,
+  sidebarKeys: SectionKey[] = ["skills", "languages", "education"],
+) {
   const b = createBuilder({ margin: 0, top: 0, bottom: 14 });
   const SIDEBAR_W = 64; // mm
   const MAIN_X = SIDEBAR_W;
@@ -1055,6 +1063,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   const MAIN_CONTENT_W = MAIN_W - PADX * 2 - 2;
   // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
   const sidebarFill = shadeHex(SIENNA, 0.22);
+  const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
 
   // Draw sidebar background on every page.
   const drawSidebar = () => {
@@ -1119,26 +1128,70 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 3;
   }
 
-  if (shouldRender(cv, "skills")) {
-    sideHeading("Skills");
-    for (const sk of cv.skills) {
-      const tw = SIDEBAR_W - PADX * 2 - 3;
-      // Measure with the SAME options used at render (no bold) so we don't
-      // reserve space for a phantom second line that the renderer never draws.
-      const h = textHeightMm(sk, tw, 8.6, 1.5);
-      b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
-      b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
-      sY += h + 1.6;
-    }
-    sY += 3;
-  }
+  const sideRenderers: Partial<Record<SectionKey, () => void>> = {
+    skills: () => {
+      if (!cv.skills.length) return;
+      sideHeading("Skills");
+      for (const sk of cv.skills) {
+        const tw = SIDEBAR_W - PADX * 2 - 3;
+        const h = textHeightMm(sk, tw, 8.6, 1.5);
+        b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
+        b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
+        sY += h + 1.6;
+      }
+      sY += 3;
+    },
+    languages: () => {
+      if (!cv.languages.length) return;
+      sideHeading("Languages");
+      for (const l of cv.languages) {
+        const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+        sideRow(null, display);
+      }
+      sY += 3;
+    },
+    education: () => {
+      if (!cv.education.length) return;
+      sideHeading("Education");
+      for (const ed of cv.education) {
+        if (ed.qualification) sideRow(null, ed.qualification);
+        if (ed.institution) {
+          const tw = SIDEBAR_W - PADX * 2;
+          const h = textHeightMm(ed.institution, tw, 7.6, 1.4);
+          b.addText({ value: ed.institution, x: PADX, y: sY, width: tw, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
+          sY += h + 0.6;
+        }
+        if (ed.period) {
+          b.addText({ value: ed.period, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+          sY += ptToMm(7) * 1.4 + 1.4;
+        } else {
+          sY += 1.2;
+        }
+      }
+      sY += 2;
+    },
+    certifications: () => {
+      if (!cv.certifications.length) return;
+      sideHeading("Certifications");
+      for (const c of cv.certifications) {
+        if (c.name) sideRow(null, c.name);
+        if (c.issuer) {
+          b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
+          sY += ptToMm(7.6) * 1.4 + 0.6;
+        }
+        if (c.date) {
+          b.addText({ value: c.date, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+          sY += ptToMm(7) * 1.4 + 1.4;
+        } else {
+          sY += 1.2;
+        }
+      }
+      sY += 2;
+    },
+  };
 
-  if (shouldRender(cv, "languages")) {
-    sideHeading("Languages");
-    for (const l of cv.languages) {
-      const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
-      sideRow(null, display);
-    }
+  for (const k of (["skills", "education", "languages", "certifications"] as SectionKey[])) {
+    if (inSidebar(k) && shouldRender(cv, k)) sideRenderers[k]?.();
   }
 
   // ---- Main column ----
@@ -1189,6 +1242,20 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
         b.cursorY += 2.4;
       }
     },
+    skills: () => {
+      if (!cv.skills.length) return;
+      mainHeading("Skills");
+      const text = cv.skills.join(" · ");
+      b.addText({ value: text, fontSize: 9.6, color: SUBINK, lineHeight: 1.6, spaceAfter: 4 });
+    },
+    languages: () => {
+      if (!cv.languages.length) return;
+      mainHeading("Languages");
+      const text = cv.languages
+        .map((l) => (l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name))
+        .join("     ");
+      b.addText({ value: text, fontSize: 9.6, color: SUBINK, spaceAfter: 4 });
+    },
     education: () => {
       mainHeading("Education");
       for (const ed of cv.education) {
@@ -1230,8 +1297,10 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
   };
 
   for (const k of getSectionOrder(cv)) {
-    if (k === "skills" || k === "languages") continue; // pinned in sidebar
-    if (shouldRender(cv, k)) mainRenderers[k]?.();
+    // Skip sections that the user has pinned in the sidebar.
+    if (inSidebar(k)) continue;
+    if (!shouldRender(cv, k)) continue;
+    mainRenderers[k]?.();
   }
 
   return b;
@@ -1423,6 +1492,8 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 export interface PdfmeOptions {
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  /** Per-section sidebar/main overrides for multi-column templates. */
+  sidebarPlacement?: SidebarPlacementMap;
 }
 
 export async function exportCvPdfme(
@@ -1449,16 +1520,17 @@ export async function generateCvPdfmeBlob(
   if (effectivePhoto && opts?.photoShape === "circle") {
     effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;
   }
+  const sidebarKeys = resolveSidebarKeys(opts?.sidebarPlacement);
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
     case "traditional":  b = await buildClassic(cv, effectivePhoto); break;
     case "executive":    b = await buildExecutive(cv, effectivePhoto); break;
     case "detailed":     b = await buildCompact(cv, effectivePhoto); break;
     case "skills":       b = await buildSkillsFirst(cv, effectivePhoto); break;
-    case "bold":         b = await buildRiyadh(cv, effectivePhoto); break;
+    case "bold":         b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
     case "editorial":    b = await buildGeneva(cv, effectivePhoto); break;
     // New templates currently route to the closest existing PDF builder.
-    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto); break;
+    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
     case "gradient":     b = await buildModern(cv, effectivePhoto); break;
     case "creative":     b = await buildGeneva(cv, effectivePhoto); break;
     case "simple":

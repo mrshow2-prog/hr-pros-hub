@@ -44,6 +44,7 @@ export default function StepExport() {
   const exportOpts = {
     accentHex: paletteHexFor(state.intentForm.colorPalette),
     photoShape: state.intentForm.photoShape,
+    sidebarPlacement: state.intentForm.sidebarPlacement,
   };
 
   /** Re-sign the photo URL just before export so a stale/expired token never silently drops the photo. */
