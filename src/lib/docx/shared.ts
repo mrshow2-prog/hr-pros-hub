@@ -17,6 +17,7 @@ import {
 import type { GeneratedCV, CVExperience, SectionKey } from "@/contexts/CVBuilderContext";
 import { getTemplateConfig, type TemplateConfig } from "@/lib/cvTemplateConfig";
 import type { TemplateId } from "@/contexts/CVBuilderContext";
+import { mixHex } from "@/lib/cv/palettes";
 
 /* ---------- font / color mapping (mirrors PDF / preview templates) ---------- */
 const FONT_MAP: Record<string, string> = {
