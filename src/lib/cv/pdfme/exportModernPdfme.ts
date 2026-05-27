@@ -1,6 +1,6 @@
 import { normalizeTemplateId, type GeneratedCV, type SectionKey, type TemplateId } from "@/contexts/CVBuilderContext";
 import {
-  contactItems, isHidden, periodOf, visibleBullets, stripUrlPrefix,
+  contactItems, contactItemsMd, mdLink, isHidden, periodOf, visibleBullets, stripUrlPrefix,
   getSectionOrder, shouldRender,
 } from "./helpers";
 import {
@@ -31,6 +31,9 @@ interface Ctx {
 
 function contactLine(cv: GeneratedCV) {
   return contactItems(cv).join("   ·   ");
+}
+function contactLineMd(cv: GeneratedCV) {
+  return contactItemsMd(cv, "   ·   ");
 }
 
 /**
@@ -275,12 +278,13 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
     });
     hy += titleH + 1.4;
   }
-  const cText = contactLine(cv);
+  const { md: cMd, display: cText } = contactLineMd(cv);
   if (cText) {
     const cFs = o.contactFs ?? 8.6;
     const ch = textHeightMm(cText, textW, cFs, 1.45);
     b.addText({
-      value: cText, x: textX, y: hy + 1.4, width: textW,
+      value: cMd, measureValue: cText, markdown: true,
+      x: textX, y: hy + 1.4, width: textW,
       fontSize: cFs, color: o.contactColor ?? MUTED, lineHeight: 1.45,
     });
     hy += ch + 1.4;
