@@ -1087,9 +1087,11 @@ async function buildRiyadh(
   const SIDEBAR_W = 64; // mm
   const MAIN_X = SIDEBAR_W;
   const MAIN_W = PAGE_W - SIDEBAR_W;
-  const PADX = 10;
-  const MAIN_MARGIN = MAIN_X + PADX + 2;
-  const MAIN_CONTENT_W = MAIN_W - PADX * 2 - 2;
+  const PADX = 7;        // left padding inside sidebar
+  const PAD_R = 4;       // tighter right padding so text column is wider
+  const SIDE_TW = SIDEBAR_W - PADX - PAD_R; // usable sidebar text width
+  const MAIN_MARGIN = MAIN_X + 10 + 2;
+  const MAIN_CONTENT_W = MAIN_W - 10 * 2 - 2;
   // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
   const sidebarFill = shadeHex(SIENNA, 0.22);
   const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
