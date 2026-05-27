@@ -173,11 +173,7 @@ export default function StepDraft() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="space-y-10">
-          <SectionShell
-            sectionKey="contact"
-            title="Contact"
-            headerAction={<ContactCaseToggle />}
-          >
+          <SectionShell sectionKey="contact" title="Contact">
             <ContactBlock contact={cv.contact} />
           </SectionShell>
 
@@ -486,6 +482,18 @@ export function ContactBlock({ contact }: { contact: ContactInfo }) {
           className="sr-only"
           onChange={handlePhoto}
         />
+
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <p className="font-dm text-[11px] uppercase tracking-[0.12em] text-ink/55">Name &amp; headline</p>
+          <CaseToggleButton
+            onApply={(mode) =>
+              patchContact({
+                name: applyCase(contact.name || "", mode),
+                jobTitle: applyCase(contact.jobTitle || "", mode),
+              })
+            }
+          />
+        </div>
 
         <div data-field="name">
           <Field label="Full name" value={contact.name} onChange={(v) => patchContact({ name: v })} />
