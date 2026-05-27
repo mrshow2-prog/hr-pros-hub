@@ -1275,10 +1275,12 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       });
       ty += ptToMm(11) * 1.25 + 1.6;
     }
-    const { md: contactMd, display: contact } = contactLineMd(cv);
+    const contactRuns = contactLinkItems(cv);
+    const contact = contactRuns.map((r) => r.label).join("   ·   ");
     if (contact) {
       const ch = textHeightMm(contact, textW, 8.4, 1.4);
-      b.addText({ value: contactMd, measureValue: contact, markdown: true, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
+      b.addText({ value: contact, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
+      addContactLinks(b, contactRuns, { x: textX, y: ty, width: textW, fontSize: 8.4, lineHeight: 1.4 });
       ty += ch + 1;
     }
     b.cursorY = Math.max(ty, hy0 + (photoData ? sz : 0)) + 8;
