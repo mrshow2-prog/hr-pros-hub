@@ -1492,6 +1492,8 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 export interface PdfmeOptions {
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
+  /** Per-section sidebar/main overrides for multi-column templates. */
+  sidebarPlacement?: SidebarPlacementMap;
 }
 
 export async function exportCvPdfme(
@@ -1518,16 +1520,17 @@ export async function generateCvPdfmeBlob(
   if (effectivePhoto && opts?.photoShape === "circle") {
     effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;
   }
+  const sidebarKeys = resolveSidebarKeys(opts?.sidebarPlacement);
   let b: PdfmeBuilder;
   switch (normalizeTemplateId(templateId)) {
     case "traditional":  b = await buildClassic(cv, effectivePhoto); break;
     case "executive":    b = await buildExecutive(cv, effectivePhoto); break;
     case "detailed":     b = await buildCompact(cv, effectivePhoto); break;
     case "skills":       b = await buildSkillsFirst(cv, effectivePhoto); break;
-    case "bold":         b = await buildRiyadh(cv, effectivePhoto); break;
+    case "bold":         b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
     case "editorial":    b = await buildGeneva(cv, effectivePhoto); break;
     // New templates currently route to the closest existing PDF builder.
-    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto); break;
+    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
     case "gradient":     b = await buildModern(cv, effectivePhoto); break;
     case "creative":     b = await buildGeneva(cv, effectivePhoto); break;
     case "simple":
