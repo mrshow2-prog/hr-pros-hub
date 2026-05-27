@@ -1119,14 +1119,26 @@ async function buildRiyadh(
   };
 
   if (shouldRender(cv, "contact")) {
-    sideHeading("Contact");
-    if (cv.contact.location) sideRow("Location", cv.contact.location);
-    if (cv.contact.phone) sideRow("Phone", cv.contact.phone);
-    if (cv.contact.email) sideRow("Email", cv.contact.email, `mailto:${cv.contact.email}`);
-    if (cv.contact.linkedinUrl) sideRow("LinkedIn", stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
-    if (cv.contact.website) sideRow("Website", stripUrlPrefix(cv.contact.website), cv.contact.website);
-    sY += 3;
+    const ICON_MM = 3.2;
+    const TEXT_X = PADX + ICON_MM + 1.8;
+    const TW = SIDEBAR_W - PADX - TEXT_X;
+    const FS = 8.4;
+    const contactRow = async (iconSvg: string, value: string, uri?: string) => {
+      const data = await svgToPngDataUrl(iconSvg);
+      b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data });
+      const h = textHeightMm(value, TW, FS, 1.45);
+      b.addText({ value, x: TEXT_X, y: sY, width: TW, fontSize: FS, color: PAPER, lineHeight: 1.45 });
+      if (uri) b.addLink({ x: TEXT_X, y: sY, width: TW, height: h, uri: withScheme(uri) });
+      sY += Math.max(h, ICON_MM) + 1.8;
+    };
+    if (cv.contact.location) await contactRow(ICON_SVGS.mapPin, cv.contact.location);
+    if (cv.contact.phone) await contactRow(ICON_SVGS.phone, cv.contact.phone);
+    if (cv.contact.email) await contactRow(ICON_SVGS.mail, cv.contact.email, `mailto:${cv.contact.email}`);
+    if (cv.contact.linkedinUrl) await contactRow(ICON_SVGS.linkedin, stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
+    if (cv.contact.website) await contactRow(ICON_SVGS.globe, stripUrlPrefix(cv.contact.website), cv.contact.website);
+    sY += 4;
   }
+
 
   const sideRenderers: Partial<Record<SectionKey, () => void>> = {
     skills: () => {
