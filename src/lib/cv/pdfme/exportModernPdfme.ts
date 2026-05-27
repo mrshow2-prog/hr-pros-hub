@@ -8,6 +8,7 @@ import {
   INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W,
   type PdfmeBuilder,
 } from "./core";
+import { shadeHex, mixHex } from "@/lib/cv/palettes";
 
 
 /* ============================================================
@@ -993,7 +994,6 @@ function renderChips(b: PdfmeBuilder, items: string[]) {
  *    contact, skills, languages. Right column flows
  *    summary/experience/education with restrained type.
  * ============================================================ */
-const SIENNA_DARK = "#6e3d2f";
 const PAPER = "#f5f0e8";
 
 async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
