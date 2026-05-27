@@ -1071,7 +1071,7 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
     sY += 2.4;
   };
 
-  const sideRow = (label: string | null, value: string) => {
+  const sideRow = (label: string | null, value: string, display?: string) => {
     if (label) {
       b.addText({
         value: label.toUpperCase(), x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
@@ -1079,9 +1079,12 @@ async function buildRiyadh(cv: GeneratedCV, photoUrl: string | null) {
       });
       sY += ptToMm(6.8) * 1.4 + 0.2;
     }
-    const h = textHeightMm(value, SIDEBAR_W - PADX * 2, 8.4, 1.45);
+    const measure = display ?? value;
+    const isMd = display !== undefined && display !== value;
+    const h = textHeightMm(measure, SIDEBAR_W - PADX * 2, 8.4, 1.45);
     b.addText({
-      value, x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
+      value, measureValue: measure, markdown: isMd,
+      x: PADX, y: sY, width: SIDEBAR_W - PADX * 2,
       fontSize: 8.4, color: PAPER, lineHeight: 1.45,
     });
     sY += h + 1.6;
