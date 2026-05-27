@@ -87,7 +87,7 @@ export default function PdfmePreview({
       window.clearTimeout(timer);
       void doc?.destroy();
     };
-  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape]);
+  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape, JSON.stringify(sidebarPlacement ?? {})]);
 
   const pageHeight = Math.round(pageWidth * (297 / 210));
 
