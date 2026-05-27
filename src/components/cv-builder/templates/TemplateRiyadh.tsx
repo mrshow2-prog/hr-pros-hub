@@ -228,7 +228,7 @@ export default function TemplateRiyadh({
         {shouldRender(cv, "summary") && (
           <section className="mb-7">
             <MainHeading>Profile</MainHeading>
-            <p className="text-[13px] leading-[1.65] text-ink/85">{cv.summary}</p>
+            <p className="text-justify hyphens-auto text-[13px] leading-[1.65] text-ink/85">{cv.summary}</p>
           </section>
         )}
 

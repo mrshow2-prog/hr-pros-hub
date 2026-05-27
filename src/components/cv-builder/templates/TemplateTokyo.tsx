@@ -244,7 +244,7 @@ export default function TemplateTokyo({
         {shouldRender(cv, "summary") && (
           <section className="mb-7">
             <SH icon={User}>About me</SH>
-            <p className="relative pl-4 text-[13px] leading-[1.7] text-ink/85">
+            <p className="relative pl-4 text-justify hyphens-auto text-[13px] leading-[1.7] text-ink/85">
               <span className="absolute left-0 top-0 h-full w-[3px] rounded-full" style={{ background: accent as string }} />
               {cv.summary}
             </p>

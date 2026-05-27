@@ -175,7 +175,7 @@ export default function TemplateExecutive({
       {shouldRender(cv, "summary") && (
         <section className="mb-12">
           <SH>Executive Summary</SH>
-          <p className="max-w-[680px] border-l-[3px] border-sienna pl-6 text-[16px] font-light leading-[1.8] text-ink/85">
+          <p className="max-w-[680px] border-l-[3px] border-sienna pl-6 text-justify hyphens-auto text-[16px] font-light leading-[1.8] text-ink/85">
             {cv.summary}
           </p>
         </section>

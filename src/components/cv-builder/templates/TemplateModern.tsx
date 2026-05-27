@@ -174,7 +174,7 @@ export default function TemplateModern({
       {shouldRender(cv, "summary") && (
         <section className="mb-9">
           <SectionHeader>Professional Summary</SectionHeader>
-          <p className="text-[15px] font-light leading-[1.7] text-ink/85">{cv.summary}</p>
+          <p className="text-justify hyphens-auto text-[15px] font-light leading-[1.7] text-ink/85">{cv.summary}</p>
         </section>
       )}
 

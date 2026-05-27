@@ -156,7 +156,7 @@ export default function TemplateClassic({ cv, photoUrl }: Props) {
       {shouldRender(cv, "summary") && (
         <section className="mb-7">
           <SectionHeader>Professional Summary</SectionHeader>
-          <p className="text-[14px] leading-[1.6] text-ink/85">{cv.summary}</p>
+          <p className="text-justify hyphens-auto text-[14px] leading-[1.6] text-ink/85">{cv.summary}</p>
         </section>
       )}
 

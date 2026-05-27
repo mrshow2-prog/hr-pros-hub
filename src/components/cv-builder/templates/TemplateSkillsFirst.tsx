@@ -176,7 +176,7 @@ export default function TemplateSkillsFirst({
       {shouldRender(cv, "summary") && (
         <section className="mb-8">
           <SH>Professional Summary</SH>
-          <p className="text-[14px] font-light leading-[1.7] text-ink/85">{cv.summary}</p>
+          <p className="text-justify hyphens-auto text-[14px] font-light leading-[1.7] text-ink/85">{cv.summary}</p>
         </section>
       )}
 
