@@ -1,36 +1,31 @@
 ## Goal
-Make the Professional Summary text render **justified** (full-justified, both edges aligned) in its dedicated block across every output: web preview, PDF, and DOCX, for all templates.
+Give the user one-click control over ALL CAPS in two places of the Draft step where the AI often over-capitalizes:
+1. **Contact** — Full name + Job title
+2. **Skills** — every skill pill
 
-## Scope
-Only the summary paragraph is affected. No layout, spacing, or color changes. Bullets, headings, and other body copy stay as they are.
+## UX
+Add a small icon button labeled **"Aa"** with a tooltip "Toggle capitalization" placed:
+- Inline at the top-right of the **Contact** SectionShell header — affects `contact.name` and `contact.jobTitle` together.
+- Inline at the top-right of the **Skills** SectionShell header — affects every entry in `cv.skills`.
 
-## Changes
+Clicking the button cycles the affected text through three states:
+1. **Title Case** (`John Doe`, `Senior Product Manager`, `Stakeholder Management`)
+2. **UPPER CASE** (`JOHN DOE`, …)
+3. **lower case** (`john doe`, …)
 
-### 1. Web preview templates (`src/components/cv-builder/templates/`)
-Add `text-justify hyphens-auto` to the `<p>` that renders `cv.summary` in:
-- TemplateModern.tsx
-- TemplateClassic.tsx
-- TemplateExecutive.tsx
-- TemplateGeneva.tsx
-- TemplateMilano.tsx
-- TemplateTokyo.tsx
-- TemplateSkillsFirst.tsx
-- TemplateRiyadh.tsx
-- TemplateCasablanca.tsx
-- TemplateCompact.tsx (if it renders summary)
+Cycle state is local to the button (not persisted) — each click just transforms the current values and advances the cycle marker. This keeps the data model unchanged (still a plain string field) and works regardless of how the AI generated the values.
 
-### 2. PDF export (`src/lib/cv/pdfme/exportModernPdfme.ts`)
-For each of the ~7 `b.addText({ value: cv.summary, ... })` call sites (Modern, Classic, Executive quote-block, two-column compact left col, Tokyo, Milano, etc.), add `align: "justify"`.
+## Implementation
+- New tiny helper `src/lib/cv/textCase.ts` exporting `toTitleCase`, `toUpper`, `toLower`, and a `nextCase(current)` cycler.
+- New component `CaseToggleButton` (in `src/components/cv-builder/StepDraft.tsx` or a sibling file) — accepts `onApply(transform: (s: string) => string)` and tracks the cycle index in local state.
+- Extend `SectionShell` (already in StepDraft.tsx) to accept an optional `headerAction` ReactNode rendered on the right of the title bar. If `SectionShell` doesn't already have a header right-slot, add it.
+- Wire two instances:
+  - **Contact**: applies the transform to `contact.name` and `contact.jobTitle` via `patchContact`.
+  - **Skills**: applies the transform to each entry in `cv.skills` via `setSkills`.
 
-### 3. DOCX export
-- `src/lib/docx/flow.ts` — the `txt(cv.summary, ...)` call and the `quoteSummary` branch.
-- `src/lib/docx/sidebar.ts` — `renderSummary()` paragraph.
-- `src/lib/docx/compact.ts` — left-column summary paragraph.
-- `src/lib/docx/shared.ts` — `quoteSummary()` helper.
+Title-case rule: split on whitespace, lowercase each word, uppercase first letter; preserve common acronyms by leaving any token already containing a digit or 2+ uppercase letters that match a small allowlist (e.g. `HR`, `CEO`, `SQL`, `AI`, `UX`, `UI`, `API`, `B2B`, `CRM`, `ERP`, `KPI`, `SaaS`, `IT`) untouched. Keep the allowlist short and inline.
 
-Pass `alignment: AlignmentType.JUSTIFIED` on each summary `Paragraph`. Optionally extend `txt()` to accept an `alignment` option so callers can opt in without a one-off paragraph.
-
-## Notes
-- Quote-style summary (Executive/Zurich) keeps its left accent bar; only the text alignment changes.
-- Justified text with very short summaries (1–2 lines) looks the same as left-aligned, so no visible regression on short content.
-- No font, color, or size changes.
+## Out of scope
+- No persistence of the chosen case mode across sessions.
+- Summary, experience bullets, education, and other sections are unchanged.
+- No styling-only/CSS `text-transform` approach — we transform the stored values so PDF/DOCX exports reflect the choice automatically.
