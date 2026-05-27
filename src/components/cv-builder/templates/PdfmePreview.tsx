@@ -28,6 +28,7 @@ export default function PdfmePreview({
   gap = 24,
   accentHex,
   photoShape,
+  sidebarPlacement,
   onStatusChange,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
