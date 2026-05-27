@@ -43,7 +43,9 @@ import {
 } from "../StepDraft";
 import PdfmePreview from "../templates/PdfmePreview";
 import SidebarPlacementToggle from "./SidebarPlacementToggle";
+import TemplatePickerDialog from "./TemplatePickerDialog";
 import { TOGGLEABLE_SECTIONS } from "@/lib/cv/sidebarPlacement";
+import { LayoutTemplate } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { scoreCv } from "@/lib/cv/atsEngine";
 import { getPalette } from "@/lib/cv/palettes";
@@ -88,6 +90,7 @@ export default function EditorShell() {
   const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [templateChanging, setTemplateChanging] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const leftRef = useRef<HTMLDivElement>(null);
 
   // ── Auto-generate on first mount if we don't have a CV yet ────
@@ -299,22 +302,19 @@ export default function EditorShell() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <select
-            value={state.selectedTemplate ?? "simple"}
-            onChange={(e) => {
-              setTemplateChanging(true);
-              setTemplate(e.target.value as TemplateId);
-            }}
+          <button
+            type="button"
+            onClick={() => setTemplatePickerOpen(true)}
             disabled={templateChanging}
-            className="rounded border border-ink/15 bg-paper px-2 py-1 font-dm text-xs text-ink focus:border-sienna focus:outline-none disabled:opacity-60"
-            aria-label="Template"
+            className="inline-flex items-center gap-1.5 rounded border border-ink/15 bg-paper px-2.5 py-1 font-dm text-xs text-ink hover:border-ink/40 focus:border-sienna focus:outline-none disabled:opacity-60"
+            aria-label="Change template"
+            title="Change template"
           >
-            {TEMPLATES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+            <LayoutTemplate size={12} />
+            {TEMPLATES.find((t) => t.id === state.selectedTemplate)?.label ?? "Template"}
+            <span className="text-ink/40">·</span>
+            <span className="text-ink/60">Change</span>
+          </button>
           {templateChanging && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-sienna/10 px-2 py-1 font-dm text-[11px] text-sienna ring-1 ring-sienna/30">
               <Loader2 className="animate-spin" size={12} />
@@ -490,6 +490,15 @@ export default function EditorShell() {
           />
         )}
       </div>
+
+      <TemplatePickerDialog
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onConfirm={(id) => {
+          setTemplateChanging(true);
+          setTemplate(id);
+        }}
+      />
     </div>
   );
 }
