@@ -1368,8 +1368,7 @@ async function buildRiyadh(
     competencies: () => {
       mainHeading("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx2, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx2, c.items.filter(Boolean).join(" · "), { fs: 9.6, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx2, c, { titleFs: 9.6, titleColor: SIENNA, itemsFs: 9.6, itemsColor: SUBINK });
       }
     },
     achievements: () => {
