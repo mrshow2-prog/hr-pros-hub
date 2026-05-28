@@ -441,6 +441,7 @@ interface CVBuilderContextValue {
   addBullet: (experienceId: string) => void;
   removeBullet: (experienceId: string, bulletId: string) => void;
   setSkills: (skills: string[]) => void;
+  setSkillLevel: (skill: string, level: number) => void;
   patchEducation: (edId: string, patch: Partial<CVEducation>) => void;
   addEducation: () => void;
   removeEducation: (edId: string) => void;
