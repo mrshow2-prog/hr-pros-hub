@@ -1499,6 +1499,33 @@ async function buildRiyadh(
     }
   }
 
+  // ---- Custom sections pinned to the sidebar ----
+  for (const s of cv.customSections) {
+    if (s.placement !== "sidebar") continue;
+    const bullets = s.bullets.filter(Boolean);
+    if (!s.title?.trim() && bullets.length === 0) continue;
+    const title = s.title?.trim() || "Additional";
+    let estH = headingH;
+    for (const it of bullets) {
+      estH += textHeightMm(it, SIDE_TW - 3, 8.4, 1.45) + 1.6;
+    }
+    blocks.push({
+      estH: estH + 3,
+      draw: (top) => {
+        let sY = headingDraw(top, title);
+        for (const it of bullets) {
+          const tw = SIDE_TW - 3;
+          const h = textHeightMm(it, tw, 8.4, 1.45);
+          b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9, color: PAPER, bold: true });
+          b.addText({ value: it, x: PADX + 3, y: sY, width: tw, fontSize: 8.4, color: PAPER, lineHeight: 1.45 });
+          sY += h + 1.6;
+        }
+        return sY + 3;
+      },
+    });
+  }
+
+
 
   // ---- Main column ----
   b.margin = MAIN_MARGIN;
@@ -1630,6 +1657,7 @@ async function buildRiyadh(
     },
     custom: () => {
       for (const s of cv.customSections) {
+        if (s.placement === "sidebar") continue;
         mainHeading(s.title || "Additional");
         for (const it of s.bullets.filter(Boolean)) {
           bullet(ctx2, "•", it, { fs: 9.4, glyphColor: SIENNA });
@@ -1637,6 +1665,7 @@ async function buildRiyadh(
         b.cursorY += 2;
       }
     },
+
   };
 
   for (const k of getSectionOrder(cv)) {
