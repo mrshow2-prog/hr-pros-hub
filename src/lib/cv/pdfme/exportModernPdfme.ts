@@ -1639,14 +1639,18 @@ async function buildRiyadh(
           const pillH = ptToMm(pillFs) * 1.25 + 1.4;
           const pillW = period ? Math.ceil(estimatedRightWidthMm(period, pillFs)) + 4 : 0;
           const leftFs = 11;
-          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0);
+          const dotSize = 2.2;
+          const dotGap = 2.0;
+          const dotIndent = dotSize + dotGap;
+          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0) - dotIndent;
           const lineStep = ptToMm(leftFs) * 1.25;
           const leftLines = wrapLines(exp.role || "", leftW, leftFs, { bold: true });
           const blockH = Math.max(leftLines.length, 1) * lineStep;
           b.ensure(Math.max(blockH, pillH));
           const py = b.cursorY;
+          b.addRect({ x: b.margin, y: py + lineStep / 2 - dotSize / 2, width: dotSize, height: dotSize, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: dotSize / 2 });
           for (let i = 0; i < leftLines.length; i++) {
-            b.addText({ value: leftLines[i], x: b.margin, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
+            b.addText({ value: leftLines[i], x: b.margin + dotIndent, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
           }
           if (period && pillW) {
             const pillX = b.margin + b.contentW - pillW;
@@ -1654,6 +1658,7 @@ async function buildRiyadh(
             b.addText({ value: period, x: pillX, y: py + 0.3 + 0.6, width: pillW, fontSize: pillFs, color: "#ffffff", bold: true, align: "center", lineHeight: 1.25 });
           }
           b.cursorY = py + blockH + 0.5;
+
         } else {
           periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
         }
