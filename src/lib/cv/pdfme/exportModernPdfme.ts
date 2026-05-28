@@ -982,7 +982,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
       fullSectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
