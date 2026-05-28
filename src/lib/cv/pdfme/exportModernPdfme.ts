@@ -1322,23 +1322,69 @@ async function buildRiyadh(
     skills: () => {
       if (!cv.skills.length) return;
       sideHeading("Skills");
-      for (const sk of cv.skills) {
-        const tw = SIDE_TW - 3;
-        const h = textHeightMm(sk, tw, 8.6, 1.5);
-        b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
-        b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
-        sY += h + 1.6;
+      if (variant === "vibrant") {
+        const widths = [92, 88, 96, 84, 90, 86, 94, 82];
+        const trackColor = mixHex(SIENNA, "#ffffff", 0.18);
+        for (let i = 0; i < cv.skills.length; i++) {
+          const sk = cv.skills[i];
+          const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
+          b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
+          sY += h + 1.2;
+          const barY = sY;
+          b.addRect({ x: PADX, y: barY, width: SIDE_TW, height: 1.0, color: trackColor, borderColor: trackColor, borderWidth: 0, radius: 0.5 });
+          const fillW = (SIDE_TW * widths[i % widths.length]) / 100;
+          b.addRect({ x: PADX, y: barY, width: fillW, height: 1.0, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.5 });
+          sY += 1.0 + 2.4;
+        }
+        sY += 2;
+      } else {
+        for (const sk of cv.skills) {
+          const tw = SIDE_TW - 3;
+          const h = textHeightMm(sk, tw, 8.6, 1.5);
+          b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
+          b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
+          sY += h + 1.6;
+        }
+        sY += 3;
       }
-      sY += 3;
     },
     languages: () => {
       if (!cv.languages.length) return;
       sideHeading("Languages");
-      for (const l of cv.languages) {
-        const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
-        sideRow(null, display);
+      if (variant === "vibrant") {
+        const dotColorOn = SIENNA;
+        const dotColorOff = mixHex(SIENNA, "#ffffff", 0.22);
+        for (const l of cv.languages) {
+          const lvl = (l.level || "").toLowerCase();
+          const filled =
+            lvl.includes("native") || lvl.includes("fluent") ? 5 :
+            lvl.includes("professional") ? 4 :
+            lvl.includes("conversational") ? 3 :
+            lvl.includes("basic") ? 2 : 4;
+          const dotsW = 5 * 1.4 + 4 * 0.8;
+          const labelW = SIDE_TW - dotsW - 2;
+          b.addText({ value: l.name, x: PADX, y: sY, width: labelW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
+          const dotsX = PADX + SIDE_TW - dotsW;
+          for (let i = 0; i < 5; i++) {
+            const cx = dotsX + i * (1.4 + 0.8);
+            b.addRect({ x: cx, y: sY + 1.2, width: 1.4, height: 1.4, color: i < filled ? dotColorOn : dotColorOff, borderColor: "", borderWidth: 0, radius: 0.7 });
+          }
+          sY += ptToMm(8.4) * 1.3 + 0.4;
+          if (l.level) {
+            b.addText({ value: l.level, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55), lineHeight: 1.3 });
+            sY += ptToMm(7) * 1.3 + 1.4;
+          } else {
+            sY += 1.2;
+          }
+        }
+        sY += 2;
+      } else {
+        for (const l of cv.languages) {
+          const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+          sideRow(null, display);
+        }
+        sY += 3;
       }
-      sY += 3;
     },
     education: () => {
       if (!cv.education.length) return;
