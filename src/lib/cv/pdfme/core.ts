@@ -279,7 +279,9 @@ export interface PdfmeBuilder {
   set cursorY(v: number);
   pageBottom: number;
   pageIndex: number;
+  pageCount: number;
   newPage(): void;
+  setPageIndex(i: number): void;
   ensure(h: number): void;
   /** Register a callback that runs after each newPage() — useful for repeating backgrounds. */
   onNewPage(cb: (b: PdfmeBuilder) => void): void;
@@ -323,6 +325,9 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
     get pageIndex() {
       return pageIdx;
     },
+    get pageCount() {
+      return pages.length;
+    },
     get cursorY() {
       return y;
     },
@@ -331,9 +336,13 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
     },
     newPage() {
       pages.push([]);
-      pageIdx++;
+      pageIdx = pages.length - 1;
       y = top;
       if (onNewPage) onNewPage(this);
+    },
+    setPageIndex(i: number) {
+      if (i < 0 || i >= pages.length) throw new Error(`setPageIndex out of range: ${i}`);
+      pageIdx = i;
     },
     ensure(h: number) {
       if (y + h > PAGE_H - bottom) this.newPage();

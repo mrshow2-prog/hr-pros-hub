@@ -197,6 +197,8 @@ export interface GeneratedCV {
   summary: string;
   experience: CVExperience[];
   skills: string[];
+  /** Per-skill proficiency level (1-5). Defaults to 4 when missing. Used by templates that render skill bars (e.g. vibrant). */
+  skillLevels?: Record<string, number>;
   education: CVEducation[];
   competencyClusters: CompetencyCluster[];
   languages: LanguageEntry[];
@@ -347,6 +349,7 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       })),
     })),
     skills: raw?.skills ?? [],
+    skillLevels: raw?.skillLevels && typeof raw.skillLevels === "object" ? { ...raw.skillLevels } : {},
     education: (raw?.education ?? []).map((ed) => ({
       id: ed.id ?? newId("ed"),
       institution: ed.institution ?? "",
@@ -438,6 +441,7 @@ interface CVBuilderContextValue {
   addBullet: (experienceId: string) => void;
   removeBullet: (experienceId: string, bulletId: string) => void;
   setSkills: (skills: string[]) => void;
+  setSkillLevel: (skill: string, level: number) => void;
   patchEducation: (edId: string, patch: Partial<CVEducation>) => void;
   addEducation: () => void;
   removeEducation: (edId: string) => void;
@@ -678,7 +682,20 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
               : { ...exp, bullets: exp.bullets.filter((b) => b.id !== bulletId) },
           ),
         })),
-      setSkills: (skills) => patchCV((cv) => ({ ...cv, skills })),
+      setSkills: (skills) =>
+        patchCV((cv) => {
+          // Drop levels for skills that no longer exist so the map stays clean.
+          const keep = new Set(skills);
+          const prev = cv.skillLevels ?? {};
+          const next: Record<string, number> = {};
+          for (const k of Object.keys(prev)) if (keep.has(k)) next[k] = prev[k];
+          return { ...cv, skills, skillLevels: next };
+        }),
+      setSkillLevel: (skill, level) =>
+        patchCV((cv) => ({
+          ...cv,
+          skillLevels: { ...(cv.skillLevels ?? {}), [skill]: Math.max(1, Math.min(5, Math.round(level))) },
+        })),
       patchEducation: (edId, patch) =>
         patchCV((cv) => ({
           ...cv,

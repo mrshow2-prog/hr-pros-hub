@@ -1012,8 +1012,63 @@ export function SkillsCaseToggle() {
 /* ---------------- Skills ---------------- */
 
 export function SkillsBlock({ skills }: { skills: string[] }) {
-  const { setSkills } = useCVBuilder();
-  return <PillInput values={skills} onChange={setSkills} placeholder="Add a skill and press Enter" />;
+  const { state, setSkills, setSkillLevel } = useCVBuilder();
+  const [draft, setDraft] = useState("");
+  const levels = state.generatedCV?.skillLevels ?? {};
+  const add = () => {
+    const t = draft.trim();
+    if (!t || skills.includes(t)) { setDraft(""); return; }
+    setSkills([...skills, t]);
+    setDraft("");
+  };
+  return (
+    <div className="space-y-2 rounded-md border border-ink/15 bg-paper p-3">
+      <p className="font-dm text-[11px] text-ink/55">
+        Set a proficiency level (1–5) for each skill. Levels are shown as bars in templates like Vibrant.
+      </p>
+      <div className="space-y-1.5">
+        {skills.map((s) => {
+          const lvl = levels[s] ?? 4;
+          return (
+            <div key={s} className="flex items-center gap-2 rounded-md border border-ink/10 bg-white px-2.5 py-1.5">
+              <span className="flex-1 font-dm text-sm text-ink">{s}</span>
+              <div className="flex items-center gap-1" role="group" aria-label={`Level for ${s}`}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setSkillLevel(s, n)}
+                    aria-label={`Set level ${n}`}
+                    className={`h-3 w-3 rounded-sm transition ${
+                      n <= lvl ? "bg-sienna" : "bg-ink/15 hover:bg-ink/25"
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSkills(skills.filter((x) => x !== s))}
+                className="rounded-full p-1 text-ink/40 hover:bg-ink/10 hover:text-ink"
+                aria-label={`Remove ${s}`}
+              >
+                <X size={12} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
+        }}
+        onBlur={add}
+        placeholder="Add a skill and press Enter"
+        className="w-full rounded-md border border-ink/10 bg-white px-2.5 py-1.5 font-dm text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-1 focus:ring-sienna"
+      />
+    </div>
+  );
 }
 
 
