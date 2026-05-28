@@ -1595,10 +1595,11 @@ async function buildRiyadh(
     }
   };
 
-  if (shouldRender(cv, "summary")) {
+  if (shouldRender(cv, "summary") && !inSidebar("summary")) {
     mainHeading("Profile");
     b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
   }
+
 
   const mainRenderers: Partial<Record<SectionKey, () => void>> = {
     experience: () => {
