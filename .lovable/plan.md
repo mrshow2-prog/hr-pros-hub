@@ -1,42 +1,57 @@
-# Fix: Preview refreshes mid-typing in the Draft step
+# Fix: Bold job titles + premature bullet wrap in PDF templates
 
-## Problem
+## What's actually wrong
 
-Every keystroke in any text field (contact, summary, experience role/company/dates/location, bullets, achievements, certifications, custom sections, etc.) calls a `patchX` action on the CV state. That updates `state.generatedCV`, which is a dependency of:
+I rendered the uploaded PDF and inspected the embedded fonts:
 
-- `PdfmePreview` — re-runs the PDF render effect (debounced ~300 ms, but still re-renders the full PDF on every pause).
-- ATS scoring effect (debounced ~400 ms).
+```
+pdffonts output → only "Roboto-Regular-116" is embedded
+```
 
-On long sections (Experience with many bullets, Certifications with multiple entries), this makes the UI lag and feel like the system is "hanging" while the user is still typing.
+Two consequences are visible in the exported CV:
 
-## Solution
+1. **Job titles are not bold.** "Senior Sales Manager", section labels, dates, etc. are all drawn in Roboto Regular. The exporter passes `bold: true` through to `wrapLines()` for width estimation, but the pdfme text schema never sets a bold `fontName`, and `generate()` is called without a `font` registry — so pdfme falls back to its single default face. The boldness in width math is ignored at render time.
+2. **Bullet text wraps too early**, leaving a visible empty band on the right even though it mathematically reaches the same right edge as the date column. Cause: `estimatedTextWidthMm()` in `src/lib/cv/pdfme/core.ts` uses Roboto char widths that are slightly inflated (`0.50/0.54` per pt for lower/bold-lower) and then multiplies by a `1.03` safety factor. With real Roboto Regular this over-predicts width by ~5–7%, so the last word of each bullet line is bumped to the next line even though it fits.
 
-Switch the two shared input primitives — `Field` and `AutoTextarea` in `src/components/cv-builder/StepDraft.tsx` — from **controlled-on-every-keystroke** to **local draft state, committed on blur** (and on Enter for single-line `Field`). This single change covers every text input in the draft editor without having to add Confirm buttons to each section.
+## Fix
 
-Behavior after the change:
+### A. Register a real bold font (`src/lib/cv/pdfme/core.ts`)
 
-- While typing: only local component state updates. No parent re-renders, no preview refresh, no ATS rescore.
-- On blur (clicking/tabbing away) or Enter (for `Field`): the value is committed via the existing `onChange` prop, which triggers a single preview refresh.
-- If the parent value changes externally (AI rewrite, auto-fix, template switch), the local draft syncs to the new value as long as the field is not focused.
+1. Bundle Roboto Regular + Bold as fetchable assets (use the `@pdfme/common`-style font registry shape: `{ Roboto: { data, fallback: true }, 'Roboto-Bold': { data } }`). The cleanest source is the two Google Fonts TTFs we can either:
+   - import from the existing `@pdfme/common` install if it ships them, or
+   - fetch once at module load from a CDN and cache as `ArrayBuffer`s, or
+   - drop two TTFs under `src/lib/cv/pdfme/fonts/` and import them with `?url` + `fetch()`.
+   Preferred: add `Roboto-Regular.ttf` and `Roboto-Bold.ttf` under `src/lib/cv/pdfme/fonts/`, import via `?arraybuffer`/`?url`, build the font object once, and pass it to `generate({ template, inputs, plugins, options: { font } })`.
+2. In `addText()`, when `o.bold` is true, set `fontName: 'Roboto-Bold'` on the schema. Otherwise leave it as the default Roboto.
+3. Keep all existing bold width-estimation paths — they were already correct for the bold face; they just weren't actually rendering bold.
 
-This matches the "commits when you move to a new field" UX the user asked for, and is consistent with how Languages already work (commit on Add).
+### B. Tighten width estimation so bullets fill the date-aligned column
 
-## Technical details
+In `estimatedTextWidthMm()`:
 
-Files touched:
+- Reduce the safety multiplier from `* 1.03` to `* 1.01`.
+- Nudge the regular per-glyph widths down to match Roboto more closely:
+  - lower-case: `0.50 → 0.48` (regular), `0.54 → 0.52` (bold)
+  - upper-case: `0.60 → 0.57` (regular), `0.64 → 0.61` (bold)
+  - mixed/symbols: `0.53 → 0.51` (regular), `0.58 → 0.56` (bold)
 
-- `src/components/cv-builder/StepDraft.tsx`
-  - `Field` (line ~1248): keep a local `draft` state initialised from `value`. `onChange` updates `draft` only. Add `onBlur` and `onKeyDown` (Enter) handlers that call the prop `onChange(draft)` only if it differs. Sync `draft` from `value` via `useEffect` when the input is not focused (use a `focusedRef`).
-  - `AutoTextarea` (line ~1277): same pattern — local `draft`, commit on blur. Keep the existing auto-resize effect, but drive it off `draft` so it grows live while typing. No Enter-to-commit (multiline).
+These are conservative trims; combined with the safety factor still being `>1`, wrapping stays safe (no overlap) but lines reach much closer to the column right edge.
 
-No other files need to change:
+Optionally also nudge the bullet glyph column in `bullet()` from `gw = 2.8` mm to `gw = 2.4` mm, since `•` at 9.4 pt is well under 2 mm wide. This gives bullet text another ~0.4 mm of horizontal room.
 
-- `ContactBlock`, `ExperienceList`, `SummaryBlock`, `AchievementsBlock`, `CertificationsBlock`, `CustomSectionsBlock`, education fields, etc. all already route through `Field` / `AutoTextarea`, so they inherit the new behavior.
-- `PillInput`, `LanguagesBlock`, skill/competency editors already commit on Add/Enter — unchanged.
-- `PdfmePreview` debounce and ATS scoring debounce stay as-is; they just receive far fewer updates.
+### C. Verify
+
+After build:
+
+1. Re-export the same CV → `pdffonts` should now list both `Roboto-Regular` and `Roboto-Bold` embedded.
+2. Render with `pdftoppm` and inspect:
+   - Job titles, section labels, dates, and skill labels visibly heavier than body text.
+   - Bullet lines reach the same right edge as the date row above them — no early breaks like "growth and / optimize…" when "optimize" clearly fits.
+   - No overlapping text and no two-line bullets that became three lines (i.e. no under-prediction).
+3. Spot-check Bold/Riyadh, Executive, Geneva templates too — they share the same `bullet()`/`addText()` and benefit automatically.
 
 ## Out of scope
 
-- No visual/layout changes.
-- No change to AI buttons, auto-fix, template picker, or section ordering.
-- No new Confirm buttons per section — the on-blur commit gives the same outcome with less UI noise. If after testing the user still wants explicit Confirm buttons on specific sections (e.g. Certifications), we can add them in a follow-up.
+- No template-level layout changes (margins, sidebar widths, font sizes stay the same).
+- No React preview changes — the issue is PDF-only; the React previews already render real bold via the browser.
+- No font swap to a different family. If after this fix bold still looks too light, we can revisit by switching the bold weight to `Roboto-Black` or by picking a different family — but Roboto Bold is normally clearly distinguishable once actually embedded.
