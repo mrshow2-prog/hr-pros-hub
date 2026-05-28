@@ -211,11 +211,20 @@ function inlineCluster(
   const titleText = `${cluster.title}: `;
   const titleW = textWidthMm(titleText, opts.titleFs, { bold: true });
   const itemsX = b.margin + titleW;
-  const itemsW = Math.max(20, b.contentW - titleW);
+  const firstW = Math.max(20, b.contentW - titleW);
+  const fullW = b.contentW;
   const lineStep = ptToMm(opts.itemsFs) * lh;
 
-  const lines = items ? wrapLines(items, itemsW, opts.itemsFs, {}) : [""];
-  const blockH = Math.max(1, lines.length) * lineStep;
+  // First line wraps to remaining width next to the title; the remainder
+  // re-wraps at full content width so subsequent lines start at the margin.
+  const firstWrap = items ? wrapLines(items, firstW, opts.itemsFs, {}) : [""];
+  const firstLine = firstWrap[0] ?? "";
+  const consumed = firstLine.length;
+  const remainder = items.slice(consumed).replace(/^\s+/, "");
+  const restLines = remainder ? wrapLines(remainder, fullW, opts.itemsFs, {}) : [];
+
+  const totalLines = 1 + restLines.length;
+  const blockH = totalLines * lineStep;
   b.ensure(blockH);
   const py = b.cursorY;
 
@@ -225,11 +234,18 @@ function inlineCluster(
     fontSize: opts.titleFs, color: opts.titleColor, bold: true, lineHeight: lh,
   });
 
-  for (let i = 0; i < lines.length; i += 1) {
-    if (!lines[i]) continue;
+  if (firstLine) {
     b.addText({
-      value: lines[i],
-      x: itemsX, y: py + i * lineStep, width: itemsW + 1,
+      value: firstLine,
+      x: itemsX, y: py, width: firstW + 1,
+      fontSize: opts.itemsFs, color: opts.itemsColor, lineHeight: lh,
+    });
+  }
+
+  for (let i = 0; i < restLines.length; i += 1) {
+    b.addText({
+      value: restLines[i],
+      x: b.margin, y: py + (i + 1) * lineStep, width: fullW + 1,
       fontSize: opts.itemsFs, color: opts.itemsColor, lineHeight: lh,
     });
   }
