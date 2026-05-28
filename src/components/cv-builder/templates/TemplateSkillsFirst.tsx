@@ -1,7 +1,13 @@
 import { Fragment } from "react";
+import { Sparkles } from "lucide-react";
 import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import { ContactLine, Page, Photo, visibleBullets } from "./shared";
 import { getSectionOrder, shouldRender } from "@/lib/cv/sectionVisibility";
+
+const pillStyle = {
+  background: "color-mix(in srgb, var(--accent, #9c5643) 10%, white)",
+  borderColor: "color-mix(in srgb, var(--accent, #9c5643) 35%, transparent)",
+} as const;
 
 const SH = ({ children }: { children: React.ReactNode }) => (
   <h2 className="mb-4 font-dm text-[18px] font-semibold tracking-[-0.01em] text-ink">{children}</h2>
