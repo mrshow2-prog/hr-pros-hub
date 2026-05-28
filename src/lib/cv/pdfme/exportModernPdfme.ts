@@ -1228,6 +1228,7 @@ async function buildRiyadh(
   cv: GeneratedCV,
   photoUrl: string | null,
   sidebarKeys: SectionKey[] = ["skills", "languages", "education"],
+  variant: "bold" | "vibrant" = "bold",
 ) {
   const b = createBuilder({ margin: 0, top: 0, bottom: 14 });
   const SIDEBAR_W = 64; // mm
@@ -1321,23 +1322,69 @@ async function buildRiyadh(
     skills: () => {
       if (!cv.skills.length) return;
       sideHeading("Skills");
-      for (const sk of cv.skills) {
-        const tw = SIDE_TW - 3;
-        const h = textHeightMm(sk, tw, 8.6, 1.5);
-        b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
-        b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
-        sY += h + 1.6;
+      if (variant === "vibrant") {
+        const widths = [92, 88, 96, 84, 90, 86, 94, 82];
+        const trackColor = mixHex(SIENNA, "#ffffff", 0.18);
+        for (let i = 0; i < cv.skills.length; i++) {
+          const sk = cv.skills[i];
+          const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
+          b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
+          sY += h + 1.2;
+          const barY = sY;
+          b.addRect({ x: PADX, y: barY, width: SIDE_TW, height: 1.0, color: trackColor, borderColor: trackColor, borderWidth: 0, radius: 0.5 });
+          const fillW = (SIDE_TW * widths[i % widths.length]) / 100;
+          b.addRect({ x: PADX, y: barY, width: fillW, height: 1.0, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.5 });
+          sY += 1.0 + 2.4;
+        }
+        sY += 2;
+      } else {
+        for (const sk of cv.skills) {
+          const tw = SIDE_TW - 3;
+          const h = textHeightMm(sk, tw, 8.6, 1.5);
+          b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
+          b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
+          sY += h + 1.6;
+        }
+        sY += 3;
       }
-      sY += 3;
     },
     languages: () => {
       if (!cv.languages.length) return;
       sideHeading("Languages");
-      for (const l of cv.languages) {
-        const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
-        sideRow(null, display);
+      if (variant === "vibrant") {
+        const dotColorOn = SIENNA;
+        const dotColorOff = mixHex(SIENNA, "#ffffff", 0.22);
+        for (const l of cv.languages) {
+          const lvl = (l.level || "").toLowerCase();
+          const filled =
+            lvl.includes("native") || lvl.includes("fluent") ? 5 :
+            lvl.includes("professional") ? 4 :
+            lvl.includes("conversational") ? 3 :
+            lvl.includes("basic") ? 2 : 4;
+          const dotsW = 5 * 1.4 + 4 * 0.8;
+          const labelW = SIDE_TW - dotsW - 2;
+          b.addText({ value: l.name, x: PADX, y: sY, width: labelW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
+          const dotsX = PADX + SIDE_TW - dotsW;
+          for (let i = 0; i < 5; i++) {
+            const cx = dotsX + i * (1.4 + 0.8);
+            b.addRect({ x: cx, y: sY + 1.2, width: 1.4, height: 1.4, color: i < filled ? dotColorOn : dotColorOff, borderColor: "", borderWidth: 0, radius: 0.7 });
+          }
+          sY += ptToMm(8.4) * 1.3 + 0.4;
+          if (l.level) {
+            b.addText({ value: l.level, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55), lineHeight: 1.3 });
+            sY += ptToMm(7) * 1.3 + 1.4;
+          } else {
+            sY += 1.2;
+          }
+        }
+        sY += 2;
+      } else {
+        for (const l of cv.languages) {
+          const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+          sideRow(null, display);
+        }
+        sY += 3;
       }
-      sY += 3;
     },
     education: () => {
       if (!cv.education.length) return;
@@ -1405,12 +1452,29 @@ async function buildRiyadh(
 
   const mainHeading = (label: string) => {
     b.ensure(10);
-    b.addText({
-      value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
-      letterSpacing: 1.6, spaceAfter: 1.2,
-    });
-    b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
-    b.cursorY += 3.4;
+    if (variant === "vibrant") {
+      const sq = 3.4;
+      const gap = 2.2;
+      const yTop = b.cursorY + 0.4;
+      b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.6 });
+      b.addText({
+        value: label.toUpperCase(),
+        x: b.margin + sq + gap,
+        y: b.cursorY,
+        width: b.contentW - sq - gap,
+        fontSize: 11.5, color: INK, bold: true, letterSpacing: 1.6,
+      });
+      b.cursorY += ptToMm(11.5) * 1.25 + 0.6;
+      b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.55) });
+      b.cursorY += 3.2;
+    } else {
+      b.addText({
+        value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
+        letterSpacing: 1.6, spaceAfter: 1.2,
+      });
+      b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
+      b.cursorY += 3.4;
+    }
   };
 
   if (shouldRender(cv, "summary")) {
@@ -1422,7 +1486,30 @@ async function buildRiyadh(
     experience: () => {
       mainHeading("Experience");
       for (const exp of cv.experience) {
-        periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+        if (variant === "vibrant") {
+          const period = periodOf(exp);
+          const pillFs = 7.8;
+          const pillH = ptToMm(pillFs) * 1.25 + 1.4;
+          const pillW = period ? Math.ceil(estimatedRightWidthMm(period, pillFs)) + 4 : 0;
+          const leftFs = 11;
+          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0);
+          const lineStep = ptToMm(leftFs) * 1.25;
+          const leftLines = wrapLines(exp.role || "", leftW, leftFs, { bold: true });
+          const blockH = Math.max(leftLines.length, 1) * lineStep;
+          b.ensure(Math.max(blockH, pillH));
+          const py = b.cursorY;
+          for (let i = 0; i < leftLines.length; i++) {
+            b.addText({ value: leftLines[i], x: b.margin, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
+          }
+          if (period && pillW) {
+            const pillX = b.margin + b.contentW - pillW;
+            b.addRect({ x: pillX, y: py + 0.3, width: pillW, height: pillH, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: pillH / 2 });
+            b.addText({ value: period, x: pillX, y: py + 0.3 + 0.6, width: pillW, fontSize: pillFs, color: "#ffffff", bold: true, align: "center", lineHeight: 1.25 });
+          }
+          b.cursorY = py + blockH + 0.5;
+        } else {
+          periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+        }
         const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
         deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
         for (const bul of visibleBullets(exp)) {
@@ -1713,7 +1800,7 @@ export async function generateCvPdfmeBlob(
     case "bold":         b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
     case "editorial":    b = await buildGeneva(cv, effectivePhoto); break;
     // New templates currently route to the closest existing PDF builder.
-    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto, sidebarKeys); break;
+    case "vibrant":      b = await buildRiyadh(cv, effectivePhoto, sidebarKeys, "vibrant"); break;
     case "gradient":     b = await buildModern(cv, effectivePhoto); break;
     case "creative":     b = await buildGeneva(cv, effectivePhoto); break;
     case "simple":
