@@ -1259,6 +1259,27 @@ async function buildRiyadh(
   const PAD_R = 4;       // tighter right padding so text column is wider
   const SIDE_TW = SIDEBAR_W - PADX - PAD_R; // usable sidebar text width
   const MAIN_MARGIN = MAIN_X + 10 + 2;
+  const MAIN_CONTENT_W = MAIN_W - 10 * 2 - 2;
+  // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
+  const sidebarFill = shadeHex(SIENNA, 0.22);
+  const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
+
+  // Draw sidebar background on every page.
+  const drawSidebar = () => {
+    b.addRect({
+      x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H,
+      color: sidebarFill, borderColor: sidebarFill, borderWidth: 0,
+    });
+  };
+  drawSidebar();
+  b.onNewPage(() => {
+    drawSidebar();
+    // Subsequent pages: cursor goes back to main column top.
+    b.margin = MAIN_MARGIN;
+    b.contentW = MAIN_CONTENT_W;
+    b.cursorY = 16;
+  });
+
   // ---- Sidebar content ----
   // We collect each sidebar section as a "block" with an estimated height and a draw fn.
   // After the main column finishes rendering, we walk the blocks, advancing to the next
