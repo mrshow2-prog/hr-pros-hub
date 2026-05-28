@@ -179,7 +179,7 @@ function langBulletList(
   ctx: Ctx,
   opts: { fs: number; color?: string; glyph?: string; glyphColor?: string; lh?: number } = { fs: 9.8 },
 ) {
-  const { b, cv } = ctx;
+  const { cv } = ctx;
   if (!cv.languages.length) return;
   const glyph = opts.glyph ?? "▪";
   for (const l of cv.languages) {
