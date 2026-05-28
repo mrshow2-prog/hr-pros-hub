@@ -81,7 +81,7 @@ function estimatedTextWidthMm(
   // Light safety factor: enough that wrapLines never under-predicts so pdfme
   // won't re-wrap on us. Bullet rendering pre-wraps with this same function
   // and emits one block per line, so spacing stays deterministic.
-  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.01;
+  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.04;
 
 }
 
