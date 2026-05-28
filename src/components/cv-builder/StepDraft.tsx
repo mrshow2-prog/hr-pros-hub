@@ -35,6 +35,7 @@ import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
 import { getPalette } from "@/lib/cv/palettes";
 import SidebarPlacementToggle from "./editor/SidebarPlacementToggle";
+import { isMultiColumn } from "@/lib/cv/sidebarPlacement";
 
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
@@ -1551,12 +1552,12 @@ export function CertificationsBlock({ certifications }: { certifications: Certif
 /* ---------------- Custom sections ---------------- */
 
 export function CustomSectionsBlock({ sections }: { sections: CustomSection[] }) {
-  const { addCustomSection, removeCustomSection, patchCustomSection } = useCVBuilder();
+  const { addCustomSection, removeCustomSection, patchCustomSection, state } = useCVBuilder();
+  const showPlacement = isMultiColumn(state.selectedTemplate);
   return (
     <div className="space-y-4">
       <p className="font-dm text-xs text-ink/55">
-        Add a custom section with a title and bullet points. You can choose whether it appears in the CV body
-        or the sidebar (sidebar applies only to templates with a side column).
+        Add a custom section with a title and bullet points.{showPlacement ? " You can choose whether it appears in the CV body or the sidebar." : ""}
       </p>
       {sections.map((s) => (
         <div key={s.id} className="rounded-md border border-ink/10 bg-paper p-4 space-y-3">
@@ -1565,28 +1566,30 @@ export function CustomSectionsBlock({ sections }: { sections: CustomSection[] })
             value={s.title}
             onChange={(v) => patchCustomSection(s.id, { title: v })}
           />
-          <div>
-            <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55 mb-1">
-              Placement
-            </span>
-            <div className="inline-flex rounded border border-ink/15 overflow-hidden">
-              {(["body", "sidebar"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => patchCustomSection(s.id, { placement: p })}
-                  className={cn(
-                    "px-3 py-1.5 font-dm text-xs capitalize",
-                    s.placement === p
-                      ? "bg-ink text-paper"
-                      : "bg-paper text-ink/65 hover:bg-ink/5",
-                  )}
-                >
-                  {p}
-                </button>
-              ))}
+          {showPlacement && (
+            <div>
+              <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55 mb-1">
+                Placement
+              </span>
+              <div className="inline-flex rounded border border-ink/15 overflow-hidden">
+                {(["body", "sidebar"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => patchCustomSection(s.id, { placement: p })}
+                    className={cn(
+                      "px-3 py-1.5 font-dm text-xs capitalize",
+                      s.placement === p
+                        ? "bg-ink text-paper"
+                        : "bg-paper text-ink/65 hover:bg-ink/5",
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           <div>
             <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55 mb-1">
               Bullets
