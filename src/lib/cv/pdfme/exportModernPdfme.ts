@@ -1031,9 +1031,26 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     });
   };
 
+  const SECTION_DIV = mixHex(INK, "#ffffff", 0.78);
+  let renderedAny = false;
+  const sep = () => {
+    if (!renderedAny) return;
+    b.ensure(6);
+    b.cursorY += 2.5;
+    b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.5, color: SECTION_DIV });
+    b.cursorY += 4.5;
+  };
+  const runSection = (fn: () => void) => {
+    sep();
+    fn();
+    renderedAny = true;
+  };
+
   if (shouldRender(cv, "summary")) {
-    sectionTitle("Professional Summary");
-    b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.7, spaceAfter: 6, align: "justify" });
+    runSection(() => {
+      sectionTitle("Professional Summary");
+      b.addText({ value: cv.summary, fontSize: 9.8, color: SUBINK, lineHeight: 1.7, spaceAfter: 6, align: "justify" });
+    });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -1070,7 +1087,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK, glyph: "◆" });
       }
     },
     languages: () => {
@@ -1105,7 +1122,10 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
   };
 
   for (const k of getSectionOrder(cv)) {
-    if (shouldRender(cv, k)) bodyRenderers[k]?.();
+    if (shouldRender(cv, k)) {
+      const fn = bodyRenderers[k];
+      if (fn) runSection(fn);
+    }
   }
   return b;
 }
