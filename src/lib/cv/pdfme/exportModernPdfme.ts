@@ -212,7 +212,7 @@ function bullet(
   const { b } = ctx;
   const fs = opts.fs ?? 9.7;
   const lh = opts.lh ?? 1.45;
-  const gw = opts.glyphW ?? 2.8;
+  const gw = opts.glyphW ?? 2.4;
   const tw = b.contentW - gw;
   const lineStep = ptToMm(fs) * lh;
 
