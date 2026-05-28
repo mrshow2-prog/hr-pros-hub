@@ -645,22 +645,30 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
       }
     },
     skills: () => {
-      sectionTitle("Core Competencies");
-      const colW = (b.contentW - 8) / 2;
+      sectionTitle("Key Skills");
+      const gap = 8;
+      const colW = (b.contentW - gap) / 2;
       const fs = 10.5;
       const lh = 1.55;
+      const glyph = "›";
+      const glyphW = 4;
+      const textW = colW - glyphW;
       for (let i = 0; i < cv.skills.length; i += 2) {
         const l = cv.skills[i];
         const r = cv.skills[i + 1];
         const h = Math.max(
-          textHeightMm(l, colW, fs, lh),
-          r ? textHeightMm(r, colW, fs, lh) : 0,
+          textHeightMm(l, textW, fs, lh),
+          r ? textHeightMm(r, textW, fs, lh) : 0,
           ptToMm(fs) * lh,
         );
         b.ensure(h + 0.6);
         const py = b.cursorY;
-        b.addText({ value: l, x: b.margin, y: py, width: colW, fontSize: fs, color: SUBINK, lineHeight: lh });
-        if (r) b.addText({ value: r, x: b.margin + colW + 8, y: py, width: colW, fontSize: fs, color: SUBINK, lineHeight: lh });
+        b.addText({ value: glyph, x: b.margin, y: py, width: glyphW, fontSize: fs, color: SIENNA, bold: true, lineHeight: lh });
+        b.addText({ value: l, x: b.margin + glyphW, y: py, width: textW, fontSize: fs, color: SUBINK, lineHeight: lh });
+        if (r) {
+          b.addText({ value: glyph, x: b.margin + colW + gap, y: py, width: glyphW, fontSize: fs, color: SIENNA, bold: true, lineHeight: lh });
+          b.addText({ value: r, x: b.margin + colW + gap + glyphW, y: py, width: textW, fontSize: fs, color: SUBINK, lineHeight: lh });
+        }
         b.cursorY = py + h + 1.2;
       }
       b.cursorY += 3;
