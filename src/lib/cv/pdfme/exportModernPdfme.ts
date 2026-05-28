@@ -235,6 +235,9 @@ function inlineCluster(
   }
 
   b.cursorY = py + blockH + spaceAfter;
+}
+
+
 
 /**
  * Render a single bullet row with FULLY DETERMINISTIC layout.
