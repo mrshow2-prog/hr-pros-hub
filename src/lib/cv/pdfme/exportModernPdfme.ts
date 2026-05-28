@@ -1630,6 +1630,7 @@ async function buildRiyadh(
     },
     custom: () => {
       for (const s of cv.customSections) {
+        if (s.placement === "sidebar") continue;
         mainHeading(s.title || "Additional");
         for (const it of s.bullets.filter(Boolean)) {
           bullet(ctx2, "•", it, { fs: 9.4, glyphColor: SIENNA });
@@ -1637,6 +1638,7 @@ async function buildRiyadh(
         b.cursorY += 2;
       }
     },
+
   };
 
   for (const k of getSectionOrder(cv)) {
