@@ -279,7 +279,9 @@ export interface PdfmeBuilder {
   set cursorY(v: number);
   pageBottom: number;
   pageIndex: number;
+  pageCount: number;
   newPage(): void;
+  setPageIndex(i: number): void;
   ensure(h: number): void;
   /** Register a callback that runs after each newPage() — useful for repeating backgrounds. */
   onNewPage(cb: (b: PdfmeBuilder) => void): void;
