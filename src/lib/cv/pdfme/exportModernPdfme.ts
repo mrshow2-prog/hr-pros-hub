@@ -179,20 +179,22 @@ function langBulletList(
   ctx: Ctx,
   opts: { fs: number; color?: string; glyph?: string; glyphColor?: string; lh?: number } = { fs: 9.8 },
 ) {
-  const { cv } = ctx;
+  const { b, cv } = ctx;
   if (!cv.languages.length) return;
-  const glyph = opts.glyph ?? "▪";
-  for (const l of cv.languages) {
-    const display = l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name;
-    bullet(ctx, glyph, display, {
-      fs: opts.fs,
-      lh: opts.lh ?? 1.45,
-      glyphColor: opts.glyphColor ?? ctx.primary,
-      textColor: opts.color,
-      glyphW: 3.2,
-      glyphBold: true,
-    });
-  }
+  const glyph = opts.glyph ?? "»";
+  const value = cv.languages
+    .map((l) => {
+      const display = l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name;
+      return `${glyph} ${display}`;
+    })
+    .join("    ");
+  b.addText({
+    value,
+    fontSize: opts.fs,
+    color: opts.color ?? SUBINK,
+    lineHeight: opts.lh ?? 1.4,
+    spaceAfter: 2,
+  });
 }
 
 
