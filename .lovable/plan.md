@@ -1,43 +1,42 @@
-## What you're seeing
+# Fix: Preview refreshes mid-typing in the Draft step
 
-In the React preview templates, the role + date row uses the full content width (left edge = title, right edge = dates). The bullet list sits below that row with a left indent (`pl-4`/`pl-5`/`pl-6` on each `<li>` — about 16–24 px). The bullet text's right edge already matches the date's right edge, but the left edge is pushed in, so each bullet row is visibly narrower than the title/date row above it and wraps to a new line sooner.
+## Problem
 
-The PDF exporter (`bullet()` in `src/lib/cv/pdfme/exportModernPdfme.ts`) has the same shape: glyph at the body margin, text starts at `margin + 4.4 mm`, text ends at `margin + contentW` (same right edge as dates). Right edge is fine; the left indent is the cause.
+Every keystroke in any text field (contact, summary, experience role/company/dates/location, bullets, achievements, certifications, custom sections, etc.) calls a `patchX` action on the CV state. That updates `state.generatedCV`, which is a dependency of:
 
-## Fix
+- `PdfmePreview` — re-runs the PDF render effect (debounced ~300 ms, but still re-renders the full PDF on every pause).
+- ATS scoring effect (debounced ~400 ms).
 
-Make each bullet row visually as wide as the title/date row by switching to a **hanging-indent** layout: the bullet glyph sits at the same left edge as the title, the text begins just to the right of the glyph, and wrapped lines hang at the glyph offset. The text's right edge already aligns with the date — that stays unchanged.
+On long sections (Experience with many bullets, Certifications with multiple entries), this makes the UI lag and feel like the system is "hanging" while the user is still typing.
 
-### React preview templates
+## Solution
 
-For each `<li>` in the experience bullets, replace the current `relative pl-X` + absolutely positioned glyph pattern with a flex row:
+Switch the two shared input primitives — `Field` and `AutoTextarea` in `src/components/cv-builder/StepDraft.tsx` — from **controlled-on-every-keystroke** to **local draft state, committed on blur** (and on Enter for single-line `Field`). This single change covers every text input in the draft editor without having to add Confirm buttons to each section.
 
-```text
-<li class="flex gap-2">
-  <span class="shrink-0">•</span>      ← glyph column, ~10–12 px
-  <span class="flex-1">…bullet text…</span>  ← text, wraps full width
-</li>
-```
+Behavior after the change:
 
-- Files touched: `TemplateModern.tsx`, `TemplateClassic.tsx`, `TemplateExecutive.tsx`, `TemplateSkillsFirst.tsx`, `TemplateRiyadh.tsx`, `TemplateGeneva.tsx`, `TemplateCasablanca.tsx`, `TemplateTokyo.tsx`, `TemplateMilano.tsx`.
-- Keep each template's existing glyph character / colour (• vs en-dash vs accent dot) so the look of each template is preserved.
-- Geneva / Casablanca: the experience block keeps its `pl-7` / `pl-5` wrapper (used for the timeline rail). The bullet row spans the inner width — i.e. the same width the title/date row already uses inside that wrapper.
-- Tokyo / Milano: dates live in a separate left grid column, so the bullets already use the full 1fr column. Apply the same hanging-indent change for visual consistency.
+- While typing: only local component state updates. No parent re-renders, no preview refresh, no ATS rescore.
+- On blur (clicking/tabbing away) or Enter (for `Field`): the value is committed via the existing `onChange` prop, which triggers a single preview refresh.
+- If the parent value changes externally (AI rewrite, auto-fix, template switch), the local draft syncs to the new value as long as the field is not focused.
 
-### PDF exporter
+This matches the "commits when you move to a new field" UX the user asked for, and is consistent with how Languages already work (commit on Add).
 
-In `src/lib/cv/pdfme/exportModernPdfme.ts` `bullet()`:
-- Reduce the glyph column from `4.4 mm` to ~`2.8 mm` so bullet text width becomes `contentW − 2.8` instead of `contentW − 4.4`. The right edge stays at `margin + contentW` (unchanged), the left edge moves closer to the body margin, matching the title row.
-- Recompute the per-line height with the **new** text width so wrapping height stays in sync — this is the key step that prevents the two regressions you called out:
-  - **No overlap**: height is measured against the actual text width used for rendering, so the next row starts below the real bottom of the wrapped text.
-  - **No blank lines**: we don't add padding or force extra line breaks; we only narrow the glyph column.
+## Technical details
 
-### Safety checks before claiming done
+Files touched:
 
-- Visual check in the preview: long bullets in Modern, Bold/Riyadh, and Geneva (the three layouts most prone to wrap) — confirm right edge aligns with the date, no clipping on the left, no overlap with the next bullet or next job block.
-- PDF export sanity check: regenerate a Bold and a Simple PDF with multi-line bullets and confirm wrapped lines don't overlap the next row and no spurious blank line appears between bullets.
+- `src/components/cv-builder/StepDraft.tsx`
+  - `Field` (line ~1248): keep a local `draft` state initialised from `value`. `onChange` updates `draft` only. Add `onBlur` and `onKeyDown` (Enter) handlers that call the prop `onChange(draft)` only if it differs. Sync `draft` from `value` via `useEffect` when the input is not focused (use a `focusedRef`).
+  - `AutoTextarea` (line ~1277): same pattern — local `draft`, commit on blur. Keep the existing auto-resize effect, but drive it off `draft` so it grows live while typing. No Enter-to-commit (multiline).
+
+No other files need to change:
+
+- `ContactBlock`, `ExperienceList`, `SummaryBlock`, `AchievementsBlock`, `CertificationsBlock`, `CustomSectionsBlock`, education fields, etc. all already route through `Field` / `AutoTextarea`, so they inherit the new behavior.
+- `PillInput`, `LanguagesBlock`, skill/competency editors already commit on Add/Enter — unchanged.
+- `PdfmePreview` debounce and ATS scoring debounce stay as-is; they just receive far fewer updates.
 
 ## Out of scope
 
-- No change to date row alignment, font sizes, section spacing, or colours.
-- No change to summary / skills / education sections — only the experience bullets.
+- No visual/layout changes.
+- No change to AI buttons, auto-fix, template picker, or section ordering.
+- No new Confirm buttons per section — the on-blur commit gives the same outcome with less UI noise. If after testing the user still wants explicit Confirm buttons on specific sections (e.g. Certifications), we can add them in a follow-up.

@@ -1258,6 +1258,14 @@ function Field({
   type?: string;
   placeholder?: string;
 }) {
+  const [draft, setDraft] = useState(value);
+  const focusedRef = useRef(false);
+  useEffect(() => {
+    if (!focusedRef.current) setDraft(value);
+  }, [value]);
+  const commit = () => {
+    if (draft !== value) onChange(draft);
+  };
   return (
     <label className="block">
       <span className="block font-dm text-[11px] uppercase tracking-wider2 text-ink/55">
@@ -1265,8 +1273,17 @@ function Field({
       </span>
       <input
         type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={() => { focusedRef.current = true; }}
+        onBlur={() => { focusedRef.current = false; commit(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && type !== "textarea") {
+            e.preventDefault();
+            commit();
+            (e.currentTarget as HTMLInputElement).blur();
+          }
+        }}
         placeholder={placeholder}
         className="mt-1 w-full rounded border border-ink/15 bg-paper px-3 py-2 font-dm text-sm text-ink focus:border-sienna focus:outline-none"
       />
@@ -1288,18 +1305,28 @@ function AutoTextarea({
   autoFocus?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const [draft, setDraft] = useState(value);
+  const focusedRef = useRef(false);
+  useEffect(() => {
+    if (!focusedRef.current) setDraft(value);
+  }, [value]);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
+  }, [draft]);
   return (
     <textarea
       ref={ref}
-      value={value}
+      value={draft}
       autoFocus={autoFocus}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => setDraft(e.target.value)}
+      onFocus={() => { focusedRef.current = true; }}
+      onBlur={() => {
+        focusedRef.current = false;
+        if (draft !== value) onChange(draft);
+      }}
       placeholder={placeholder}
       className={cn(
         "w-full resize-none rounded border border-ink/15 bg-paper p-3 font-dm text-sm text-ink placeholder:text-ink/40 focus:border-sienna focus:outline-none",
