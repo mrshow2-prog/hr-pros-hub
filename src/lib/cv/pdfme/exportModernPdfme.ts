@@ -1023,16 +1023,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     bottomRule: { color: HAIRLINE, weight: 0.3 },
   });
 
-  let sectionsRendered = 0;
-  const SEP_COLOR = mixHex(INK, "#ffffff", 0.55);
-  const sectionDivider = () => {
-    b.ensure(6);
-    b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.4, color: SEP_COLOR });
-    b.cursorY += 4.5;
-  };
   const sectionTitle = (label: string) => {
-    if (sectionsRendered > 0) sectionDivider();
-    sectionsRendered += 1;
     b.ensure(8);
     b.addText({
       value: label, fontSize: 12, color: INK, bold: true,
@@ -1078,26 +1069,8 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     },
     competencies: () => {
       sectionTitle("Core Competencies");
-      const DOT = 1.6;
       for (const c of cv.competencyClusters) {
-        if (c.title) {
-          b.ensure(6);
-          // accent dot
-          b.addRect({
-            x: b.margin, y: b.cursorY + 1.4,
-            width: DOT, height: DOT, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: DOT / 2,
-          });
-          b.addText({
-            value: c.title.toUpperCase(),
-            x: b.margin + DOT + 1.8,
-            y: b.cursorY,
-            width: b.contentW - DOT - 1.8,
-            fontSize: 8.6, color: INK, bold: true, letterSpacing: 0.4, spaceAfter: 1.6,
-          });
-        }
-        const items = c.items.filter(Boolean);
-        if (items.length) renderChips(b, items);
-        b.cursorY += 2;
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     languages: () => {
@@ -1134,7 +1107,6 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
   for (const k of getSectionOrder(cv)) {
     if (shouldRender(cv, k)) bodyRenderers[k]?.();
   }
-
   return b;
 }
 
