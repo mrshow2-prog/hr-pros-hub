@@ -1662,6 +1662,35 @@ async function buildRiyadh(
     mainRenderers[k]?.();
   }
 
+  // ---- Place sidebar blocks across pages ----
+  // Main column is fully rendered, so we know how many pages exist. Walk the
+  // sidebar blocks placing each one on a page where it fits whole. If a block
+  // would overflow the bottom margin, push it to the next page (creating one
+  // if needed). Sections are never split across pages.
+  const SIDE_PAGE_BOTTOM = b.PAGE_H - SIDE_BOTTOM_PAD;
+  let sidebarPage = 0;
+  let sY = SIDE_TOP;
+  const ensureSidebarPage = (i: number) => {
+    while (i >= b.pageCount) {
+      // Save main cursor state; newPage() resets it via onNewPage to MAIN.
+      const prevIdx = b.pageIndex;
+      b.newPage(); // appends; pageIndex becomes pageCount-1
+      // newPage's onNewPage callback already redrew the sidebar bg + reset
+      // cursor for the main column. We don't need that cursor anymore.
+      void prevIdx;
+    }
+    b.setPageIndex(i);
+  };
+  ensureSidebarPage(0);
+  for (const blk of blocks) {
+    if (sY + blk.estH > SIDE_PAGE_BOTTOM && sY > SIDE_TOP) {
+      sidebarPage += 1;
+      ensureSidebarPage(sidebarPage);
+      sY = SIDE_TOP;
+    }
+    sY = blk.draw(sY);
+  }
+
   return b;
 }
 
