@@ -239,6 +239,8 @@ export interface TextOpts {
   uppercase?: boolean;
   letterSpacing?: number;
   bold?: boolean;
+  /** Override font family (e.g. FONT_DISPLAY for a serif name treatment). */
+  fontName?: string;
   bgColor?: string;
   /** When true, render text as inline-markdown so [label](https://url) becomes a clickable PDF link. */
   markdown?: boolean;
