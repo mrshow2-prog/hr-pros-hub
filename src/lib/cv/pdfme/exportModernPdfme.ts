@@ -1409,7 +1409,7 @@ async function buildRiyadh(
         return {
           estH,
           draw: (top) => {
-            let sY = headingDraw(top, "Skills");
+            let sY = headingDraw(top, "Skills", "sparkles");
             for (const sk of skills) {
               const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
               b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
@@ -1430,7 +1430,7 @@ async function buildRiyadh(
       return {
         estH,
         draw: (top) => {
-          let sY = headingDraw(top, "Skills");
+          let sY = headingDraw(top, "Skills", "sparkles");
           for (const sk of skills) {
             const tw = SIDE_TW - 3;
             const h = textHeightMm(sk, tw, 8.6, 1.5);
@@ -1458,7 +1458,7 @@ async function buildRiyadh(
         return {
           estH: estH + 2,
           draw: (top) => {
-            let sY = headingDraw(top, "Languages");
+            let sY = headingDraw(top, "Languages", "languages");
             for (const l of langs) {
               const nh = textHeightMm(l.name, nameW, 8.4, 1.3);
               const lh = l.level ? textHeightMm(l.level, levelW, 7.6, 1.3) : 0;
@@ -1481,7 +1481,7 @@ async function buildRiyadh(
       return {
         estH: estH + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Languages");
+          let sY = headingDraw(top, "Languages", "languages");
           for (const l of langs) {
             const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
             sY = drawSideRow(sY, display);
@@ -1503,7 +1503,7 @@ async function buildRiyadh(
       return {
         estH: estH + 2,
         draw: (top) => {
-          let sY = headingDraw(top, "Education");
+          let sY = headingDraw(top, "Education", "graduationCap");
           for (const ed of eds) {
             if (ed.qualification) sY = drawSideRow(sY, ed.qualification);
             if (ed.institution) {
@@ -1534,7 +1534,7 @@ async function buildRiyadh(
       return {
         estH: estH + 2,
         draw: (top) => {
-          let sY = headingDraw(top, "Certifications");
+          let sY = headingDraw(top, "Certifications", "badgeCheck");
           for (const c of certs) {
             const line = buildLine(c);
             const h = textHeightMm(line, SIDE_TW, 8.2, 1.45);
@@ -1554,7 +1554,7 @@ async function buildRiyadh(
       return {
         estH: estH + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Achievements");
+          let sY = headingDraw(top, "Achievements", "award");
           for (const a of items) {
             const h = textHeightMm(a, tw, 8.4, 1.45);
             b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9, color: PAPER, bold: true });
@@ -1572,7 +1572,7 @@ async function buildRiyadh(
       return {
         estH: headingH + h + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Profile");
+          let sY = headingDraw(top, "Profile", "user");
           b.addText({ value: text, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.2, color: PAPER, lineHeight: 1.5 });
           return sY + h + 3;
         },
@@ -1603,7 +1603,7 @@ async function buildRiyadh(
     blocks.push({
       estH: estH + 3,
       draw: (top) => {
-        let sY = headingDraw(top, title);
+        let sY = headingDraw(top, title, "fileText");
         for (const it of bullets) {
           const tw = SIDE_TW - 3;
           const h = textHeightMm(it, tw, 8.4, 1.45);
