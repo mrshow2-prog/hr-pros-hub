@@ -432,11 +432,14 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
         basePdf: { width: PAGE_W, height: PAGE_H, padding: [0, 0, 0, 0] },
         schemas: pages,
       };
+      const font = await loadFont();
       const pdf = await generate({
         template,
         inputs: [inputs],
         plugins: { text, image, line, rectangle },
+        options: { font },
       });
+
       let bytes = pdf as unknown as Uint8Array;
       if (links.length) {
         const doc = await PDFDocument.load(bytes);
