@@ -1594,10 +1594,8 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     },
     languages: () => {
       sectionTitle("Languages");
-      b.addText({
-        value: cv.languages.map((l) => l.level?.trim() ? `${l.name} — ${l.level}` : l.name).join("       "),
-        fontSize: 9.8, color: SUBINK,
-      });
+      langBulletList(ctx, { fs: 9.8, color: SUBINK, glyphColor: SIENNA, lh: 1.5 });
+      b.cursorY += 1;
     },
     achievements: () => {
       sectionTitle("Achievements");
@@ -1610,7 +1608,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
