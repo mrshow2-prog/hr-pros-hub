@@ -366,6 +366,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           width,
           height: h + 0.5,
           fontSize: o.fontSize,
+          fontName: o.bold ? FONT_BOLD : FONT_REGULAR,
           fontColor: o.color ?? INK,
           alignment: o.align ?? "left",
           verticalAlignment: "top",
@@ -373,6 +374,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           characterSpacing: o.letterSpacing ?? 0,
           backgroundColor: o.bgColor ?? "",
           ...(o.markdown ? { textFormat: "inline-markdown", readOnly: true } : {}),
+
         } as Schema & { name: string },
         value,
       );
