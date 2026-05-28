@@ -238,7 +238,7 @@ function deterministicLine(
 function inlineCluster(
   ctx: Ctx,
   cluster: { title?: string; items: string[] },
-  opts: { titleFs: number; titleColor: string; itemsFs: number; itemsColor: string; lh?: number; spaceAfter?: number; glyph?: string },
+  opts: { titleFs: number; titleColor: string; itemsFs: number; itemsColor: string; lh?: number; spaceAfter?: number; bulletIcon?: boolean },
 ) {
   const { b } = ctx;
   const items = cluster.items.filter(Boolean).join(" · ");
@@ -250,11 +250,15 @@ function inlineCluster(
     return;
   }
 
-  const titleText = `${opts.glyph ? opts.glyph + "  " : ""}${cluster.title}: `;
+  const bulletW = opts.bulletIcon ? 4 : 0;
+  const bulletGap = opts.bulletIcon ? 1.2 : 0;
+  const textX = b.margin + bulletW + bulletGap;
+  const textW = b.contentW - bulletW - bulletGap;
+  const titleText = `${cluster.title}: `;
   const titleW = textWidthMm(titleText, opts.titleFs, { bold: true });
-  const itemsX = b.margin + titleW;
-  const firstW = Math.max(20, b.contentW - titleW);
-  const fullW = b.contentW;
+  const itemsX = textX + titleW;
+  const firstW = Math.max(20, textW - titleW);
+  const fullW = textW;
   const lineStep = ptToMm(opts.itemsFs) * lh;
 
   // First line wraps to remaining width next to the title; the remainder
@@ -270,9 +274,22 @@ function inlineCluster(
   b.ensure(blockH);
   const py = b.cursorY;
 
+  if (opts.bulletIcon) {
+    b.addRect({
+      x: b.margin,
+      y: py + 1.05,
+      width: 1.8,
+      height: 1.8,
+      color: opts.titleColor,
+      borderColor: opts.titleColor,
+      borderWidth: 0,
+      radius: 0.35,
+    });
+  }
+
   b.addText({
     value: titleText,
-    x: b.margin, y: py, width: titleW + 1,
+    x: textX, y: py, width: titleW + 1,
     fontSize: opts.titleFs, color: opts.titleColor, bold: true, lineHeight: lh,
   });
 
@@ -287,7 +304,7 @@ function inlineCluster(
   for (let i = 0; i < restLines.length; i += 1) {
     b.addText({
       value: restLines[i],
-      x: b.margin, y: py + (i + 1) * lineStep, width: fullW + 1,
+      x: textX, y: py + (i + 1) * lineStep, width: fullW + 1,
       fontSize: opts.itemsFs, color: opts.itemsColor, lineHeight: lh,
     });
   }
