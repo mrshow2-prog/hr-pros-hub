@@ -269,7 +269,9 @@ export default function EditorShell() {
   const score = state.atsScore;
   const cv = state.generatedCV;
   const showCompetencies =
-    state.intentForm.cvType === "skills" || state.intentForm.cvType === "hybrid";
+    state.intentForm.cvType === "skills" ||
+    state.intentForm.cvType === "hybrid" ||
+    (cv.competencyClusters?.length ?? 0) > 0;
 
   // Build the ordered section list: contact + summary pinned at top,
   // then the user's customised body order from cv.sectionOrder.

@@ -162,7 +162,9 @@ export default function StepDraft() {
 
   const cv = state.generatedCV;
   const showCompetencies =
-    state.intentForm.cvType === "skills" || state.intentForm.cvType === "hybrid";
+    state.intentForm.cvType === "skills" ||
+    state.intentForm.cvType === "hybrid" ||
+    (cv.competencyClusters?.length ?? 0) > 0;
 
   return (
     <>
