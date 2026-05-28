@@ -69,19 +69,20 @@ function estimatedTextWidthMm(
   letterSpacing = 0,
 ) {
   const widthUnits = Array.from(text).reduce((sum, ch) => {
-    if (ch === " ") return sum + 0.30;
-    if (/[A-Z]/.test(ch)) return sum + (bold ? 0.64 : 0.60);
-    if (/[a-z]/.test(ch)) return sum + (bold ? 0.54 : 0.50);
-    if (/[0-9]/.test(ch)) return sum + 0.55;
-    if (/[.,;:'`!|]/.test(ch)) return sum + 0.27;
-    if (/[-–—/\\()]/.test(ch)) return sum + 0.36;
-    return sum + (bold ? 0.58 : 0.53);
+    if (ch === " ") return sum + 0.28;
+    if (/[A-Z]/.test(ch)) return sum + (bold ? 0.61 : 0.57);
+    if (/[a-z]/.test(ch)) return sum + (bold ? 0.52 : 0.48);
+    if (/[0-9]/.test(ch)) return sum + 0.53;
+    if (/[.,;:'`!|]/.test(ch)) return sum + 0.25;
+    if (/[-–—/\\()]/.test(ch)) return sum + 0.34;
+    return sum + (bold ? 0.56 : 0.51);
   }, 0);
   const tracking = Math.max(0, text.length - 1) * (letterSpacing / PT_PER_MM);
   // Light safety factor: enough that wrapLines never under-predicts so pdfme
   // won't re-wrap on us. Bullet rendering pre-wraps with this same function
   // and emits one block per line, so spacing stays deterministic.
-  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.03;
+  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.01;
+
 }
 
 export function textWidthMm(
