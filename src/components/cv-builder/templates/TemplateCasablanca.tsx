@@ -198,18 +198,14 @@ export default function TemplateCasablanca({
     competencies: () => (
       <section className="mb-7">
         <MainH icon={Layers}>Core Competencies</MainH>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id}>
+            <p key={c.id} className="text-[12.5px] leading-[1.6] text-ink/85">
               {c.title && (
-                <p className="mb-1 text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: accentBg as string }}>
-                  {c.title}
-                </p>
+                <span className="font-semibold" style={{ color: accentBg as string }}>{c.title}: </span>
               )}
-              <p className="text-[12.5px] leading-[1.6] text-ink/85">
-                {c.items.filter(Boolean).join(" · ")}
-              </p>
-            </div>
+              {c.items.filter(Boolean).join(" · ")}
+            </p>
           ))}
         </div>
       </section>

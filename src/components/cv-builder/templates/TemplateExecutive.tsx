@@ -81,16 +81,14 @@ export default function TemplateExecutive({
     competencies: () => (
       <section className="mb-12">
         <SH>Competency Clusters</SH>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id}>
+            <p key={c.id} className="text-[15px] font-light leading-[1.6] text-ink/85">
               {c.title && (
-                <p className="mb-1 text-[14px] font-semibold uppercase tracking-[0.08em] text-sienna">
-                  {c.title}
-                </p>
+                <span className="font-semibold text-sienna">{c.title}: </span>
               )}
-              <p className="text-[15px] font-light text-ink/85">{c.items.filter(Boolean).join(" · ")}</p>
-            </div>
+              {c.items.filter(Boolean).join(" · ")}
+            </p>
           ))}
         </div>
       </section>

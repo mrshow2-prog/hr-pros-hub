@@ -112,16 +112,14 @@ export default function TemplateMilano({
     competencies: () => (
       <section className="mb-9">
         <SH num={num()}>Competencies</SH>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id}>
+            <p key={c.id} className="text-[12.5px] leading-[1.6] text-ink/85">
               {c.title && (
-                <p className="mb-1 font-dm text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: accent as string }}>
-                  {c.title}
-                </p>
+                <span className="font-dm font-bold" style={{ color: accent as string }}>{c.title}: </span>
               )}
-              <p className="text-[12.5px] text-ink/85">{c.items.filter(Boolean).join(" · ")}</p>
-            </div>
+              {c.items.filter(Boolean).join(" · ")}
+            </p>
           ))}
         </div>
       </section>

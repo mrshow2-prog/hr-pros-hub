@@ -187,6 +187,59 @@ function deterministicLine(
 }
 
 /**
+ * Render a competency cluster inline: "Title: item · item · item",
+ * with the title bold + accent color and items in body color. The
+ * title sits on the first line; items wrap within the remaining width
+ * on the right of the title, and any wrapped lines continue at that
+ * same indented x so the title stays visually attached to its items.
+ */
+function inlineCluster(
+  ctx: Ctx,
+  cluster: { title?: string; items: string[] },
+  opts: { titleFs: number; titleColor: string; itemsFs: number; itemsColor: string; lh?: number; spaceAfter?: number },
+) {
+  const { b } = ctx;
+  const items = cluster.items.filter(Boolean).join(" · ");
+  const lh = opts.lh ?? 1.4;
+  const spaceAfter = opts.spaceAfter ?? 2;
+
+  if (!cluster.title) {
+    if (items) deterministicLine(ctx, items, { fs: opts.itemsFs, color: opts.itemsColor, lh, spaceAfter });
+    return;
+  }
+
+  const titleText = `${cluster.title}: `;
+  const titleW = textWidthMm(titleText, opts.titleFs, { bold: true });
+  const itemsX = b.margin + titleW;
+  const itemsW = Math.max(20, b.contentW - titleW);
+  const lineStep = ptToMm(opts.itemsFs) * lh;
+
+  const lines = items ? wrapLines(items, itemsW, opts.itemsFs, {}) : [""];
+  const blockH = Math.max(1, lines.length) * lineStep;
+  b.ensure(blockH);
+  const py = b.cursorY;
+
+  b.addText({
+    value: titleText,
+    x: b.margin, y: py, width: titleW + 1,
+    fontSize: opts.titleFs, color: opts.titleColor, bold: true, lineHeight: lh,
+  });
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!lines[i]) continue;
+    b.addText({
+      value: lines[i],
+      x: itemsX, y: py + i * lineStep, width: itemsW + 1,
+      fontSize: opts.itemsFs, color: opts.itemsColor, lineHeight: lh,
+    });
+  }
+
+  b.cursorY = py + blockH + spaceAfter;
+}
+
+
+
+/**
  * Render a single bullet row with FULLY DETERMINISTIC layout.
  *
  * The key technique: we pre-wrap the bullet text into visual lines ourselves
@@ -413,8 +466,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     languages: () => {
@@ -540,8 +592,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 10, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 10, titleColor: SIENNA, itemsFs: 10, itemsColor: SUBINK });
       }
     },
     languages: () => {
@@ -676,8 +727,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competency Areas");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 10, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 10.5, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 10.5, titleColor: SIENNA, itemsFs: 10.5, itemsColor: SUBINK });
       }
       b.cursorY += 2;
     },
@@ -868,8 +918,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       fullSectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     achievements: () => {
@@ -969,8 +1018,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     languages: () => {
@@ -1320,8 +1368,7 @@ async function buildRiyadh(
     competencies: () => {
       mainHeading("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx2, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx2, c.items.filter(Boolean).join(" · "), { fs: 9.6, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx2, c, { titleFs: 9.6, titleColor: SIENNA, itemsFs: 9.6, itemsColor: SUBINK });
       }
     },
     achievements: () => {
@@ -1496,8 +1543,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     languages: () => {

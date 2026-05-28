@@ -79,16 +79,12 @@ export default function TemplateModern({
     competencies: () => (
       <section className="mb-9">
         <SectionHeader>Core Competencies</SectionHeader>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id}>
-              {c.title && (
-                <p className="mb-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-sienna">
-                  {c.title}
-                </p>
-              )}
-              <p className="text-[14px] font-light text-ink/85">{c.items.filter(Boolean).join(" · ")}</p>
-            </div>
+            <p key={c.id} className="text-[14px] font-light leading-[1.6] text-ink/85">
+              {c.title && <span className="font-semibold text-sienna">{c.title}: </span>}
+              {c.items.filter(Boolean).join(" · ")}
+            </p>
           ))}
         </div>
       </section>
