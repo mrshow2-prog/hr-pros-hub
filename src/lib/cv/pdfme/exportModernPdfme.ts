@@ -1347,9 +1347,20 @@ async function buildRiyadh(
       draw: (top) => {
         let sY = top;
         if (photoData) {
+          if (variant === "vibrant") {
+            // Cream ring around the circular photo to match the thumbnail.
+            const ringExtra = 2.4; // mm of ring on each side
+            const ringSz = sz + ringExtra * 2;
+            b.addRect({
+              x: (SIDEBAR_W - ringSz) / 2, y: sY - ringExtra,
+              width: ringSz, height: ringSz,
+              color: PAPER, borderColor: PAPER, borderWidth: 0, radius: ringSz / 2,
+            });
+          }
           b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
           sY += sz + 8;
         }
+
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
           b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data: iconData[i] });
