@@ -254,11 +254,14 @@ function bullet(
       bullet(ctx, "", remaining, { ...opts });
       return;
     }
+    // Render each pre-wrapped line in a generously oversized box so pdfme
+    // can never re-wrap it (which would stack 2 visual lines inside a single
+    // lineStep slot and overlap with the next bullet line drawn below).
     b.addText({
       value: lines[i],
       x: b.margin + gw,
       y: lineY,
-      width: tw,
+      width: tw + 20,
       fontSize: fs,
       color: opts.textColor ?? SUBINK,
       lineHeight: lh,
