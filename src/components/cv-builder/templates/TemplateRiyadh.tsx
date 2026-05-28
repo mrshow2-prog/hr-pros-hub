@@ -106,16 +106,10 @@ export default function TemplateRiyadh({
         <MainHeading>Core Competencies</MainHeading>
         <div className="space-y-2">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id}>
-              {c.title && (
-                <p className="mb-0.5 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-sienna">
-                  {c.title}
-                </p>
-              )}
-              <p className="text-[12.5px] leading-[1.6] text-ink/85">
-                {c.items.filter(Boolean).join(" · ")}
-              </p>
-            </div>
+            <p key={c.id} className="text-[12.5px] leading-[1.6] text-ink/85">
+              {c.title && <span className="font-semibold text-sienna">{c.title}: </span>}
+              {c.items.filter(Boolean).join(" · ")}
+            </p>
           ))}
         </div>
       </section>
