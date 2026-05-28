@@ -1624,38 +1624,77 @@ async function buildRiyadh(
   b.cursorY = 16;
   const ctx2: Ctx = { cv, primary: SIENNA, b };
 
+  // Vibrant: hero-area decorative disc + check in the top-right corner of the main column.
+  if (variant === "vibrant") {
+    const discSz = 9;
+    const discX = MAIN_X + MAIN_W - discSz - 8;
+    const discY = 8;
+    b.addRect({
+      x: discX, y: discY, width: discSz, height: discSz,
+      color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: discSz / 2,
+    });
+    if (sectionIconWhite.check) {
+      const ico = discSz * 0.55;
+      b.addImage({
+        x: discX + (discSz - ico) / 2, y: discY + (discSz - ico) / 2,
+        w: ico, h: ico, data: sectionIconWhite.check,
+      });
+    }
+  }
+
   b.addText({
     value: cv.contact.name || "Your name",
-    fontSize: 24, color: INK, bold: true, letterSpacing: -0.4, lineHeight: 1.05,
+    fontSize: variant === "vibrant" ? 30 : 24,
+    color: INK,
+    bold: true,
+    letterSpacing: variant === "vibrant" ? -0.6 : -0.4,
+    lineHeight: 1.05,
     spaceAfter: 1,
+    fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
   });
   if (cv.contact.jobTitle) {
     b.addText({
       value: cv.contact.jobTitle.toUpperCase(),
-      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4, spaceAfter: 6,
+      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
+      spaceAfter: variant === "vibrant" ? 2 : 6,
     });
+    if (variant === "vibrant") {
+      // Short accent rule beneath the job title, matching the thumbnail.
+      b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
+      b.cursorY += 5;
+    }
   } else {
     b.cursorY += 4;
   }
 
-  const mainHeading = (label: string) => {
-    b.ensure(10);
+  const mainHeading = (label: string, iconKey?: keyof typeof ICON_SVGS) => {
     if (variant === "vibrant") {
-      const sq = 3.4;
-      const gap = 2.2;
-      const yTop = b.cursorY + 0.4;
-      b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.6 });
+      b.ensure(14);
+      b.cursorY += 3;
+      const sq = 4.4;
+      const gap = 2.6;
+      const yTop = b.cursorY + 0.2;
+      b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.8 });
+      if (iconKey && sectionIconWhite[iconKey]) {
+        const ico = sq * 0.7;
+        b.addImage({
+          x: b.margin + (sq - ico) / 2,
+          y: yTop + (sq - ico) / 2,
+          w: ico, h: ico, data: sectionIconWhite[iconKey]!,
+        });
+      }
       b.addText({
         value: label.toUpperCase(),
         x: b.margin + sq + gap,
-        y: b.cursorY,
+        y: b.cursorY + 0.4,
         width: b.contentW - sq - gap,
         fontSize: 11.5, color: INK, bold: true, letterSpacing: 1.6,
       });
       b.cursorY += ptToMm(11.5) * 1.25 + 0.6;
       b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.55) });
-      b.cursorY += 3.2;
+      b.cursorY += 2.6;
     } else {
+      b.ensure(10);
       b.addText({
         value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
         letterSpacing: 1.6, spaceAfter: 1.2,
@@ -1664,6 +1703,7 @@ async function buildRiyadh(
       b.cursorY += 3.4;
     }
   };
+
 
   if (shouldRender(cv, "summary") && !inSidebar("summary")) {
     mainHeading("Profile");
