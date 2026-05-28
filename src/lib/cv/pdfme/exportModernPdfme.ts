@@ -590,7 +590,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
  *    in sienna, ▸ bullets
  * ============================================================ */
 async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
-  const b = createBuilder({ margin: 22, top: 22, bottom: 22 });
+  const b = createBuilder({ margin: 18, top: 22, bottom: 22 });
   const ctx: Ctx = { cv, primary: SIENNA, b };
 
   await renderHeader(ctx, {
