@@ -7,7 +7,7 @@
  * selection is only committed when the user clicks "Use this template".
  */
 import { useEffect, useState } from "react";
-import { Check, ShieldCheck, Sparkles, X } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCVBuilder, type TemplateId } from "@/contexts/CVBuilderContext";
