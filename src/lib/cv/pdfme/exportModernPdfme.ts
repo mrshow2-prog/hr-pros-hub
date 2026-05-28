@@ -727,8 +727,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competency Areas");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 10, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 10.5, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 10.5, titleColor: SIENNA, itemsFs: 10.5, itemsColor: SUBINK });
       }
       b.cursorY += 2;
     },
