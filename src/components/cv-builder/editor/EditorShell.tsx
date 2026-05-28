@@ -60,6 +60,9 @@ const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: "skills", label: "Skills-Based" },
   { id: "bold", label: "Bold" },
   { id: "editorial", label: "Editorial" },
+  { id: "vibrant", label: "Vibrant" },
+  { id: "gradient", label: "Gradient" },
+  { id: "creative", label: "Creative" },
 ];
 
 type SectionDef = { key: SectionKey; label: string };
