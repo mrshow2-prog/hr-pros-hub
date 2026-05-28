@@ -197,6 +197,8 @@ export interface GeneratedCV {
   summary: string;
   experience: CVExperience[];
   skills: string[];
+  /** Per-skill proficiency level (1-5). Defaults to 4 when missing. Used by templates that render skill bars (e.g. vibrant). */
+  skillLevels?: Record<string, number>;
   education: CVEducation[];
   competencyClusters: CompetencyCluster[];
   languages: LanguageEntry[];
