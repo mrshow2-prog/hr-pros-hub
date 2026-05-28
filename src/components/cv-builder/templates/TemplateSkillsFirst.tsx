@@ -98,9 +98,9 @@ export default function TemplateSkillsFirst({
           {cv.competencyClusters.map((c) => (
             <div key={c.id}>
               {c.title && (
-                <div className="mb-2 flex items-center gap-1.5">
+                <div className="mb-2 flex items-center gap-2">
                   <span
-                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] shadow-sm"
                     style={{ background: "var(--accent, #9c5643)" }}
                   />
                   <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink">
@@ -226,7 +226,7 @@ export default function TemplateSkillsFirst({
         }
         return blocks.map((b, i) => (
           <Fragment key={b.key}>
-            {i > 0 && <hr className="mb-8 border-0 border-t border-ink/20" />}
+            {i > 0 && <hr className="mb-8 border-0 border-t border-ink/35" />}
             {b.node}
           </Fragment>
         ));
