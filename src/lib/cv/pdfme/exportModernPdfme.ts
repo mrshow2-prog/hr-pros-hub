@@ -1353,7 +1353,6 @@ async function buildRiyadh(
     });
   }
 
-  }
 
   const sideRenderers: Partial<Record<SectionKey, () => Block | null>> = {
     skills: () => {
