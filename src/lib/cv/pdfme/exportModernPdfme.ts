@@ -1272,17 +1272,10 @@ async function buildRiyadh(
   // ---- Photo + contact block (always first, on page 1) ----
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
 
-  const HEAD_ICON_SQ = 2.6;
-  const HEAD_ICON_GAP = 1.8;
   const headingDraw = (top: number, label: string) => {
     let sY = top;
-    const labelX = variant === "vibrant" ? PADX + HEAD_ICON_SQ + HEAD_ICON_GAP : PADX;
-    const labelW = variant === "vibrant" ? SIDE_TW - HEAD_ICON_SQ - HEAD_ICON_GAP : SIDE_TW;
-    if (variant === "vibrant") {
-      b.addRect({ x: PADX, y: sY + 1.2, width: HEAD_ICON_SQ, height: HEAD_ICON_SQ, color: PAPER, borderColor: PAPER, borderWidth: 0, radius: 0.5 });
-    }
     b.addText({
-      value: label.toUpperCase(), x: labelX, y: sY, width: labelW,
+      value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
@@ -1291,7 +1284,6 @@ async function buildRiyadh(
     return sY;
   };
   const headingH = ptToMm(9) * 1.25 + 0.6 + 0.25 + 2.4;
-
 
   const sideRowH = (value: string) => textHeightMm(value, SIDE_TW, 8.4, 1.45) + 1.6;
   const drawSideRow = (top: number, value: string, uri?: string) => {
@@ -1320,10 +1312,8 @@ async function buildRiyadh(
     // Pre-resolve icon data URLs so the draw fn stays synchronous.
     const iconData: string[] = await Promise.all(contactRows.map((r) => svgToPngDataUrl(r.iconSvg)));
     const sz = 32;
-    const showHeading = variant === "vibrant" && contactRows.length > 0;
     let estH = 0;
     if (photoData) estH += sz + 8;
-    if (showHeading) estH += headingH;
     for (const r of contactRows) {
       estH += Math.max(textHeightMm(r.value, TW, FS, 1.45), ICON_MM) + 1.8;
     }
@@ -1335,9 +1325,6 @@ async function buildRiyadh(
         if (photoData) {
           b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
           sY += sz + 8;
-        }
-        if (showHeading) {
-          sY = headingDraw(sY, "Contact");
         }
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
@@ -1352,7 +1339,6 @@ async function buildRiyadh(
       },
     });
   }
-
 
   const sideRenderers: Partial<Record<SectionKey, () => Block | null>> = {
     skills: () => {
@@ -1639,18 +1625,14 @@ async function buildRiyadh(
           const pillH = ptToMm(pillFs) * 1.25 + 1.4;
           const pillW = period ? Math.ceil(estimatedRightWidthMm(period, pillFs)) + 4 : 0;
           const leftFs = 11;
-          const dotSize = 2.2;
-          const dotGap = 2.0;
-          const dotIndent = dotSize + dotGap;
-          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0) - dotIndent;
+          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0);
           const lineStep = ptToMm(leftFs) * 1.25;
           const leftLines = wrapLines(exp.role || "", leftW, leftFs, { bold: true });
           const blockH = Math.max(leftLines.length, 1) * lineStep;
           b.ensure(Math.max(blockH, pillH));
           const py = b.cursorY;
-          b.addRect({ x: b.margin, y: py + lineStep / 2 - dotSize / 2, width: dotSize, height: dotSize, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: dotSize / 2 });
           for (let i = 0; i < leftLines.length; i++) {
-            b.addText({ value: leftLines[i], x: b.margin + dotIndent, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
+            b.addText({ value: leftLines[i], x: b.margin, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
           }
           if (period && pillW) {
             const pillX = b.margin + b.contentW - pillW;
@@ -1658,7 +1640,6 @@ async function buildRiyadh(
             b.addText({ value: period, x: pillX, y: py + 0.3 + 0.6, width: pillW, fontSize: pillFs, color: "#ffffff", bold: true, align: "center", lineHeight: 1.25 });
           }
           b.cursorY = py + blockH + 0.5;
-
         } else {
           periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
         }
