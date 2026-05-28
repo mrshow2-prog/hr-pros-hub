@@ -1018,8 +1018,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
     competencies: () => {
       sectionTitle("Core Competencies");
       for (const c of cv.competencyClusters) {
-        if (c.title) deterministicLine(ctx, c.title, { fs: 9.4, color: SIENNA, bold: true, spaceAfter: 0.5 });
-        deterministicLine(ctx, c.items.filter(Boolean).join(" · "), { fs: 9.8, color: SUBINK, spaceAfter: 2 });
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: SIENNA, itemsFs: 9.8, itemsColor: SUBINK });
       }
     },
     languages: () => {
