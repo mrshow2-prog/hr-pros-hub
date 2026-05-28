@@ -1259,27 +1259,6 @@ async function buildRiyadh(
   const PAD_R = 4;       // tighter right padding so text column is wider
   const SIDE_TW = SIDEBAR_W - PADX - PAD_R; // usable sidebar text width
   const MAIN_MARGIN = MAIN_X + 10 + 2;
-  const MAIN_CONTENT_W = MAIN_W - 10 * 2 - 2;
-  // Sidebar fill = palette accent shaded 22% toward black so white text stays legible.
-  const sidebarFill = shadeHex(SIENNA, 0.22);
-  const inSidebar = (k: SectionKey) => sidebarKeys.includes(k);
-
-  // Draw sidebar background on every page.
-  const drawSidebar = () => {
-    b.addRect({
-      x: 0, y: 0, width: SIDEBAR_W, height: b.PAGE_H,
-      color: sidebarFill, borderColor: sidebarFill, borderWidth: 0,
-    });
-  };
-  drawSidebar();
-  b.onNewPage(() => {
-    drawSidebar();
-    // Subsequent pages: cursor goes back to main column top.
-    b.margin = MAIN_MARGIN;
-    b.contentW = MAIN_CONTENT_W;
-    b.cursorY = 16;
-  });
-
   // ---- Sidebar content ----
   // We collect each sidebar section as a "block" with an estimated height and a draw fn.
   // After the main column finishes rendering, we walk the blocks, advancing to the next
@@ -1290,15 +1269,39 @@ async function buildRiyadh(
   const SIDE_TOP = 14;
   const SIDE_BOTTOM_PAD = 14;
 
+  // ---- Pre-resolve icon PNGs (vibrant only) so heading draw fns stay sync ----
+  // We resolve once per build, in both colors we'll need.
+  const sectionIconWhite: Partial<Record<keyof typeof ICON_SVGS, string>> = {};
+  const sectionIconAccent: Partial<Record<keyof typeof ICON_SVGS, string>> = {};
+  if (variant === "vibrant") {
+    const keys = Object.keys(ICON_SVGS) as (keyof typeof ICON_SVGS)[];
+    await Promise.all(
+      keys.map(async (k) => {
+        sectionIconWhite[k] = await svgToPngDataUrl(ICON_SVGS[k], "#ffffff");
+        sectionIconAccent[k] = await svgToPngDataUrl(ICON_SVGS[k], SIENNA);
+      }),
+    );
+  }
+
   // ---- Photo + contact block (always first, on page 1) ----
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
 
-  const headingDraw = (top: number, label: string) => {
+  const headingDraw = (top: number, label: string, iconKey?: keyof typeof ICON_SVGS) => {
     let sY = top;
-    b.addText({
-      value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
-      fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
-    });
+    if (variant === "vibrant" && iconKey && sectionIconWhite[iconKey]) {
+      // Small icon mark to the left of the heading label, paper color on the sienna sidebar.
+      const ico = 3.6;
+      b.addImage({ x: PADX, y: sY + 0.2, w: ico, h: ico, data: sectionIconWhite[iconKey]! });
+      b.addText({
+        value: label.toUpperCase(), x: PADX + ico + 1.6, y: sY, width: SIDE_TW - ico - 1.6,
+        fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
+      });
+    } else {
+      b.addText({
+        value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
+        fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
+      });
+    }
     sY += ptToMm(9) * 1.25 + 0.6;
     b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
@@ -1313,6 +1316,23 @@ async function buildRiyadh(
     if (uri) b.addLink({ x: PADX, y: top, width: SIDE_TW, height: h, uri: withScheme(uri) });
     return top + h + 1.6;
   };
+
+  // Header block — photo + contact rows. Kept together on page 1.
+  if (photoData || shouldRender(cv, "contact")) {
+    const ICON_MM = 3.2;
+    const TEXT_X = PADX + ICON_MM + 1.8;
+    const TW = SIDEBAR_W - PAD_R - TEXT_X;
+    const FS = 8.4;
+    type ContactRow = { iconSvg: string; value: string; uri?: string };
+    const contactRows: ContactRow[] = [];
+    if (shouldRender(cv, "contact")) {
+      const c = cv.contact;
+      if (c.location) contactRows.push({ iconSvg: ICON_SVGS.mapPin, value: c.location });
+      if (c.phone) contactRows.push({ iconSvg: ICON_SVGS.phone, value: c.phone });
+      if (c.email) contactRows.push({ iconSvg: ICON_SVGS.mail, value: c.email, uri: `mailto:${c.email}` });
+      if (c.linkedinUrl) contactRows.push({ iconSvg: ICON_SVGS.linkedin, value: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
+      if (c.website) contactRows.push({ iconSvg: ICON_SVGS.globe, value: stripUrlPrefix(c.website), uri: c.website });
+    }
 
   // Header block — photo + contact rows. Kept together on page 1.
   if (photoData || shouldRender(cv, "contact")) {
