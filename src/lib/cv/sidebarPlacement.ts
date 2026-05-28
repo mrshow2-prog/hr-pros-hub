@@ -7,7 +7,9 @@ export const TOGGLEABLE_SECTIONS: SectionKey[] = [
   "education",
   "languages",
   "certifications",
+  "achievements",
 ];
+
 
 /** Templates that have a dedicated sidebar/banner column. */
 export const MULTI_COLUMN_TEMPLATES: TemplateId[] = ["bold", "vibrant"];

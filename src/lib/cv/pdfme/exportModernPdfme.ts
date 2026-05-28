@@ -1489,15 +1489,36 @@ async function buildRiyadh(
         },
       };
     },
+    achievements: () => {
+      const items = cv.achievements.filter((a) => a && a.trim());
+      if (!items.length) return null;
+      const tw = SIDE_TW - 3;
+      let estH = headingH;
+      for (const a of items) estH += textHeightMm(a, tw, 8.4, 1.45) + 1.6;
+      return {
+        estH: estH + 3,
+        draw: (top) => {
+          let sY = headingDraw(top, "Achievements");
+          for (const a of items) {
+            const h = textHeightMm(a, tw, 8.4, 1.45);
+            b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9, color: PAPER, bold: true });
+            b.addText({ value: a, x: PADX + 3, y: sY, width: tw, fontSize: 8.4, color: PAPER, lineHeight: 1.45 });
+            sY += h + 1.6;
+          }
+          return sY + 3;
+        },
+      };
+    },
 
   };
 
-  for (const k of (["skills", "education", "languages", "certifications"] as SectionKey[])) {
+  for (const k of (["skills", "education", "languages", "certifications", "achievements"] as SectionKey[])) {
     if (inSidebar(k) && shouldRender(cv, k)) {
       const blk = sideRenderers[k]?.();
       if (blk) blocks.push(blk);
     }
   }
+
 
   // ---- Custom sections pinned to the sidebar ----
   for (const s of cv.customSections) {
