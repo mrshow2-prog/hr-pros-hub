@@ -5,7 +5,7 @@ import {
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
-  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W,
+  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY,
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
@@ -39,7 +39,28 @@ const ICON_SVGS = {
   mail: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>`,
   linkedin: `<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>`,
   globe: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+  user: `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
+  briefcase: `<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>`,
+  graduationCap: `<path d="M22 10v6"/><path d="M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>`,
+  sparkles: `<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M19 14l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/>`,
+  languages: `<path d="M5 8h10"/><path d="M9 4v4"/><path d="M5 12c2 4 5 6 8 7"/><path d="M15 21l4-10 4 10"/><path d="M16 18h6"/>`,
+  badgeCheck: `<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"/><path d="m9 12 2 2 4-4"/>`,
+  award: `<circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/>`,
+  fileText: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/>`,
+  check: `<path d="M20 6 9 17l-5-5"/>`,
 };
+
+const SECTION_ICON: Partial<Record<SectionKey, keyof typeof ICON_SVGS>> = {
+  summary: "user",
+  experience: "briefcase",
+  education: "graduationCap",
+  skills: "sparkles",
+  languages: "languages",
+  certifications: "badgeCheck",
+  achievements: "award",
+  custom: "fileText",
+};
+
 
 async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): Promise<string> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
@@ -1269,15 +1290,39 @@ async function buildRiyadh(
   const SIDE_TOP = 14;
   const SIDE_BOTTOM_PAD = 14;
 
+  // ---- Pre-resolve icon PNGs (vibrant only) so heading draw fns stay sync ----
+  // We resolve once per build, in both colors we'll need.
+  const sectionIconWhite: Partial<Record<keyof typeof ICON_SVGS, string>> = {};
+  const sectionIconAccent: Partial<Record<keyof typeof ICON_SVGS, string>> = {};
+  if (variant === "vibrant") {
+    const keys = Object.keys(ICON_SVGS) as (keyof typeof ICON_SVGS)[];
+    await Promise.all(
+      keys.map(async (k) => {
+        sectionIconWhite[k] = await svgToPngDataUrl(ICON_SVGS[k], "#ffffff");
+        sectionIconAccent[k] = await svgToPngDataUrl(ICON_SVGS[k], SIENNA);
+      }),
+    );
+  }
+
   // ---- Photo + contact block (always first, on page 1) ----
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
 
-  const headingDraw = (top: number, label: string) => {
+  const headingDraw = (top: number, label: string, iconKey?: keyof typeof ICON_SVGS) => {
     let sY = top;
-    b.addText({
-      value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
-      fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
-    });
+    if (variant === "vibrant" && iconKey && sectionIconWhite[iconKey]) {
+      // Small icon mark to the left of the heading label, paper color on the sienna sidebar.
+      const ico = 3.6;
+      b.addImage({ x: PADX, y: sY + 0.2, w: ico, h: ico, data: sectionIconWhite[iconKey]! });
+      b.addText({
+        value: label.toUpperCase(), x: PADX + ico + 1.6, y: sY, width: SIDE_TW - ico - 1.6,
+        fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
+      });
+    } else {
+      b.addText({
+        value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
+        fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
+      });
+    }
     sY += ptToMm(9) * 1.25 + 0.6;
     b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
@@ -1323,9 +1368,20 @@ async function buildRiyadh(
       draw: (top) => {
         let sY = top;
         if (photoData) {
+          if (variant === "vibrant") {
+            // Cream ring around the circular photo to match the thumbnail.
+            const ringExtra = 2.4; // mm of ring on each side
+            const ringSz = sz + ringExtra * 2;
+            b.addRect({
+              x: (SIDEBAR_W - ringSz) / 2, y: sY - ringExtra,
+              width: ringSz, height: ringSz,
+              color: PAPER, borderColor: PAPER, borderWidth: 0, radius: ringSz / 2,
+            });
+          }
           b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
           sY += sz + 8;
         }
+
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
           b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data: iconData[i] });
@@ -1353,7 +1409,7 @@ async function buildRiyadh(
         return {
           estH,
           draw: (top) => {
-            let sY = headingDraw(top, "Skills");
+            let sY = headingDraw(top, "Skills", "sparkles");
             for (const sk of skills) {
               const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
               b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
@@ -1374,7 +1430,7 @@ async function buildRiyadh(
       return {
         estH,
         draw: (top) => {
-          let sY = headingDraw(top, "Skills");
+          let sY = headingDraw(top, "Skills", "sparkles");
           for (const sk of skills) {
             const tw = SIDE_TW - 3;
             const h = textHeightMm(sk, tw, 8.6, 1.5);
@@ -1402,7 +1458,7 @@ async function buildRiyadh(
         return {
           estH: estH + 2,
           draw: (top) => {
-            let sY = headingDraw(top, "Languages");
+            let sY = headingDraw(top, "Languages", "languages");
             for (const l of langs) {
               const nh = textHeightMm(l.name, nameW, 8.4, 1.3);
               const lh = l.level ? textHeightMm(l.level, levelW, 7.6, 1.3) : 0;
@@ -1425,7 +1481,7 @@ async function buildRiyadh(
       return {
         estH: estH + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Languages");
+          let sY = headingDraw(top, "Languages", "languages");
           for (const l of langs) {
             const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
             sY = drawSideRow(sY, display);
@@ -1447,7 +1503,7 @@ async function buildRiyadh(
       return {
         estH: estH + 2,
         draw: (top) => {
-          let sY = headingDraw(top, "Education");
+          let sY = headingDraw(top, "Education", "graduationCap");
           for (const ed of eds) {
             if (ed.qualification) sY = drawSideRow(sY, ed.qualification);
             if (ed.institution) {
@@ -1478,7 +1534,7 @@ async function buildRiyadh(
       return {
         estH: estH + 2,
         draw: (top) => {
-          let sY = headingDraw(top, "Certifications");
+          let sY = headingDraw(top, "Certifications", "badgeCheck");
           for (const c of certs) {
             const line = buildLine(c);
             const h = textHeightMm(line, SIDE_TW, 8.2, 1.45);
@@ -1498,7 +1554,7 @@ async function buildRiyadh(
       return {
         estH: estH + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Achievements");
+          let sY = headingDraw(top, "Achievements", "award");
           for (const a of items) {
             const h = textHeightMm(a, tw, 8.4, 1.45);
             b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9, color: PAPER, bold: true });
@@ -1516,7 +1572,7 @@ async function buildRiyadh(
       return {
         estH: headingH + h + 3,
         draw: (top) => {
-          let sY = headingDraw(top, "Profile");
+          let sY = headingDraw(top, "Profile", "user");
           b.addText({ value: text, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.2, color: PAPER, lineHeight: 1.5 });
           return sY + h + 3;
         },
@@ -1547,7 +1603,7 @@ async function buildRiyadh(
     blocks.push({
       estH: estH + 3,
       draw: (top) => {
-        let sY = headingDraw(top, title);
+        let sY = headingDraw(top, title, "fileText");
         for (const it of bullets) {
           const tw = SIDE_TW - 3;
           const h = textHeightMm(it, tw, 8.4, 1.45);
@@ -1568,38 +1624,77 @@ async function buildRiyadh(
   b.cursorY = 16;
   const ctx2: Ctx = { cv, primary: SIENNA, b };
 
+  // Vibrant: hero-area decorative disc + check in the top-right corner of the main column.
+  if (variant === "vibrant") {
+    const discSz = 9;
+    const discX = MAIN_X + MAIN_W - discSz - 8;
+    const discY = 8;
+    b.addRect({
+      x: discX, y: discY, width: discSz, height: discSz,
+      color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: discSz / 2,
+    });
+    if (sectionIconWhite.check) {
+      const ico = discSz * 0.55;
+      b.addImage({
+        x: discX + (discSz - ico) / 2, y: discY + (discSz - ico) / 2,
+        w: ico, h: ico, data: sectionIconWhite.check,
+      });
+    }
+  }
+
   b.addText({
     value: cv.contact.name || "Your name",
-    fontSize: 24, color: INK, bold: true, letterSpacing: -0.4, lineHeight: 1.05,
+    fontSize: variant === "vibrant" ? 30 : 24,
+    color: INK,
+    bold: true,
+    letterSpacing: variant === "vibrant" ? -0.6 : -0.4,
+    lineHeight: 1.05,
     spaceAfter: 1,
+    fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
   });
   if (cv.contact.jobTitle) {
     b.addText({
       value: cv.contact.jobTitle.toUpperCase(),
-      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4, spaceAfter: 6,
+      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
+      spaceAfter: variant === "vibrant" ? 2 : 6,
     });
+    if (variant === "vibrant") {
+      // Short accent rule beneath the job title, matching the thumbnail.
+      b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
+      b.cursorY += 5;
+    }
   } else {
     b.cursorY += 4;
   }
 
-  const mainHeading = (label: string) => {
-    b.ensure(10);
+  const mainHeading = (label: string, iconKey?: keyof typeof ICON_SVGS) => {
     if (variant === "vibrant") {
-      const sq = 3.4;
-      const gap = 2.2;
-      const yTop = b.cursorY + 0.4;
-      b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.6 });
+      b.ensure(14);
+      b.cursorY += 3;
+      const sq = 4.4;
+      const gap = 2.6;
+      const yTop = b.cursorY + 0.2;
+      b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.8 });
+      if (iconKey && sectionIconWhite[iconKey]) {
+        const ico = sq * 0.7;
+        b.addImage({
+          x: b.margin + (sq - ico) / 2,
+          y: yTop + (sq - ico) / 2,
+          w: ico, h: ico, data: sectionIconWhite[iconKey]!,
+        });
+      }
       b.addText({
         value: label.toUpperCase(),
         x: b.margin + sq + gap,
-        y: b.cursorY,
+        y: b.cursorY + 0.4,
         width: b.contentW - sq - gap,
         fontSize: 11.5, color: INK, bold: true, letterSpacing: 1.6,
       });
       b.cursorY += ptToMm(11.5) * 1.25 + 0.6;
       b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.55) });
-      b.cursorY += 3.2;
+      b.cursorY += 2.6;
     } else {
+      b.ensure(10);
       b.addText({
         value: label.toUpperCase(), fontSize: 11.5, color: INK, bold: true,
         letterSpacing: 1.6, spaceAfter: 1.2,
@@ -1609,15 +1704,16 @@ async function buildRiyadh(
     }
   };
 
+
   if (shouldRender(cv, "summary") && !inSidebar("summary")) {
-    mainHeading("Profile");
+    mainHeading("Profile", "user");
     b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
   }
 
 
   const mainRenderers: Partial<Record<SectionKey, () => void>> = {
     experience: () => {
-      mainHeading("Experience");
+      mainHeading("Experience", "briefcase");
       for (const exp of cv.experience) {
         if (variant === "vibrant") {
           const period = periodOf(exp);
@@ -1653,38 +1749,38 @@ async function buildRiyadh(
     },
     skills: () => {
       if (!cv.skills.length) return;
-      mainHeading("Skills");
+      mainHeading("Skills", "sparkles");
       const text = cv.skills.join(" · ");
       b.addText({ value: text, fontSize: 9.6, color: SUBINK, lineHeight: 1.6, spaceAfter: 4 });
     },
     languages: () => {
       if (!cv.languages.length) return;
-      mainHeading("Languages");
+      mainHeading("Languages", "languages");
       langBulletList(ctx2, { fs: 9.6, color: SUBINK, glyphColor: SIENNA });
       b.cursorY += 2;
     },
     education: () => {
-      mainHeading("Education");
+      mainHeading("Education", "graduationCap");
       for (const ed of cv.education) {
         periodRow(ctx2, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
         if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
       }
     },
     competencies: () => {
-      mainHeading("Core Competencies");
+      mainHeading("Core Competencies", "sparkles");
       for (const c of cv.competencyClusters) {
         inlineCluster(ctx2, c, { titleFs: 9.6, titleColor: SIENNA, itemsFs: 9.6, itemsColor: SUBINK });
       }
     },
     achievements: () => {
-      mainHeading("Achievements");
+      mainHeading("Achievements", "award");
       for (const a of cv.achievements.filter(Boolean)) {
         bullet(ctx2, "•", a, { fs: 9.4, glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
     certifications: () => {
-      mainHeading("Certifications");
+      mainHeading("Certifications", "badgeCheck");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
         periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
@@ -1694,7 +1790,7 @@ async function buildRiyadh(
     custom: () => {
       for (const s of cv.customSections) {
         if (s.placement === "sidebar") continue;
-        mainHeading(s.title || "Additional");
+        mainHeading(s.title || "Additional", "fileText");
         for (const it of s.bullets.filter(Boolean)) {
           bullet(ctx2, "•", it, { fs: 9.4, glyphColor: SIENNA });
         }

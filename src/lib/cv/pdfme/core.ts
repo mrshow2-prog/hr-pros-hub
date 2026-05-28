@@ -5,26 +5,31 @@ import { PDFDocument, PDFName, PDFString } from "@pdfme/pdf-lib";
 import { saveAs } from "file-saver";
 import RobotoRegularUrl from "./fonts/Roboto-Regular.ttf?url";
 import RobotoBoldUrl from "./fonts/Roboto-Bold.ttf?url";
+import PlayfairDisplayUrl from "./fonts/PlayfairDisplay.ttf?url";
 
 /** Font registry for pdfme. Lazy-loaded once and cached. */
 export const FONT_REGULAR = "Roboto";
 export const FONT_BOLD = "Roboto-Bold";
+export const FONT_DISPLAY = "PlayfairDisplay";
 let fontPromise: Promise<Font> | null = null;
 async function loadFont(): Promise<Font> {
   if (!fontPromise) {
     fontPromise = (async () => {
-      const [reg, bold] = await Promise.all([
+      const [reg, bold, display] = await Promise.all([
         fetch(RobotoRegularUrl).then((r) => r.arrayBuffer()),
         fetch(RobotoBoldUrl).then((r) => r.arrayBuffer()),
+        fetch(PlayfairDisplayUrl).then((r) => r.arrayBuffer()),
       ]);
       return {
         [FONT_REGULAR]: { data: reg, fallback: true },
         [FONT_BOLD]: { data: bold },
+        [FONT_DISPLAY]: { data: display },
       };
     })();
   }
   return fontPromise;
 }
+
 
 
 /* ============================================================
@@ -234,6 +239,8 @@ export interface TextOpts {
   uppercase?: boolean;
   letterSpacing?: number;
   bold?: boolean;
+  /** Override font family (e.g. FONT_DISPLAY for a serif name treatment). */
+  fontName?: string;
   bgColor?: string;
   /** When true, render text as inline-markdown so [label](https://url) becomes a clickable PDF link. */
   markdown?: boolean;
@@ -375,7 +382,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           width,
           height: h + 0.5,
           fontSize: o.fontSize,
-          fontName: o.bold ? FONT_BOLD : FONT_REGULAR,
+          fontName: o.fontName ?? (o.bold ? FONT_BOLD : FONT_REGULAR),
           fontColor: o.color ?? INK,
           alignment: o.align ?? "left",
           verticalAlignment: "top",
