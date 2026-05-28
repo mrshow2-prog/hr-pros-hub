@@ -682,7 +682,20 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
               : { ...exp, bullets: exp.bullets.filter((b) => b.id !== bulletId) },
           ),
         })),
-      setSkills: (skills) => patchCV((cv) => ({ ...cv, skills })),
+      setSkills: (skills) =>
+        patchCV((cv) => {
+          // Drop levels for skills that no longer exist so the map stays clean.
+          const keep = new Set(skills);
+          const prev = cv.skillLevels ?? {};
+          const next: Record<string, number> = {};
+          for (const k of Object.keys(prev)) if (keep.has(k)) next[k] = prev[k];
+          return { ...cv, skills, skillLevels: next };
+        }),
+      setSkillLevel: (skill, level) =>
+        patchCV((cv) => ({
+          ...cv,
+          skillLevels: { ...(cv.skillLevels ?? {}), [skill]: Math.max(1, Math.min(5, Math.round(level))) },
+        })),
       patchEducation: (edId, patch) =>
         patchCV((cv) => ({
           ...cv,
