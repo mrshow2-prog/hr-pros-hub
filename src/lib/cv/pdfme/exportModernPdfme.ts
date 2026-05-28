@@ -1401,10 +1401,8 @@ async function buildRiyadh(
     languages: () => {
       if (!cv.languages.length) return;
       mainHeading("Languages");
-      const text = cv.languages
-        .map((l) => (l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name))
-        .join("     ");
-      b.addText({ value: text, fontSize: 9.6, color: SUBINK, spaceAfter: 4 });
+      langBulletList(ctx2, { fs: 9.6, color: SUBINK, glyphColor: SIENNA });
+      b.cursorY += 2;
     },
     education: () => {
       mainHeading("Education");
@@ -1430,7 +1428,7 @@ async function buildRiyadh(
       mainHeading("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false });
+        periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
