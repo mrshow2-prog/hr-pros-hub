@@ -179,20 +179,22 @@ function langBulletList(
   ctx: Ctx,
   opts: { fs: number; color?: string; glyph?: string; glyphColor?: string; lh?: number } = { fs: 9.8 },
 ) {
-  const { cv } = ctx;
+  const { b, cv } = ctx;
   if (!cv.languages.length) return;
-  const glyph = opts.glyph ?? "▪";
-  for (const l of cv.languages) {
-    const display = l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name;
-    bullet(ctx, glyph, display, {
-      fs: opts.fs,
-      lh: opts.lh ?? 1.45,
-      glyphColor: opts.glyphColor ?? ctx.primary,
-      textColor: opts.color,
-      glyphW: 3.2,
-      glyphBold: true,
-    });
-  }
+  const glyph = opts.glyph ?? "»";
+  const value = cv.languages
+    .map((l) => {
+      const display = l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name;
+      return `${glyph} ${display}`;
+    })
+    .join("    ");
+  b.addText({
+    value,
+    fontSize: opts.fs,
+    color: opts.color ?? SUBINK,
+    lineHeight: opts.lh ?? 1.4,
+    spaceAfter: 2,
+  });
 }
 
 
@@ -541,7 +543,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 9.8, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 9.8, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -665,7 +667,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -799,7 +801,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10.5, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 10.5, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -982,7 +984,7 @@ async function buildCompact(cv: GeneratedCV, photoUrl: string | null) {
       fullSectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -1087,7 +1089,7 @@ async function buildSkillsFirst(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -1428,7 +1430,7 @@ async function buildRiyadh(
       mainHeading("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
@@ -1608,7 +1610,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "▪", glyphColor: SIENNA });
+        periodRow(ctx, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
