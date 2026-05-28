@@ -1259,16 +1259,21 @@ async function buildRiyadh(
     b.cursorY = 16;
   });
 
-  // ---- Sidebar content (absolute positioned) ----
-  let sY = 14;
-  const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
-  if (photoData) {
-    const sz = 32;
-    b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
-    sY += sz + 8;
-  }
+  // ---- Sidebar content ----
+  // We collect each sidebar section as a "block" with an estimated height and a draw fn.
+  // After the main column finishes rendering, we walk the blocks, advancing to the next
+  // page when a block would overflow. Sections are kept whole — never split across pages.
+  type Block = { estH: number; draw: (top: number) => number /* new sY */ };
+  const blocks: Block[] = [];
 
-  const sideHeading = (label: string) => {
+  const SIDE_TOP = 14;
+  const SIDE_BOTTOM_PAD = 14;
+
+  // ---- Photo + contact block (always first, on page 1) ----
+  const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+
+  const headingDraw = (top: number, label: string) => {
+    let sY = top;
     b.addText({
       value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
@@ -1276,159 +1281,240 @@ async function buildRiyadh(
     sY += ptToMm(9) * 1.25 + 0.6;
     b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
     sY += 2.4;
+    return sY;
   };
+  const headingH = ptToMm(9) * 1.25 + 0.6 + 0.25 + 2.4;
 
-  const sideRow = (label: string | null, value: string, uri?: string) => {
-    if (label) {
-      b.addText({
-        value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
-        fontSize: 6.8, color: mixHex(SIENNA, "#ffffff", 0.8), bold: true, letterSpacing: 1.2,
-      });
-      sY += ptToMm(6.8) * 1.4 + 0.2;
-    }
+  const sideRowH = (value: string) => textHeightMm(value, SIDE_TW, 8.4, 1.45) + 1.6;
+  const drawSideRow = (top: number, value: string, uri?: string) => {
     const h = textHeightMm(value, SIDE_TW, 8.4, 1.45);
-    b.addText({
-      value,
-      x: PADX, y: sY, width: SIDE_TW,
-      fontSize: 8.4, color: PAPER, lineHeight: 1.45,
-    });
-    if (uri) b.addLink({ x: PADX, y: sY, width: SIDE_TW, height: h, uri: withScheme(uri) });
-    sY += h + 1.6;
+    b.addText({ value, x: PADX, y: top, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.45 });
+    if (uri) b.addLink({ x: PADX, y: top, width: SIDE_TW, height: h, uri: withScheme(uri) });
+    return top + h + 1.6;
   };
 
-  if (shouldRender(cv, "contact")) {
+  // Header block — photo + contact rows. Kept together on page 1.
+  if (photoData || shouldRender(cv, "contact")) {
     const ICON_MM = 3.2;
     const TEXT_X = PADX + ICON_MM + 1.8;
     const TW = SIDEBAR_W - PAD_R - TEXT_X;
     const FS = 8.4;
-    const contactRow = async (iconSvg: string, value: string, uri?: string) => {
-      const data = await svgToPngDataUrl(iconSvg);
-      b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data });
-      const h = textHeightMm(value, TW, FS, 1.45);
-      b.addText({ value, x: TEXT_X, y: sY, width: TW, fontSize: FS, color: PAPER, lineHeight: 1.45 });
-      if (uri) b.addLink({ x: TEXT_X, y: sY, width: TW, height: h, uri: withScheme(uri) });
-      sY += Math.max(h, ICON_MM) + 1.8;
-    };
-    if (cv.contact.location) await contactRow(ICON_SVGS.mapPin, cv.contact.location);
-    if (cv.contact.phone) await contactRow(ICON_SVGS.phone, cv.contact.phone);
-    if (cv.contact.email) await contactRow(ICON_SVGS.mail, cv.contact.email, `mailto:${cv.contact.email}`);
-    if (cv.contact.linkedinUrl) await contactRow(ICON_SVGS.linkedin, stripUrlPrefix(cv.contact.linkedinUrl), cv.contact.linkedinUrl);
-    if (cv.contact.website) await contactRow(ICON_SVGS.globe, stripUrlPrefix(cv.contact.website), cv.contact.website);
-    sY += 4;
+    type ContactRow = { iconSvg: string; value: string; uri?: string };
+    const contactRows: ContactRow[] = [];
+    if (shouldRender(cv, "contact")) {
+      const c = cv.contact;
+      if (c.location) contactRows.push({ iconSvg: ICON_SVGS.mapPin, value: c.location });
+      if (c.phone) contactRows.push({ iconSvg: ICON_SVGS.phone, value: c.phone });
+      if (c.email) contactRows.push({ iconSvg: ICON_SVGS.mail, value: c.email, uri: `mailto:${c.email}` });
+      if (c.linkedinUrl) contactRows.push({ iconSvg: ICON_SVGS.linkedin, value: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
+      if (c.website) contactRows.push({ iconSvg: ICON_SVGS.globe, value: stripUrlPrefix(c.website), uri: c.website });
+    }
+    // Pre-resolve icon data URLs so the draw fn stays synchronous.
+    const iconData: string[] = await Promise.all(contactRows.map((r) => svgToPngDataUrl(r.iconSvg)));
+    const sz = 32;
+    let estH = 0;
+    if (photoData) estH += sz + 8;
+    for (const r of contactRows) {
+      estH += Math.max(textHeightMm(r.value, TW, FS, 1.45), ICON_MM) + 1.8;
+    }
+    if (contactRows.length) estH += 4;
+    blocks.push({
+      estH,
+      draw: (top) => {
+        let sY = top;
+        if (photoData) {
+          b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
+          sY += sz + 8;
+        }
+        for (let i = 0; i < contactRows.length; i++) {
+          const r = contactRows[i];
+          b.addImage({ x: PADX, y: sY + 0.3, w: ICON_MM, h: ICON_MM, data: iconData[i] });
+          const h = textHeightMm(r.value, TW, FS, 1.45);
+          b.addText({ value: r.value, x: TEXT_X, y: sY, width: TW, fontSize: FS, color: PAPER, lineHeight: 1.45 });
+          if (r.uri) b.addLink({ x: TEXT_X, y: sY, width: TW, height: h, uri: withScheme(r.uri) });
+          sY += Math.max(h, ICON_MM) + 1.8;
+        }
+        if (contactRows.length) sY += 4;
+        return sY;
+      },
+    });
   }
 
-
-  const sideRenderers: Partial<Record<SectionKey, () => void>> = {
+  const sideRenderers: Partial<Record<SectionKey, () => Block | null>> = {
     skills: () => {
-      if (!cv.skills.length) return;
-      sideHeading("Skills");
+      const skills = cv.skills.filter((s) => s && s.trim());
+      if (!skills.length) return null;
+      const levels = cv.skillLevels ?? {};
       if (variant === "vibrant") {
-        const widths = [92, 88, 96, 84, 90, 86, 94, 82];
         const trackColor = mixHex(SIENNA, "#ffffff", 0.18);
-        for (let i = 0; i < cv.skills.length; i++) {
-          const sk = cv.skills[i];
-          const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
-          b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
-          sY += h + 1.2;
-          const barY = sY;
-          b.addRect({ x: PADX, y: barY, width: SIDE_TW, height: 1.0, color: trackColor, borderColor: trackColor, borderWidth: 0, radius: 0.5 });
-          const fillW = (SIDE_TW * widths[i % widths.length]) / 100;
-          b.addRect({ x: PADX, y: barY, width: fillW, height: 1.0, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.5 });
-          sY += 1.0 + 2.4;
-        }
-        sY += 2;
-      } else {
-        for (const sk of cv.skills) {
-          const tw = SIDE_TW - 3;
-          const h = textHeightMm(sk, tw, 8.6, 1.5);
-          b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
-          b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
-          sY += h + 1.6;
-        }
-        sY += 3;
+        let estH = headingH;
+        for (const sk of skills) estH += textHeightMm(sk, SIDE_TW, 8.4, 1.4) + 1.2 + 1.0 + 2.4;
+        estH += 2;
+        return {
+          estH,
+          draw: (top) => {
+            let sY = headingDraw(top, "Skills");
+            for (const sk of skills) {
+              const h = textHeightMm(sk, SIDE_TW, 8.4, 1.4);
+              b.addText({ value: sk, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.4, color: PAPER, lineHeight: 1.4 });
+              sY += h + 1.2;
+              const lvl = Math.max(1, Math.min(5, Math.round(levels[sk] ?? 4)));
+              b.addRect({ x: PADX, y: sY, width: SIDE_TW, height: 1.0, color: trackColor, borderColor: trackColor, borderWidth: 0, radius: 0.5 });
+              const fillW = SIDE_TW * (lvl / 5);
+              b.addRect({ x: PADX, y: sY, width: fillW, height: 1.0, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.5 });
+              sY += 1.0 + 2.4;
+            }
+            return sY + 2;
+          },
+        };
       }
+      let estH = headingH;
+      for (const sk of skills) estH += textHeightMm(sk, SIDE_TW - 3, 8.6, 1.5) + 1.6;
+      estH += 3;
+      return {
+        estH,
+        draw: (top) => {
+          let sY = headingDraw(top, "Skills");
+          for (const sk of skills) {
+            const tw = SIDE_TW - 3;
+            const h = textHeightMm(sk, tw, 8.6, 1.5);
+            b.addText({ value: "•", x: PADX, y: sY, width: 3, fontSize: 9.2, color: SIENNA, bold: true });
+            b.addText({ value: sk, x: PADX + 3, y: sY, width: tw, fontSize: 8.6, color: PAPER, lineHeight: 1.5 });
+            sY += h + 1.6;
+          }
+          return sY + 3;
+        },
+      };
     },
     languages: () => {
-      if (!cv.languages.length) return;
-      sideHeading("Languages");
+      const langs = cv.languages.filter((l) => l.name && l.name.trim());
+      if (!langs.length) return null;
       if (variant === "vibrant") {
         const dotColorOn = SIENNA;
         const dotColorOff = mixHex(SIENNA, "#ffffff", 0.22);
-        for (const l of cv.languages) {
-          const lvl = (l.level || "").toLowerCase();
-          const filled =
-            lvl.includes("native") || lvl.includes("fluent") ? 5 :
-            lvl.includes("professional") ? 4 :
-            lvl.includes("conversational") ? 3 :
-            lvl.includes("basic") ? 2 : 4;
-          const dotsW = 5 * 1.4 + 4 * 0.8;
-          const labelW = SIDE_TW - dotsW - 2;
-          b.addText({ value: l.name, x: PADX, y: sY, width: labelW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
-          const dotsX = PADX + SIDE_TW - dotsW;
-          for (let i = 0; i < 5; i++) {
-            const cx = dotsX + i * (1.4 + 0.8);
-            b.addRect({ x: cx, y: sY + 1.2, width: 1.4, height: 1.4, color: i < filled ? dotColorOn : dotColorOff, borderColor: "", borderWidth: 0, radius: 0.7 });
-          }
-          sY += ptToMm(8.4) * 1.3 + 0.4;
-          if (l.level) {
-            b.addText({ value: l.level, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55), lineHeight: 1.3 });
-            sY += ptToMm(7) * 1.3 + 1.4;
-          } else {
-            sY += 1.2;
-          }
+        let estH = headingH;
+        for (const l of langs) {
+          estH += ptToMm(8.4) * 1.3 + 0.4 + (l.level ? ptToMm(7) * 1.3 + 1.4 : 1.2);
         }
-        sY += 2;
-      } else {
-        for (const l of cv.languages) {
-          const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
-          sideRow(null, display);
-        }
-        sY += 3;
+        return {
+          estH: estH + 2,
+          draw: (top) => {
+            let sY = top;
+            sY = headingDraw(sY, "Languages");
+            for (const l of langs) {
+              const lvl = (l.level || "").toLowerCase();
+              const filled =
+                lvl.includes("native") || lvl.includes("fluent") ? 5 :
+                lvl.includes("professional") ? 4 :
+                lvl.includes("conversational") ? 3 :
+                lvl.includes("basic") ? 2 : 4;
+              const dotsW = 5 * 1.4 + 4 * 0.8;
+              const labelW = SIDE_TW - dotsW - 2;
+              b.addText({ value: l.name, x: PADX, y: sY, width: labelW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
+              const dotsX = PADX + SIDE_TW - dotsW;
+              for (let i = 0; i < 5; i++) {
+                const cx = dotsX + i * (1.4 + 0.8);
+                b.addRect({ x: cx, y: sY + 1.2, width: 1.4, height: 1.4, color: i < filled ? dotColorOn : dotColorOff, borderColor: "", borderWidth: 0, radius: 0.7 });
+              }
+              sY += ptToMm(8.4) * 1.3 + 0.4;
+              if (l.level) {
+                b.addText({ value: l.level, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55), lineHeight: 1.3 });
+                sY += ptToMm(7) * 1.3 + 1.4;
+              } else {
+                sY += 1.2;
+              }
+            }
+            return sY + 2;
+          },
+        };
       }
+      let estH = headingH;
+      for (const l of langs) {
+        const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+        estH += sideRowH(display);
+      }
+      return {
+        estH: estH + 3,
+        draw: (top) => {
+          let sY = headingDraw(top, "Languages");
+          for (const l of langs) {
+            const display = l.level?.trim() ? `${l.name} — ${l.level}` : l.name;
+            sY = drawSideRow(sY, display);
+          }
+          return sY + 3;
+        },
+      };
     },
     education: () => {
-      if (!cv.education.length) return;
-      sideHeading("Education");
-      for (const ed of cv.education) {
-        if (ed.qualification) sideRow(null, ed.qualification);
-        if (ed.institution) {
-          const tw = SIDE_TW;
-          const h = textHeightMm(ed.institution, tw, 7.6, 1.4);
-          b.addText({ value: ed.institution, x: PADX, y: sY, width: tw, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
-          sY += h + 0.6;
-        }
-        if (ed.period) {
-          b.addText({ value: ed.period, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
-          sY += ptToMm(7) * 1.4 + 1.4;
-        } else {
-          sY += 1.2;
-        }
+      const eds = cv.education.filter((e) => (e.qualification && e.qualification.trim()) || (e.institution && e.institution.trim()));
+      if (!eds.length) return null;
+      let estH = headingH;
+      for (const ed of eds) {
+        if (ed.qualification) estH += sideRowH(ed.qualification);
+        if (ed.institution) estH += textHeightMm(ed.institution, SIDE_TW, 7.6, 1.4) + 0.6;
+        estH += ed.period ? ptToMm(7) * 1.4 + 1.4 : 1.2;
       }
-      sY += 2;
+      return {
+        estH: estH + 2,
+        draw: (top) => {
+          let sY = headingDraw(top, "Education");
+          for (const ed of eds) {
+            if (ed.qualification) sY = drawSideRow(sY, ed.qualification);
+            if (ed.institution) {
+              const h = textHeightMm(ed.institution, SIDE_TW, 7.6, 1.4);
+              b.addText({ value: ed.institution, x: PADX, y: sY, width: SIDE_TW, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
+              sY += h + 0.6;
+            }
+            if (ed.period) {
+              b.addText({ value: ed.period, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+              sY += ptToMm(7) * 1.4 + 1.4;
+            } else {
+              sY += 1.2;
+            }
+          }
+          return sY + 2;
+        },
+      };
     },
     certifications: () => {
-      if (!cv.certifications.length) return;
-      sideHeading("Certifications");
-      for (const c of cv.certifications) {
-        if (c.name) sideRow(null, c.name);
-        if (c.issuer) {
-          b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDE_TW, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
-          sY += ptToMm(7.6) * 1.4 + 0.6;
-        }
-        if (c.date) {
-          b.addText({ value: c.date, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
-          sY += ptToMm(7) * 1.4 + 1.4;
-        } else {
-          sY += 1.2;
-        }
+      const certs = cv.certifications.filter((c) => c.name && c.name.trim());
+      if (!certs.length) return null;
+      let estH = headingH;
+      for (const c of certs) {
+        estH += sideRowH(c.name);
+        if (c.issuer) estH += ptToMm(7.6) * 1.4 + 0.6;
+        estH += c.date ? ptToMm(7) * 1.4 + 1.4 : 1.2;
       }
-      sY += 2;
+      return {
+        estH: estH + 2,
+        draw: (top) => {
+          let sY = headingDraw(top, "Certifications");
+          for (const c of certs) {
+            sY = drawSideRow(sY, c.name);
+            if (c.issuer) {
+              b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDE_TW, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
+              sY += ptToMm(7.6) * 1.4 + 0.6;
+            }
+            if (c.date) {
+              b.addText({ value: c.date, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
+              sY += ptToMm(7) * 1.4 + 1.4;
+            } else {
+              sY += 1.2;
+            }
+          }
+          return sY + 2;
+        },
+      };
     },
   };
 
   for (const k of (["skills", "education", "languages", "certifications"] as SectionKey[])) {
-    if (inSidebar(k) && shouldRender(cv, k)) sideRenderers[k]?.();
+    if (inSidebar(k) && shouldRender(cv, k)) {
+      const blk = sideRenderers[k]?.();
+      if (blk) blocks.push(blk);
+    }
   }
+
 
   // ---- Main column ----
   b.margin = MAIN_MARGIN;
