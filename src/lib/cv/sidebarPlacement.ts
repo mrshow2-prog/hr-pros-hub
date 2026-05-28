@@ -3,12 +3,14 @@ import { normalizeTemplateId } from "@/contexts/CVBuilderContext";
 
 /** Sections that the user can toggle between the sidebar and the main body. */
 export const TOGGLEABLE_SECTIONS: SectionKey[] = [
+  "summary",
   "skills",
   "education",
   "languages",
   "certifications",
   "achievements",
 ];
+
 
 
 /** Templates that have a dedicated sidebar/banner column. */
