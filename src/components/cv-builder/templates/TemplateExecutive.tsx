@@ -67,10 +67,13 @@ export default function TemplateExecutive({
     ),
     skills: () => (
       <section className="mb-12">
-        <SH>Core Competencies</SH>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px] font-light text-ink/85">
+        <SH>Key Skills</SH>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[15px] font-light text-ink/85">
           {cv.skills.map((s) => (
-            <div key={s}>{s}</div>
+            <div key={s} className="flex gap-2">
+              <span className="relative top-[10px] h-0.5 w-2 bg-sienna shrink-0" />
+              <span className="flex-1">{s}</span>
+            </div>
           ))}
         </div>
       </section>
