@@ -97,28 +97,42 @@ function periodRow(
   ctx: Ctx,
   left: string,
   right: string,
-  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number; periodW?: number },
+  opts: { leftFs: number; rightFs?: number; leftColor?: string; rightColor?: string; bold?: boolean; spaceAfter?: number; periodW?: number; glyph?: string; glyphColor?: string; glyphW?: number },
 ) {
   const { b } = ctx;
   const leftFs = opts.leftFs;
   const rightFs = opts.rightFs ?? 8.8;
+  const glyph = opts.glyph;
+  const glyphW = glyph ? (opts.glyphW ?? 3.2) : 0;
   // Reserve only what the date string actually needs (+ small padding) so the
   // job title gets the rest of the line instead of wrapping into 3 narrow rows.
   const measuredRightW = right
     ? Math.min(b.contentW * 0.45, Math.ceil(estimatedRightWidthMm(right, rightFs)) + 2)
     : 0;
   const periodW = opts.periodW ?? measuredRightW;
-  const leftW = b.contentW - periodW - (periodW ? 2 : 0);
+  const leftW = b.contentW - glyphW - periodW - (periodW ? 2 : 0);
   const lineStep = ptToMm(leftFs) * 1.25;
   const leftLines = wrapLines(left || "", leftW, leftFs, { bold: opts.bold });
   const lineCount = Math.max(1, leftLines.length);
   const blockH = lineCount * lineStep;
   b.ensure(blockH);
   const py = b.cursorY;
+  if (glyph) {
+    b.addText({
+      value: glyph,
+      x: b.margin,
+      y: py,
+      width: glyphW,
+      fontSize: leftFs,
+      color: opts.glyphColor ?? ctx.primary,
+      bold: true,
+      lineHeight: 1.25,
+    });
+  }
   for (let i = 0; i < leftLines.length; i++) {
     b.addText({
       value: leftLines[i],
-      x: b.margin,
+      x: b.margin + glyphW,
       y: py + i * lineStep,
       width: leftW,
       fontSize: leftFs,
@@ -130,7 +144,7 @@ function periodRow(
   if (right) {
     b.addText({
       value: right,
-      x: b.margin + leftW + 2,
+      x: b.margin + glyphW + leftW + 2,
       y: py,
       width: periodW,
       fontSize: rightFs,
