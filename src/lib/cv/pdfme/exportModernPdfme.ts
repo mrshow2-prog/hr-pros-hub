@@ -1706,14 +1706,14 @@ async function buildRiyadh(
 
 
   if (shouldRender(cv, "summary") && !inSidebar("summary")) {
-    mainHeading("Profile");
+    mainHeading("Profile", "user");
     b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
   }
 
 
   const mainRenderers: Partial<Record<SectionKey, () => void>> = {
     experience: () => {
-      mainHeading("Experience");
+      mainHeading("Experience", "briefcase");
       for (const exp of cv.experience) {
         if (variant === "vibrant") {
           const period = periodOf(exp);
@@ -1749,38 +1749,38 @@ async function buildRiyadh(
     },
     skills: () => {
       if (!cv.skills.length) return;
-      mainHeading("Skills");
+      mainHeading("Skills", "sparkles");
       const text = cv.skills.join(" · ");
       b.addText({ value: text, fontSize: 9.6, color: SUBINK, lineHeight: 1.6, spaceAfter: 4 });
     },
     languages: () => {
       if (!cv.languages.length) return;
-      mainHeading("Languages");
+      mainHeading("Languages", "languages");
       langBulletList(ctx2, { fs: 9.6, color: SUBINK, glyphColor: SIENNA });
       b.cursorY += 2;
     },
     education: () => {
-      mainHeading("Education");
+      mainHeading("Education", "graduationCap");
       for (const ed of cv.education) {
         periodRow(ctx2, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
         if (ed.institution) b.addText({ value: ed.institution, fontSize: 9.6, color: SIENNA, bold: true, spaceAfter: 3 });
       }
     },
     competencies: () => {
-      mainHeading("Core Competencies");
+      mainHeading("Core Competencies", "sparkles");
       for (const c of cv.competencyClusters) {
         inlineCluster(ctx2, c, { titleFs: 9.6, titleColor: SIENNA, itemsFs: 9.6, itemsColor: SUBINK });
       }
     },
     achievements: () => {
-      mainHeading("Achievements");
+      mainHeading("Achievements", "award");
       for (const a of cv.achievements.filter(Boolean)) {
         bullet(ctx2, "•", a, { fs: 9.4, glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
     certifications: () => {
-      mainHeading("Certifications");
+      mainHeading("Certifications", "badgeCheck");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
         periodRow(ctx2, left, c.date || "", { leftFs: 10, bold: false, glyph: "»", glyphColor: SIENNA });
@@ -1790,7 +1790,7 @@ async function buildRiyadh(
     custom: () => {
       for (const s of cv.customSections) {
         if (s.placement === "sidebar") continue;
-        mainHeading(s.title || "Additional");
+        mainHeading(s.title || "Additional", "fileText");
         for (const it of s.bullets.filter(Boolean)) {
           bullet(ctx2, "•", it, { fs: 9.4, glyphColor: SIENNA });
         }
