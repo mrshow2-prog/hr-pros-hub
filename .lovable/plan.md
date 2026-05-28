@@ -1,32 +1,43 @@
-## Goal
+All work is in the Vibrant variant of the Riyadh builder in `src/lib/cv/pdfme/exportModernPdfme.ts`. No other templates change, no data/logic changes.
 
-Make the Skills-First template feel more "skills-focused" by adding visual emphasis to the Core Competencies section, and add subtle separators between all top-level sections so the page reads as a structured document.
+## 1. Bold ring around the sidebar photo
+In the photo+contact block (around line 1325) replace the bare `addImage` with a layered draw, only when `variant === "vibrant"`:
+- A filled circle (PAPER color) sized `sz + 3mm`, then the photo image on top.
+- Result: a ~1.5mm cream ring around the circular portrait, matching the thumbnail.
 
-Scope: `src/components/cv-builder/templates/TemplateSkillsFirst.tsx` only. No PDF export, no other templates, no data/logic changes.
+## 2. Icon squares next to every section heading (sidebar + main)
+Today, both `headingDraw` (sidebar) and `mainHeading` (main column) render only a text label + thin underline. For `variant === "vibrant"`:
+- Promote the existing accent square in `mainHeading` from a plain rect to a rect + small white icon (`svgToPngDataUrl` rendered with `color = "#ffffff"`), centered inside the square.
+- Add the same treatment to `headingDraw` (sidebar) — currently it has no square at all; the sidebar already paints sienna so the square uses PAPER fill + sienna icon so it reads on the dark band.
+- Add a `SECTION_ICONS` map (`summary→user`, `experience→briefcase`, `education→graduationCap`, `skills→sparkles`, `languages→languages`, `certifications→badgeCheck`, `achievements→award`, `custom→fileText`). Each entry is a 24×24 lucide path string added to the existing `ICON_SVGS` constant.
+- Both `headingDraw` and `mainHeading` accept an optional `iconKey` argument; their callsites pass the matching key.
 
-## Changes
+## 3. Name font / treatment
+Only Roboto Regular + Bold are bundled (`src/lib/cv/pdfme/core.ts`), so a true serif swap requires shipping a new TTF. Two options:
 
-### 1. Bullet icons for Core Competencies
+- **A. Bundle a display serif** (preferred for fidelity): add `PlayfairDisplay-Bold.ttf` (or similar) under `src/lib/cv/pdfme/fonts/`, register it in `core.ts` as `FONT_DISPLAY`, plumb an optional `fontName` through `addText`, and use it for the Vibrant name only.
+- **B. Stay on Roboto** but differentiate via size/spacing: bump the name from `24pt` to `30pt`, letter-spacing `-0.8`, lineHeight `1.0`. Cheaper but won't look serif.
 
-Currently each competency cluster renders as a plain line: `Title: item, item, item`.
+Recommendation: option A. Will use Playfair Display Bold (OFL-licensed) unless you prefer a different face.
 
-Replace with a small visual treatment:
-- Each cluster gets a leading accent icon (lucide `Sparkles` or `Target` — accent-colored, ~14px) followed by the cluster title in semibold ink.
-- Items render as accent-tinted pills (same style currently used for Skills) on the following line, so the cluster reads as a labeled group rather than a comma list.
-- Increase the section's vertical rhythm slightly so it feels like the visual anchor of the template.
+## 4. Hero-area decoration (top-right circle/check)
+In the Vibrant main column, before the name is drawn, paint a small decorative motif in the top-right corner of the main content area:
+- A filled sienna disc (~10mm) at `(MAIN_X + MAIN_W - 14, 10)`.
+- A small white check glyph (existing svg-to-png path) centered inside.
+This mirrors the circled checkmark in the thumbnail without affecting layout (it sits in the existing top padding).
 
-This keeps the existing `competencyClusters` data shape untouched.
+## 5. Short accent rule under the job title
+After the job-title line in the Vibrant main column (around line 1579), draw a 14mm × 0.7mm sienna line, then advance the cursor by ~3mm before the Profile section. Mirrors the thumbnail's tiny underline beneath "SENIOR HR BUSINESS PARTNER".
 
-### 2. Section separators
+## 6. Increase spacing between main-column sections
+The complaint is that subsequent section headers crowd the prior section's last line. Two adjustments, both Vibrant-only:
+- In `mainHeading` (vibrant branch), bump the pre-heading `b.ensure(10)` to `b.ensure(14)` and add `b.cursorY += 4` before drawing.
+- Drop the trailing `b.cursorY += 3.2` after the heading underline to `2.4` so the gap is *above* the heading, not below it. Net effect: clear breathing room between sections, summary unaffected (it has its own `spaceAfter: 5`).
 
-Add a thin horizontal divider between every visible top-level section (Summary, Skills, Experience, Education, Competencies, Languages, Achievements, Certifications, Custom).
+## Out of scope (per your message)
+- No contact section heading.
+- No bullet dots beside job titles / no vertical experience timeline.
+- No changes to Bold variant, other templates, docx, or thumbnails.
 
-- Use the same hairline style already used between Experience entries (`divide-y divide-clay`), but a touch darker — `border-ink/20` — so it reads clearly without competing with content.
-- Implemented by wrapping each rendered section in a container and applying a top border to every section after the first, rather than editing every individual section block.
-- The header already has its own bottom border; the first section after it should not double-up.
-
-## Technical notes
-
-- File touched: `src/components/cv-builder/templates/TemplateSkillsFirst.tsx`.
-- Pills reuse the existing inline style (`color-mix` with `--accent`) so the active palette continues to drive the color.
-- No changes to `CVRenderer`, shared helpers, section visibility, or PDF export — the user explicitly said the Skills template; PDF/other templates are out of scope.
+## Question before I build
+For item 3, do you want me to bundle Playfair Display Bold for the Vibrant name (option A, closer to the thumbnail) or just enlarge Roboto (option B, no new asset)?
