@@ -1509,15 +1509,29 @@ async function buildRiyadh(
         },
       };
     },
+    summary: () => {
+      const text = (cv.summary || "").trim();
+      if (!text) return null;
+      const h = textHeightMm(text, SIDE_TW, 8.2, 1.5);
+      return {
+        estH: headingH + h + 3,
+        draw: (top) => {
+          let sY = headingDraw(top, "Profile");
+          b.addText({ value: text, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.2, color: PAPER, lineHeight: 1.5 });
+          return sY + h + 3;
+        },
+      };
+    },
 
   };
 
-  for (const k of (["skills", "education", "languages", "certifications", "achievements"] as SectionKey[])) {
+  for (const k of (["summary", "skills", "education", "languages", "certifications", "achievements"] as SectionKey[])) {
     if (inSidebar(k) && shouldRender(cv, k)) {
       const blk = sideRenderers[k]?.();
       if (blk) blocks.push(blk);
     }
   }
+
 
 
   // ---- Custom sections pinned to the sidebar ----
