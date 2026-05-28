@@ -35,6 +35,7 @@ import PdfmePreview from "./templates/PdfmePreview";
 import PhotoCropperDialog from "./PhotoCropperDialog";
 import { getPalette } from "@/lib/cv/palettes";
 import SidebarPlacementToggle from "./editor/SidebarPlacementToggle";
+import { isMultiColumn } from "@/lib/cv/sidebarPlacement";
 
 
 const LANG_LEVELS: LanguageEntry["level"][] = [
