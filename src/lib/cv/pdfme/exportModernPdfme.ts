@@ -1333,23 +1333,6 @@ async function buildRiyadh(
       if (c.linkedinUrl) contactRows.push({ iconSvg: ICON_SVGS.linkedin, value: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
       if (c.website) contactRows.push({ iconSvg: ICON_SVGS.globe, value: stripUrlPrefix(c.website), uri: c.website });
     }
-
-  // Header block — photo + contact rows. Kept together on page 1.
-  if (photoData || shouldRender(cv, "contact")) {
-    const ICON_MM = 3.2;
-    const TEXT_X = PADX + ICON_MM + 1.8;
-    const TW = SIDEBAR_W - PAD_R - TEXT_X;
-    const FS = 8.4;
-    type ContactRow = { iconSvg: string; value: string; uri?: string };
-    const contactRows: ContactRow[] = [];
-    if (shouldRender(cv, "contact")) {
-      const c = cv.contact;
-      if (c.location) contactRows.push({ iconSvg: ICON_SVGS.mapPin, value: c.location });
-      if (c.phone) contactRows.push({ iconSvg: ICON_SVGS.phone, value: c.phone });
-      if (c.email) contactRows.push({ iconSvg: ICON_SVGS.mail, value: c.email, uri: `mailto:${c.email}` });
-      if (c.linkedinUrl) contactRows.push({ iconSvg: ICON_SVGS.linkedin, value: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
-      if (c.website) contactRows.push({ iconSvg: ICON_SVGS.globe, value: stripUrlPrefix(c.website), uri: c.website });
-    }
     // Pre-resolve icon data URLs so the draw fn stays synchronous.
     const iconData: string[] = await Promise.all(contactRows.map((r) => svgToPngDataUrl(r.iconSvg)));
     const sz = 32;
