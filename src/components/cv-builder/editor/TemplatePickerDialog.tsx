@@ -76,13 +76,6 @@ export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: 
               Click any template to preview it. Your content stays the same.
             </p>
           </div>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="rounded p-1.5 text-ink/60 hover:bg-ink/5 hover:text-ink"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
         </div>
 
         <div className="flex flex-1 min-h-0">
