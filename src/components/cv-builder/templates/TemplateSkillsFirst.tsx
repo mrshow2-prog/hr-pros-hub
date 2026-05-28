@@ -88,17 +88,43 @@ export default function TemplateSkillsFirst({
     ),
     competencies: () => (
       <section className="mb-8">
-        <SH>Core Competencies</SH>
-        <div className="space-y-2">
+        <div className="mb-4 flex items-center gap-2">
+          <Sparkles className="h-[18px] w-[18px] text-sienna" strokeWidth={2.2} />
+          <h2 className="font-dm text-[18px] font-semibold tracking-[-0.01em] text-ink">
+            Core Competencies
+          </h2>
+        </div>
+        <div className="space-y-4">
           {cv.competencyClusters.map((c) => (
-            <div key={c.id} className="text-[13px] font-light text-ink/85">
-              {c.title && <span className="font-semibold text-ink">{c.title}: </span>}
-              {c.items.filter(Boolean).join(", ")}
+            <div key={c.id}>
+              {c.title && (
+                <div className="mb-2 flex items-center gap-1.5">
+                  <span
+                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ background: "var(--accent, #9c5643)" }}
+                  />
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink">
+                    {c.title}
+                  </p>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-1.5">
+                {c.items.filter(Boolean).map((item, i) => (
+                  <span
+                    key={i}
+                    className="rounded-full border px-3 py-1 text-[12px] font-medium text-ink"
+                    style={pillStyle}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </section>
     ),
+
     languages: () => (
       <section className="mb-8">
         <SH>Languages</SH>
