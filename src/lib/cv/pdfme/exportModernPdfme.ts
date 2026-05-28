@@ -238,7 +238,7 @@ function deterministicLine(
 function inlineCluster(
   ctx: Ctx,
   cluster: { title?: string; items: string[] },
-  opts: { titleFs: number; titleColor: string; itemsFs: number; itemsColor: string; lh?: number; spaceAfter?: number },
+  opts: { titleFs: number; titleColor: string; itemsFs: number; itemsColor: string; lh?: number; spaceAfter?: number; glyph?: string },
 ) {
   const { b } = ctx;
   const items = cluster.items.filter(Boolean).join(" · ");
@@ -250,7 +250,7 @@ function inlineCluster(
     return;
   }
 
-  const titleText = `${cluster.title}: `;
+  const titleText = `${opts.glyph ? opts.glyph + "  " : ""}${cluster.title}: `;
   const titleW = textWidthMm(titleText, opts.titleFs, { bold: true });
   const itemsX = b.margin + titleW;
   const firstW = Math.max(20, b.contentW - titleW);
