@@ -382,7 +382,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           width,
           height: h + 0.5,
           fontSize: o.fontSize,
-          fontName: o.bold ? FONT_BOLD : FONT_REGULAR,
+          fontName: o.fontName ?? (o.bold ? FONT_BOLD : FONT_REGULAR),
           fontColor: o.color ?? INK,
           alignment: o.align ?? "left",
           verticalAlignment: "top",
