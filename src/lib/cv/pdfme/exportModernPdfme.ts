@@ -1272,10 +1272,17 @@ async function buildRiyadh(
   // ---- Photo + contact block (always first, on page 1) ----
   const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
 
+  const HEAD_ICON_SQ = 2.6;
+  const HEAD_ICON_GAP = 1.8;
   const headingDraw = (top: number, label: string) => {
     let sY = top;
+    const labelX = variant === "vibrant" ? PADX + HEAD_ICON_SQ + HEAD_ICON_GAP : PADX;
+    const labelW = variant === "vibrant" ? SIDE_TW - HEAD_ICON_SQ - HEAD_ICON_GAP : SIDE_TW;
+    if (variant === "vibrant") {
+      b.addRect({ x: PADX, y: sY + 1.2, width: HEAD_ICON_SQ, height: HEAD_ICON_SQ, color: PAPER, borderColor: PAPER, borderWidth: 0, radius: 0.5 });
+    }
     b.addText({
-      value: label.toUpperCase(), x: PADX, y: sY, width: SIDE_TW,
+      value: label.toUpperCase(), x: labelX, y: sY, width: labelW,
       fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
     });
     sY += ptToMm(9) * 1.25 + 0.6;
@@ -1284,6 +1291,7 @@ async function buildRiyadh(
     return sY;
   };
   const headingH = ptToMm(9) * 1.25 + 0.6 + 0.25 + 2.4;
+
 
   const sideRowH = (value: string) => textHeightMm(value, SIDE_TW, 8.4, 1.45) + 1.6;
   const drawSideRow = (top: number, value: string, uri?: string) => {
