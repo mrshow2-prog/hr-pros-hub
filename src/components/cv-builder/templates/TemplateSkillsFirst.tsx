@@ -205,18 +205,33 @@ export default function TemplateSkillsFirst({
         </header>
       )}
 
-      {shouldRender(cv, "summary") && (
-        <section className="mb-8">
-          <SH>Professional Summary</SH>
-          <p className="text-justify hyphens-auto text-[14px] font-light leading-[1.7] text-ink/85">{cv.summary}</p>
-        </section>
-      )}
-
-      {getSectionOrder(cv)
-        .filter((k) => shouldRender(cv, k))
-        .map((k) => (
-          <Fragment key={k}>{renderers[k]?.()}</Fragment>
-        ))}
+      {(() => {
+        const blocks: { key: string; node: JSX.Element }[] = [];
+        if (shouldRender(cv, "summary")) {
+          blocks.push({
+            key: "summary",
+            node: (
+              <section className="mb-8">
+                <SH>Professional Summary</SH>
+                <p className="text-justify hyphens-auto text-[14px] font-light leading-[1.7] text-ink/85">
+                  {cv.summary}
+                </p>
+              </section>
+            ),
+          });
+        }
+        for (const k of getSectionOrder(cv).filter((sk) => shouldRender(cv, sk))) {
+          const node = renderers[k]?.();
+          if (node) blocks.push({ key: k, node });
+        }
+        return blocks.map((b, i) => (
+          <Fragment key={b.key}>
+            {i > 0 && <hr className="mb-8 border-0 border-t border-ink/20" />}
+            {b.node}
+          </Fragment>
+        ));
+      })()}
     </Page>
   );
 }
+
