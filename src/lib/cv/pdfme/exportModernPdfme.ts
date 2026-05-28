@@ -1486,7 +1486,30 @@ async function buildRiyadh(
     experience: () => {
       mainHeading("Experience");
       for (const exp of cv.experience) {
-        periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+        if (variant === "vibrant") {
+          const period = periodOf(exp);
+          const pillFs = 7.8;
+          const pillH = ptToMm(pillFs) * 1.25 + 1.4;
+          const pillW = period ? Math.ceil(estimatedRightWidthMm(period, pillFs)) + 4 : 0;
+          const leftFs = 11;
+          const leftW = b.contentW - pillW - (pillW ? 2.5 : 0);
+          const lineStep = ptToMm(leftFs) * 1.25;
+          const leftLines = wrapLines(exp.role || "", leftW, leftFs, { bold: true });
+          const blockH = Math.max(leftLines.length, 1) * lineStep;
+          b.ensure(Math.max(blockH, pillH));
+          const py = b.cursorY;
+          for (let i = 0; i < leftLines.length; i++) {
+            b.addText({ value: leftLines[i], x: b.margin, y: py + i * lineStep, width: leftW, fontSize: leftFs, color: INK, bold: true, lineHeight: 1.25 });
+          }
+          if (period && pillW) {
+            const pillX = b.margin + b.contentW - pillW;
+            b.addRect({ x: pillX, y: py + 0.3, width: pillW, height: pillH, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: pillH / 2 });
+            b.addText({ value: period, x: pillX, y: py + 0.3 + 0.6, width: pillW, fontSize: pillFs, color: "#ffffff", bold: true, align: "center", lineHeight: 1.25 });
+          }
+          b.cursorY = py + blockH + 0.5;
+        } else {
+          periodRow(ctx2, exp.role || "", periodOf(exp), { leftFs: 11, bold: true });
+        }
         const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
         deterministicLine(ctx2, comp, { fs: 9.5, color: SIENNA, bold: true, spaceAfter: 1.5 });
         for (const bul of visibleBullets(exp)) {
