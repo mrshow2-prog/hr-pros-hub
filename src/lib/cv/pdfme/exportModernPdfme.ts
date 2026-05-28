@@ -1390,39 +1390,28 @@ async function buildRiyadh(
       const langs = cv.languages.filter((l) => l.name && l.name.trim());
       if (!langs.length) return null;
       if (variant === "vibrant") {
-        const dotColorOn = SIENNA;
-        const dotColorOff = mixHex(SIENNA, "#ffffff", 0.22);
+        const levelColor = mixHex(SIENNA, "#ffffff", 0.7);
+        const levelW = 18;
+        const nameW = SIDE_TW - levelW - 2;
         let estH = headingH;
         for (const l of langs) {
-          estH += ptToMm(8.4) * 1.3 + 0.4 + (l.level ? ptToMm(7) * 1.3 + 1.4 : 1.2);
+          const nh = textHeightMm(l.name, nameW, 8.4, 1.3);
+          const lh = l.level ? textHeightMm(l.level, levelW, 7.6, 1.3) : 0;
+          estH += Math.max(nh, lh) + 2.2;
         }
         return {
           estH: estH + 2,
           draw: (top) => {
-            let sY = top;
-            sY = headingDraw(sY, "Languages");
+            let sY = headingDraw(top, "Languages");
             for (const l of langs) {
-              const lvl = (l.level || "").toLowerCase();
-              const filled =
-                lvl.includes("native") || lvl.includes("fluent") ? 5 :
-                lvl.includes("professional") ? 4 :
-                lvl.includes("conversational") ? 3 :
-                lvl.includes("basic") ? 2 : 4;
-              const dotsW = 5 * 1.4 + 4 * 0.8;
-              const labelW = SIDE_TW - dotsW - 2;
-              b.addText({ value: l.name, x: PADX, y: sY, width: labelW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
-              const dotsX = PADX + SIDE_TW - dotsW;
-              for (let i = 0; i < 5; i++) {
-                const cx = dotsX + i * (1.4 + 0.8);
-                b.addRect({ x: cx, y: sY + 1.2, width: 1.4, height: 1.4, color: i < filled ? dotColorOn : dotColorOff, borderColor: "", borderWidth: 0, radius: 0.7 });
-              }
-              sY += ptToMm(8.4) * 1.3 + 0.4;
+              const nh = textHeightMm(l.name, nameW, 8.4, 1.3);
+              const lh = l.level ? textHeightMm(l.level, levelW, 7.6, 1.3) : 0;
+              const rowH = Math.max(nh, lh);
+              b.addText({ value: l.name, x: PADX, y: sY, width: nameW, fontSize: 8.4, color: PAPER, bold: true, lineHeight: 1.3 });
               if (l.level) {
-                b.addText({ value: l.level, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55), lineHeight: 1.3 });
-                sY += ptToMm(7) * 1.3 + 1.4;
-              } else {
-                sY += 1.2;
+                b.addText({ value: l.level, x: PADX + nameW + 2, y: sY + (nh - lh), width: levelW, fontSize: 7.6, color: levelColor, lineHeight: 1.3, align: "right" });
               }
+              sY += rowH + 2.2;
             }
             return sY + 2;
           },
@@ -1445,6 +1434,7 @@ async function buildRiyadh(
         },
       };
     },
+
     education: () => {
       const eds = cv.education.filter((e) => (e.qualification && e.qualification.trim()) || (e.institution && e.institution.trim()));
       if (!eds.length) return null;
@@ -1479,33 +1469,27 @@ async function buildRiyadh(
     certifications: () => {
       const certs = cv.certifications.filter((c) => c.name && c.name.trim());
       if (!certs.length) return null;
+      const buildLine = (c: { name: string; issuer?: string; date?: string }) =>
+        [c.name, c.issuer, c.date].map((p) => (p || "").trim()).filter(Boolean).join(" | ");
       let estH = headingH;
       for (const c of certs) {
-        estH += sideRowH(c.name);
-        if (c.issuer) estH += ptToMm(7.6) * 1.4 + 0.6;
-        estH += c.date ? ptToMm(7) * 1.4 + 1.4 : 1.2;
+        estH += textHeightMm(buildLine(c), SIDE_TW, 8.2, 1.45) + 2.2;
       }
       return {
         estH: estH + 2,
         draw: (top) => {
           let sY = headingDraw(top, "Certifications");
           for (const c of certs) {
-            sY = drawSideRow(sY, c.name);
-            if (c.issuer) {
-              b.addText({ value: c.issuer, x: PADX, y: sY, width: SIDE_TW, fontSize: 7.6, color: mixHex(SIENNA, "#ffffff", 0.7), lineHeight: 1.4 });
-              sY += ptToMm(7.6) * 1.4 + 0.6;
-            }
-            if (c.date) {
-              b.addText({ value: c.date, x: PADX, y: sY, width: SIDE_TW, fontSize: 7, color: mixHex(SIENNA, "#ffffff", 0.55) });
-              sY += ptToMm(7) * 1.4 + 1.4;
-            } else {
-              sY += 1.2;
-            }
+            const line = buildLine(c);
+            const h = textHeightMm(line, SIDE_TW, 8.2, 1.45);
+            b.addText({ value: line, x: PADX, y: sY, width: SIDE_TW, fontSize: 8.2, color: PAPER, lineHeight: 1.45 });
+            sY += h + 2.2;
           }
           return sY + 2;
         },
       };
     },
+
   };
 
   for (const k of (["skills", "education", "languages", "certifications"] as SectionKey[])) {
