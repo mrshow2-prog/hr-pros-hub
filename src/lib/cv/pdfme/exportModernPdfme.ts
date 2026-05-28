@@ -1320,8 +1320,10 @@ async function buildRiyadh(
     // Pre-resolve icon data URLs so the draw fn stays synchronous.
     const iconData: string[] = await Promise.all(contactRows.map((r) => svgToPngDataUrl(r.iconSvg)));
     const sz = 32;
+    const showHeading = variant === "vibrant" && contactRows.length > 0;
     let estH = 0;
     if (photoData) estH += sz + 8;
+    if (showHeading) estH += headingH;
     for (const r of contactRows) {
       estH += Math.max(textHeightMm(r.value, TW, FS, 1.45), ICON_MM) + 1.8;
     }
@@ -1333,6 +1335,9 @@ async function buildRiyadh(
         if (photoData) {
           b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
           sY += sz + 8;
+        }
+        if (showHeading) {
+          sY = headingDraw(sY, "Contact");
         }
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
@@ -1346,6 +1351,8 @@ async function buildRiyadh(
         return sY;
       },
     });
+  }
+
   }
 
   const sideRenderers: Partial<Record<SectionKey, () => Block | null>> = {
