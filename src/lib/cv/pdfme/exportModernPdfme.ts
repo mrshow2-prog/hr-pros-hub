@@ -1228,6 +1228,7 @@ async function buildRiyadh(
   cv: GeneratedCV,
   photoUrl: string | null,
   sidebarKeys: SectionKey[] = ["skills", "languages", "education"],
+  variant: "bold" | "vibrant" = "bold",
 ) {
   const b = createBuilder({ margin: 0, top: 0, bottom: 14 });
   const SIDEBAR_W = 64; // mm
