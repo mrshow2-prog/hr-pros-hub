@@ -349,6 +349,7 @@ export function hydrateGeneratedCV(raw: Partial<GeneratedCV> | null | undefined)
       })),
     })),
     skills: raw?.skills ?? [],
+    skillLevels: raw?.skillLevels && typeof raw.skillLevels === "object" ? { ...raw.skillLevels } : {},
     education: (raw?.education ?? []).map((ed) => ({
       id: ed.id ?? newId("ed"),
       institution: ed.institution ?? "",
