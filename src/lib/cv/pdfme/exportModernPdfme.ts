@@ -527,10 +527,8 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
     },
     languages: () => {
       sectionTitle("Languages");
-      b.addText({
-        value: cv.languages.map((l) => l.level?.trim() ? `${l.name} (${l.level.trim()})` : l.name).join("   ·   "),
-        fontSize: 9.8, color: SUBINK, spaceAfter: 2,
-      });
+      langBulletList(ctx, { fs: 9.8, color: SUBINK, glyphColor: SIENNA });
+      b.cursorY += 1;
     },
     achievements: () => {
       sectionTitle("Achievements");
@@ -543,7 +541,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Certifications");
       for (const c of cv.certifications) {
         const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
-        periodRow(ctx, left, c.date || "", { leftFs: 9.8, bold: false });
+        periodRow(ctx, left, c.date || "", { leftFs: 9.8, bold: false, glyph: "▪", glyphColor: SIENNA });
       }
       b.cursorY += 2;
     },
