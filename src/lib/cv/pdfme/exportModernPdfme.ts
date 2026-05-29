@@ -1389,11 +1389,7 @@ async function buildRiyadh(
           sY += sz + 8;
         }
 
-            });
-          }
-          b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
-          sY += sz + 8;
-        }
+
 
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
