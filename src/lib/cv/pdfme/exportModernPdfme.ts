@@ -1328,12 +1328,10 @@ async function buildRiyadh(
         fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
       });
     }
-    sY += ptToMm(9) * 1.25 + 0.6;
-    b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
-    sY += 2.4;
+    sY += ptToMm(9) * 1.25 + 2.4;
     return sY;
   };
-  const headingH = ptToMm(9) * 1.25 + 0.6 + 0.25 + 2.4;
+  const headingH = ptToMm(9) * 1.25 + 2.4;
 
   const sideRowH = (value: string) => textHeightMm(value, SIDE_TW, 8.4, 1.45) + 1.6;
   const drawSideRow = (top: number, value: string, uri?: string) => {
