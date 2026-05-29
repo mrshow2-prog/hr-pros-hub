@@ -1638,23 +1638,19 @@ async function buildRiyadh(
   b.cursorY = 16;
   const ctx2: Ctx = { cv, primary: SIENNA, b };
 
-  // Vibrant: hero-area decorative disc + check in the top-right corner of the main column.
+  // Vibrant: folded-corner triangle in the top-right of the main column.
   if (variant === "vibrant") {
-    const discSz = 9;
-    const discX = MAIN_X + MAIN_W - discSz - 8;
-    const discY = 8;
-    b.addRect({
-      x: discX, y: discY, width: discSz, height: discSz,
-      color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: discSz / 2,
-    });
-    if (sectionIconWhite.check) {
-      const ico = discSz * 0.55;
-      b.addImage({
-        x: discX + (discSz - ico) / 2, y: discY + (discSz - ico) / 2,
-        w: ico, h: ico, data: sectionIconWhite.check,
-      });
-    }
+    const triSz = 22; // mm
+    const triX = MAIN_X + MAIN_W - triSz;
+    const triY = 0;
+    const fill = mixHex(SIENNA, "#ffffff", 0.65);
+    const stroke = mixHex(SIENNA, "#ffffff", 0.35);
+    const sizePx = 256;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 100 100"><polygon points="100,0 100,100 0,0" fill="${fill}" stroke="${stroke}" stroke-width="1"/></svg>`;
+    const data = await rasterizeSvg(svg, sizePx, sizePx);
+    b.addImage({ x: triX, y: triY, w: triSz, h: triSz, data });
   }
+
 
   b.addText({
     value: cv.contact.name || "Your name",
