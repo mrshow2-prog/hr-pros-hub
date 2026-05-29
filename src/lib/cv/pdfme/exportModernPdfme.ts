@@ -1661,17 +1661,32 @@ async function buildRiyadh(
     lineHeight: 1.05,
     spaceAfter: 1,
     fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
-  });
   if (cv.contact.jobTitle) {
-    b.addText({
-      value: cv.contact.jobTitle.toUpperCase(),
-      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
-      spaceAfter: variant === "vibrant" ? 2 : 6,
-    });
     if (variant === "vibrant") {
-      // Short accent rule beneath the job title, matching the thumbnail.
-      b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
-      b.cursorY += 5;
+      const jt = cv.contact.jobTitle.toUpperCase();
+      const ruleW = 8;
+      const ruleGap = 2.5;
+      const fs = 10;
+      const lineH = ptToMm(fs) * 1.25;
+      const textY = b.cursorY;
+      // Short rule centered vertically with the text on the same line.
+      b.addLine({
+        x: b.margin, y: textY + lineH / 2 - 0.35,
+        width: ruleW, height: 0.7, color: SIENNA,
+      });
+      b.addText({
+        value: jt,
+        x: b.margin + ruleW + ruleGap, y: textY,
+        width: b.contentW - ruleW - ruleGap,
+        fontSize: fs, color: SIENNA, bold: true, letterSpacing: 1.4,
+      });
+      b.cursorY += lineH + 3;
+    } else {
+      b.addText({
+        value: cv.contact.jobTitle.toUpperCase(),
+        fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
+        spaceAfter: 6,
+      });
     }
   } else {
     b.cursorY += 4;
@@ -1683,6 +1698,9 @@ async function buildRiyadh(
       b.cursorY += 3;
       const sq = 4.4;
       const gap = 2.6;
+      const fs = 11.5;
+      const labelText = label.toUpperCase();
+      const labelW = textWidthMm(labelText, fs, { bold: true, letterSpacing: 1.6 });
       const yTop = b.cursorY + 0.2;
       b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.8 });
       if (iconKey && sectionIconWhite[iconKey]) {
@@ -1693,16 +1711,28 @@ async function buildRiyadh(
           w: ico, h: ico, data: sectionIconWhite[iconKey]!,
         });
       }
+      const textX = b.margin + sq + gap;
       b.addText({
-        value: label.toUpperCase(),
-        x: b.margin + sq + gap,
+        value: labelText,
+        x: textX,
         y: b.cursorY + 0.4,
         width: b.contentW - sq - gap,
-        fontSize: 11.5, color: INK, bold: true, letterSpacing: 1.6,
+        fontSize: fs, color: INK, bold: true, letterSpacing: 1.6,
       });
-      b.cursorY += ptToMm(11.5) * 1.25 + 0.6;
-      b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.55) });
-      b.cursorY += 2.6;
+      // Extending rule after the label, centered vertically with the text.
+      const lineH = ptToMm(fs) * 1.25;
+      const ruleStartX = textX + labelW + 3;
+      const ruleEndX = b.margin + b.contentW;
+      if (ruleEndX > ruleStartX + 2) {
+        b.addLine({
+          x: ruleStartX,
+          y: b.cursorY + 0.4 + lineH / 2 - 0.15,
+          width: ruleEndX - ruleStartX,
+          height: 0.3,
+          color: mixHex(SIENNA, "#ffffff", 0.55),
+        });
+      }
+      b.cursorY += lineH + 2.6;
     } else {
       b.ensure(10);
       b.addText({
@@ -1712,6 +1742,8 @@ async function buildRiyadh(
       b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
       b.cursorY += 3.4;
     }
+  };
+
   };
 
 
