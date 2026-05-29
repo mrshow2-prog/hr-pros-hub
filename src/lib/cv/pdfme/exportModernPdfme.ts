@@ -64,6 +64,10 @@ const SECTION_ICON: Partial<Record<SectionKey, keyof typeof ICON_SVGS>> = {
 
 async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): Promise<string> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  return rasterizeSvg(svg, sizePx, sizePx);
+}
+
+async function rasterizeSvg(svg: string, wPx: number, hPx: number): Promise<string> {
   const url = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new Image();
@@ -72,13 +76,14 @@ async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): P
     i.src = url;
   });
   const canvas = document.createElement("canvas");
-  canvas.width = sizePx;
-  canvas.height = sizePx;
+  canvas.width = wPx;
+  canvas.height = hPx;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No 2d context");
-  ctx.drawImage(img, 0, 0, sizePx, sizePx);
+  ctx.drawImage(img, 0, 0, wPx, hPx);
   return canvas.toDataURL("image/png");
 }
+
 
 /* ------------ shared building blocks ------------ */
 
