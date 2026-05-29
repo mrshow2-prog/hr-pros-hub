@@ -1746,12 +1746,12 @@ async function buildRiyadh(
     }
   };
 
-  };
-
 
   if (shouldRender(cv, "summary") && !inSidebar("summary")) {
     mainHeading("Profile", "user");
-    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
+    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 1, align: "justify" });
+  }
+
   }
 
 
