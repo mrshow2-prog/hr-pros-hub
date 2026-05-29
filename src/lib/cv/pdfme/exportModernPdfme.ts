@@ -1366,8 +1366,13 @@ async function buildRiyadh(
     if (photoData) estH += sz + 8;
     for (const r of contactRows) {
       estH += Math.max(textHeightMm(r.value, TW, FS, 1.45), ICON_MM) + 1.8;
-    }
+    if (contactRows.length) estH += 4;
+    blocks.push({
+      estH,
+      draw: (top) => {
+        let sY = top;
         if (photoData) {
+
           if (variant === "vibrant") {
             // Sienna outer ring with a small gap (sidebar color) between ring and photo.
             const outerExtra = 3.0;
