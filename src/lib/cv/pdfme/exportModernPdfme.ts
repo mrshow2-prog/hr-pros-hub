@@ -1661,6 +1661,8 @@ async function buildRiyadh(
     lineHeight: 1.05,
     spaceAfter: 1,
     fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
+  });
+
   if (cv.contact.jobTitle) {
     if (variant === "vibrant") {
       const jt = cv.contact.jobTitle.toUpperCase();
