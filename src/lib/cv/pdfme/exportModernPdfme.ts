@@ -64,6 +64,10 @@ const SECTION_ICON: Partial<Record<SectionKey, keyof typeof ICON_SVGS>> = {
 
 async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): Promise<string> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  return rasterizeSvg(svg, sizePx, sizePx);
+}
+
+async function rasterizeSvg(svg: string, wPx: number, hPx: number): Promise<string> {
   const url = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new Image();
@@ -72,13 +76,14 @@ async function svgToPngDataUrl(inner: string, color = "#f5f0e8", sizePx = 64): P
     i.src = url;
   });
   const canvas = document.createElement("canvas");
-  canvas.width = sizePx;
-  canvas.height = sizePx;
+  canvas.width = wPx;
+  canvas.height = hPx;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No 2d context");
-  ctx.drawImage(img, 0, 0, sizePx, sizePx);
+  ctx.drawImage(img, 0, 0, wPx, hPx);
   return canvas.toDataURL("image/png");
 }
+
 
 /* ------------ shared building blocks ------------ */
 
@@ -1323,12 +1328,10 @@ async function buildRiyadh(
         fontSize: 9, color: PAPER, bold: true, letterSpacing: 1.2,
       });
     }
-    sY += ptToMm(9) * 1.25 + 0.6;
-    b.addLine({ x: PADX, y: sY, width: SIDE_TW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.45) });
-    sY += 2.4;
+    sY += ptToMm(9) * 1.25 + 2.4;
     return sY;
   };
-  const headingH = ptToMm(9) * 1.25 + 0.6 + 0.25 + 2.4;
+  const headingH = ptToMm(9) * 1.25 + 2.4;
 
   const sideRowH = (value: string) => textHeightMm(value, SIDE_TW, 8.4, 1.45) + 1.6;
   const drawSideRow = (top: number, value: string, uri?: string) => {
@@ -1363,24 +1366,35 @@ async function buildRiyadh(
       estH += Math.max(textHeightMm(r.value, TW, FS, 1.45), ICON_MM) + 1.8;
     }
     if (contactRows.length) estH += 4;
+
     blocks.push({
       estH,
       draw: (top) => {
         let sY = top;
         if (photoData) {
+
           if (variant === "vibrant") {
-            // Cream ring around the circular photo to match the thumbnail.
-            const ringExtra = 2.4; // mm of ring on each side
-            const ringSz = sz + ringExtra * 2;
+            // Sienna outer ring with a small gap (sidebar color) between ring and photo.
+            const outerExtra = 3.0;
+            const gapExtra = 1.2;
+            const outerSz = sz + outerExtra * 2;
+            const gapSz = sz + gapExtra * 2;
             b.addRect({
-              x: (SIDEBAR_W - ringSz) / 2, y: sY - ringExtra,
-              width: ringSz, height: ringSz,
-              color: PAPER, borderColor: PAPER, borderWidth: 0, radius: ringSz / 2,
+              x: (SIDEBAR_W - outerSz) / 2, y: sY - outerExtra,
+              width: outerSz, height: outerSz,
+              color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: outerSz / 2,
+            });
+            b.addRect({
+              x: (SIDEBAR_W - gapSz) / 2, y: sY - gapExtra,
+              width: gapSz, height: gapSz,
+              color: sidebarFill, borderColor: sidebarFill, borderWidth: 0, radius: gapSz / 2,
             });
           }
           b.addImage({ x: (SIDEBAR_W - sz) / 2, y: sY, w: sz, h: sz, data: photoData });
           sY += sz + 8;
         }
+
+
 
         for (let i = 0; i < contactRows.length; i++) {
           const r = contactRows[i];
@@ -1624,23 +1638,19 @@ async function buildRiyadh(
   b.cursorY = 16;
   const ctx2: Ctx = { cv, primary: SIENNA, b };
 
-  // Vibrant: hero-area decorative disc + check in the top-right corner of the main column.
+  // Vibrant: folded-corner triangle in the top-right of the main column.
   if (variant === "vibrant") {
-    const discSz = 9;
-    const discX = MAIN_X + MAIN_W - discSz - 8;
-    const discY = 8;
-    b.addRect({
-      x: discX, y: discY, width: discSz, height: discSz,
-      color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: discSz / 2,
-    });
-    if (sectionIconWhite.check) {
-      const ico = discSz * 0.55;
-      b.addImage({
-        x: discX + (discSz - ico) / 2, y: discY + (discSz - ico) / 2,
-        w: ico, h: ico, data: sectionIconWhite.check,
-      });
-    }
+    const triSz = 22; // mm
+    const triX = MAIN_X + MAIN_W - triSz;
+    const triY = 0;
+    const fill = mixHex(SIENNA, "#ffffff", 0.65);
+    const stroke = mixHex(SIENNA, "#ffffff", 0.35);
+    const sizePx = 256;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 100 100"><polygon points="100,0 100,100 0,0" fill="${fill}" stroke="${stroke}" stroke-width="1"/></svg>`;
+    const data = await rasterizeSvg(svg, sizePx, sizePx);
+    b.addImage({ x: triX, y: triY, w: triSz, h: triSz, data });
   }
+
 
   b.addText({
     value: cv.contact.name || "Your name",
@@ -1652,16 +1662,33 @@ async function buildRiyadh(
     spaceAfter: 1,
     fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
   });
+
   if (cv.contact.jobTitle) {
-    b.addText({
-      value: cv.contact.jobTitle.toUpperCase(),
-      fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
-      spaceAfter: variant === "vibrant" ? 2 : 6,
-    });
     if (variant === "vibrant") {
-      // Short accent rule beneath the job title, matching the thumbnail.
-      b.addLine({ x: b.margin, y: b.cursorY, width: 14, height: 0.7, color: SIENNA });
-      b.cursorY += 5;
+      const jt = cv.contact.jobTitle.toUpperCase();
+      const ruleW = 8;
+      const ruleGap = 2.5;
+      const fs = 10;
+      const lineH = ptToMm(fs) * 1.25;
+      const textY = b.cursorY;
+      // Short rule centered vertically with the text on the same line.
+      b.addLine({
+        x: b.margin, y: textY + lineH / 2 - 0.35,
+        width: ruleW, height: 0.7, color: SIENNA,
+      });
+      b.addText({
+        value: jt,
+        x: b.margin + ruleW + ruleGap, y: textY,
+        width: b.contentW - ruleW - ruleGap,
+        fontSize: fs, color: SIENNA, bold: true, letterSpacing: 1.4,
+      });
+      b.cursorY += lineH + 3;
+    } else {
+      b.addText({
+        value: cv.contact.jobTitle.toUpperCase(),
+        fontSize: 10, color: SIENNA, bold: true, letterSpacing: 1.4,
+        spaceAfter: 6,
+      });
     }
   } else {
     b.cursorY += 4;
@@ -1673,6 +1700,9 @@ async function buildRiyadh(
       b.cursorY += 3;
       const sq = 4.4;
       const gap = 2.6;
+      const fs = 11.5;
+      const labelText = label.toUpperCase();
+      const labelW = textWidthMm(labelText, fs, { bold: true, letterSpacing: 1.6 });
       const yTop = b.cursorY + 0.2;
       b.addRect({ x: b.margin, y: yTop, width: sq, height: sq, color: SIENNA, borderColor: SIENNA, borderWidth: 0, radius: 0.8 });
       if (iconKey && sectionIconWhite[iconKey]) {
@@ -1683,16 +1713,28 @@ async function buildRiyadh(
           w: ico, h: ico, data: sectionIconWhite[iconKey]!,
         });
       }
+      const textX = b.margin + sq + gap;
       b.addText({
-        value: label.toUpperCase(),
-        x: b.margin + sq + gap,
+        value: labelText,
+        x: textX,
         y: b.cursorY + 0.4,
         width: b.contentW - sq - gap,
-        fontSize: 11.5, color: INK, bold: true, letterSpacing: 1.6,
+        fontSize: fs, color: INK, bold: true, letterSpacing: 1.6,
       });
-      b.cursorY += ptToMm(11.5) * 1.25 + 0.6;
-      b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.25, color: mixHex(SIENNA, "#ffffff", 0.55) });
-      b.cursorY += 2.6;
+      // Extending rule after the label, centered vertically with the text.
+      const lineH = ptToMm(fs) * 1.25;
+      const ruleStartX = textX + labelW + 3;
+      const ruleEndX = b.margin + b.contentW;
+      if (ruleEndX > ruleStartX + 2) {
+        b.addLine({
+          x: ruleStartX,
+          y: b.cursorY + 0.4 + lineH / 2 - 0.15,
+          width: ruleEndX - ruleStartX,
+          height: 0.3,
+          color: mixHex(SIENNA, "#ffffff", 0.55),
+        });
+      }
+      b.cursorY += lineH + 2.6;
     } else {
       b.ensure(10);
       b.addText({
@@ -1707,8 +1749,10 @@ async function buildRiyadh(
 
   if (shouldRender(cv, "summary") && !inSidebar("summary")) {
     mainHeading("Profile", "user");
-    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 5, align: "justify" });
+    b.addText({ value: cv.summary, fontSize: 9.7, color: SUBINK, lineHeight: 1.65, spaceAfter: 1, align: "justify" });
   }
+
+
 
 
   const mainRenderers: Partial<Record<SectionKey, () => void>> = {
