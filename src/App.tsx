@@ -10,6 +10,8 @@ import CvBuilder from "./pages/CvBuilder";
 import CvBuilderLogin from "./pages/cv-builder/CvBuilderLogin";
 import MyCvs from "./pages/cv-builder/MyCvs";
 import RequireCvAuth from "./components/cv-builder/RequireCvAuth";
+import RequireAdmin from "./components/admin/RequireAdmin";
+import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,7 @@ const App = () => (
             <Route path="/login" element={<CvBuilderLogin />} />
             <Route path="/my-cvs" element={<RequireCvAuth><MyCvs /></RequireCvAuth>} />
             <Route path="/builder" element={<RequireCvAuth><CvBuilder /></RequireCvAuth>} />
+            <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

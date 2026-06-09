@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import SEO from "@/components/seo/SEO";
 import SiteFooter from "@/components/ui/SiteFooter";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface Row {
   id: string;
@@ -19,6 +20,7 @@ export default function MyCvs() {
   const nav = useNavigate();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [email, setEmail] = useState<string>("");
+  const { isAdmin } = useIsAdmin();
 
   const load = async () => {
     const { data: s } = await supabase.auth.getSession();
@@ -75,6 +77,9 @@ export default function MyCvs() {
             <p className="text-sm text-ink/60 mt-1">Signed in as {email}</p>
           </div>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => nav("/admin")}>Admin</Button>
+            )}
             <Button onClick={startNew}>Start new CV</Button>
             <Button variant="outline" onClick={logout}>Log out</Button>
           </div>
