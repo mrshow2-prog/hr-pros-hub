@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: boolean
+          paywall_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          paywall_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          paywall_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cv_builder_sessions: {
         Row: {
           created_at: string
@@ -40,6 +58,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      unlock_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          session_id: string
+          status: string
+          updated_at: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unlock_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cv_builder_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
