@@ -85,6 +85,7 @@ export default function CvBuilderLogin() {
           {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </button>
       </form>
+      </div>
     </div>
   );
 }
