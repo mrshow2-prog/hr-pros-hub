@@ -6,6 +6,7 @@ import { toast } from "@/components/ui/sonner";
 import SEO from "@/components/seo/SEO";
 import SiteFooter from "@/components/ui/SiteFooter";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import BrandMark from "@/components/brand/BrandMark";
 
 interface Row {
   id: string;
@@ -70,19 +71,24 @@ export default function MyCvs() {
   return (
     <div className="min-h-screen bg-paper text-ink font-dm">
       <SEO title="My CVs · People.Studio CV Builder" description="Manage your saved CV drafts, track payment status, and continue building or tailoring your professional CV for your next role." path="/my-cvs" />
+      <header className="border-b border-ink/10 bg-paper">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BrandMark to="/" />
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => nav("/admin")}>Admin</Button>
+            )}
+            <Button variant="outline" size="sm" onClick={logout}>Log out</Button>
+          </div>
+        </div>
+      </header>
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-semibold">My CVs</h1>
             <p className="text-sm text-ink/60 mt-1">Signed in as {email}</p>
           </div>
-          <div className="flex gap-2">
-            {isAdmin && (
-              <Button variant="outline" onClick={() => nav("/admin")}>Admin</Button>
-            )}
-            <Button onClick={startNew}>Start new CV</Button>
-            <Button variant="outline" onClick={logout}>Log out</Button>
-          </div>
+          <Button onClick={startNew}>Start new CV</Button>
         </div>
 
         {rows === null ? (
