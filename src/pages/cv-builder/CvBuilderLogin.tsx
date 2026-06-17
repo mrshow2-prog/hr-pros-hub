@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import SEO from "@/components/seo/SEO";
+import BrandMark from "@/components/brand/BrandMark";
 
 export default function CvBuilderLogin() {
   const nav = useNavigate();
@@ -48,12 +49,18 @@ export default function CvBuilderLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-paper px-4 font-dm text-ink">
+    <div className="min-h-screen flex flex-col bg-paper font-dm text-ink">
       <SEO
-        title="Sign in · People.Studio CV Builder"
+        title="Sign in · People Studio CV Builder"
         description="Sign in to your People Studio CV Builder account to save drafts, edit them later, and download ATS-optimised PDF CVs tailored to each role."
         path="/login"
       />
+      <header className="border-b border-ink/10">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <BrandMark to="/" />
+        </div>
+      </header>
+      <div className="flex-1 flex items-center justify-center px-4 py-10">
       <form onSubmit={submit} className="w-full max-w-sm space-y-4 border border-ink/10 rounded-lg p-6 bg-white">
         <div>
           <h1 className="text-2xl font-semibold">{mode === "signin" ? "Sign in" : "Create account"}</h1>
@@ -78,6 +85,7 @@ export default function CvBuilderLogin() {
           {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </button>
       </form>
+      </div>
     </div>
   );
 }

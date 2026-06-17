@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
 import SEO from "@/components/seo/SEO";
 import SiteFooter from "@/components/ui/SiteFooter";
+import BrandMark from "@/components/brand/BrandMark";
 
 interface SessionRow {
   id: string;
@@ -123,13 +124,16 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-paper text-ink font-dm">
       <SEO title="Admin · People.Studio" description="Manage users, CVs, and the paywall." path="/admin" />
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-semibold">Admin</h1>
-            <p className="text-sm text-ink/60 mt-1">Manage CVs, paywall, and unlock requests.</p>
-          </div>
+      <header className="border-b border-ink/10 bg-paper">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <BrandMark to="/" />
           <Link to="/my-cvs" className="text-sm text-ink/60 hover:text-ink underline">← My CVs</Link>
+        </div>
+      </header>
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold">Admin</h1>
+          <p className="text-sm text-ink/60 mt-1">Manage CVs, paywall, and unlock requests.</p>
         </div>
 
         {/* Paywall master toggle */}

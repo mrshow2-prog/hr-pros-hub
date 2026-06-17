@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import SEO from "@/components/seo/SEO";
 import SiteFooter from "@/components/ui/SiteFooter";
+import BrandMark from "@/components/brand/BrandMark";
 import HeroCvPreview from "@/components/landing/HeroCvPreview";
 import TrustStrip from "@/components/landing/TrustStrip";
 import HowItWorks from "@/components/landing/HowItWorks";
@@ -19,9 +20,7 @@ export default function Landing() {
       />
 
       <header className="px-6 md:px-10 py-5 flex items-center justify-between border-b border-ink/10">
-        <Link to="/" className="font-syne text-lg tracking-tight">
-          People Studio <span className="text-sienna">CV</span>
-        </Link>
+        <BrandMark />
         <div className="flex items-center gap-3 text-sm">
           <Link to="/login" className="text-ink/70 hover:text-ink">
             Sign in

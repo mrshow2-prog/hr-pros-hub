@@ -11,6 +11,8 @@ import EditorShell from "@/components/cv-builder/editor/EditorShell";
 import StepExport from "@/components/cv-builder/StepExport";
 import { supabase } from "@/integrations/supabase/client";
 
+import BrandMark from "@/components/brand/BrandMark";
+
 function CvBuilderTopBar() {
   const nav = useNavigate();
   const [email, setEmail] = useState<string>("");
@@ -23,9 +25,10 @@ function CvBuilderTopBar() {
   };
   return (
     <div className="w-full bg-paper border-b border-ink/10">
-      <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between text-xs font-dm text-ink/70">
-        <Link to="/my-cvs" className="hover:text-ink">← My CVs</Link>
-        <div className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between font-dm text-xs text-ink/70">
+        <BrandMark to="/my-cvs" logoHeightClass="h-6 md:h-7" />
+        <div className="flex items-center gap-4">
+          <Link to="/my-cvs" className="hover:text-ink">← My CVs</Link>
           {email && <span className="hidden sm:inline">{email}</span>}
           <button onClick={logout} className="hover:text-ink underline">Log out</button>
         </div>
