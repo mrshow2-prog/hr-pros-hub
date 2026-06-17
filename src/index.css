@@ -121,12 +121,25 @@
   }
   html {
     scroll-behavior: smooth;
+    color-scheme: light only;
+    background-color: hsl(var(--paper));
   }
   body {
     @apply bg-background text-foreground font-dm antialiased;
+    background-color: hsl(var(--paper));
   }
   h1, h2, h3, h4, h5 {
     @apply font-syne;
+  }
+  /* Lock the portal to its light brand palette even when the phone is in
+     dark mode (Chrome Android / Samsung Internet force-dark heuristics). */
+  @media (prefers-color-scheme: dark) {
+    html, body {
+      background-color: hsl(var(--paper)) !important;
+      color: hsl(var(--ink)) !important;
+      color-scheme: light only;
+      forced-color-adjust: none;
+    }
   }
 }
 
