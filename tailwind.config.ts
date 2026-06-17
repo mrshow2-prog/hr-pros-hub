@@ -13,7 +13,7 @@ export default {
     extend: {
       fontFamily: {
         serif: ['Fraunces', 'Georgia', 'serif'],
-        syne: ['Syne', 'Georgia', 'serif'],
+        syne: ['Fraunces', 'Georgia', 'serif'],
         dm: ['"DM Sans"', 'system-ui', 'sans-serif'],
         sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },
