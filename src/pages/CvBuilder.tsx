@@ -37,6 +37,10 @@ function CvBuilderTopBar() {
 function Wizard() {
   const { state, loading } = useCVBuilder();
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [state.currentStep]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper font-dm text-sm text-ink/55">
