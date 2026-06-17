@@ -2061,6 +2061,296 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 }
 
 /* ============================================================
+ *  MILANO (Creative)
+ *  - Editorial numbered sections, two-tone display name, year
+ *    column for experience, pill skills, language meter bars.
+ *  - Mirrors src/components/cv-builder/templates/TemplateMilano.tsx
+ * ============================================================ */
+async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
+  const b = createBuilder({ margin: 16, top: 16, bottom: 16 });
+  const ACCENT = SIENNA;
+  const ctx: Ctx = { cv, primary: ACCENT, b };
+
+  // ---- Header ----
+  if (!isHidden(cv, "contact")) {
+    const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    const photoSize = 32;
+    const hy0 = b.cursorY;
+    const textX = photoData ? b.margin + photoSize + 8 : b.margin;
+    const textW = photoData ? b.contentW - photoSize - 8 : b.contentW;
+
+    if (photoData) {
+      b.addImage({ x: b.margin, y: hy0, w: photoSize, h: photoSize, data: photoData });
+      // Accent square offset behind the photo's bottom-right corner
+      b.addRect({ x: b.margin + photoSize - 4, y: hy0 + photoSize - 4, width: 8, height: 8, color: ACCENT });
+    } else {
+      b.addRect({ x: b.margin, y: hy0, width: photoSize, height: photoSize, color: ACCENT });
+      const initials =
+        (cv.contact.name || "Y N").split(/\s+/).filter(Boolean).slice(0, 2)
+          .map((s) => s[0]?.toUpperCase() ?? "").join("") || "YN";
+      b.addText({
+        value: initials, x: b.margin, y: hy0 + 8.5, width: photoSize,
+        fontSize: 24, color: PAPER, bold: true, fontName: FONT_DISPLAY, align: "center",
+      });
+    }
+
+    b.addText({
+      value: "CURRICULUM VITAE", x: textX, y: hy0 + 1, width: textW,
+      fontSize: 7.4, color: ACCENT, bold: true, letterSpacing: 3,
+    });
+
+    let ty = hy0 + 6;
+    const tokens = (cv.contact.name || "Your Name").trim().split(/\s+/);
+    const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
+    const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
+
+    b.addText({
+      value: first, x: textX, y: ty, width: textW,
+      fontSize: 30, color: INK, bold: true, fontName: FONT_DISPLAY,
+      lineHeight: 1.0, letterSpacing: -0.8,
+    });
+    ty += ptToMm(30) * 1.0 + 0.6;
+    if (last) {
+      b.addText({
+        value: last, x: textX, y: ty, width: textW,
+        fontSize: 30, color: ACCENT, bold: true, fontName: FONT_DISPLAY,
+        lineHeight: 1.0, letterSpacing: -0.8,
+      });
+      ty += ptToMm(30) * 1.0 + 1.6;
+    }
+    if (cv.contact.jobTitle) {
+      b.addText({
+        value: cv.contact.jobTitle.toUpperCase(), x: textX, y: ty, width: textW,
+        fontSize: 9, color: MUTED, letterSpacing: 2.4, bold: true,
+      });
+      ty += ptToMm(9) * 1.25 + 2;
+    }
+
+    let headEnd = Math.max(ty, hy0 + photoSize) + 4;
+
+    // Accent bar + small ink cap (editorial rule)
+    const capW = 8;
+    const barW = b.contentW - capW - 2;
+    b.addRect({ x: b.margin, y: headEnd, width: barW, height: 1.4, color: ACCENT });
+    b.addRect({ x: b.margin + barW + 2, y: headEnd, width: capW, height: 1.4, color: INK });
+    headEnd += 4;
+
+    const contactRuns = contactLinkItems(cv);
+    const contact = contactRuns.map((r) => r.label).join("   ·   ");
+    if (contact) {
+      b.addText({
+        value: contact, x: b.margin, y: headEnd, width: b.contentW,
+        fontSize: 8.6, color: SUBINK, lineHeight: 1.45,
+      });
+      addContactLinks(b, contactRuns, { x: b.margin, y: headEnd, width: b.contentW, fontSize: 8.6, lineHeight: 1.45 });
+      headEnd += textHeightMm(contact, b.contentW, 8.6, 1.45) + 2;
+    }
+    b.cursorY = headEnd + 4;
+  }
+
+  // ---- Numbered section heading ----
+  let n = 0;
+  const sectionTitle = (label: string) => {
+    n += 1;
+    b.ensure(15);
+    const startY = b.cursorY;
+    const numStr = String(n).padStart(2, "0");
+    const numW = 18;
+    b.addText({
+      value: numStr, x: b.margin, y: startY - 1, width: numW,
+      fontSize: 24, color: ACCENT, bold: true, fontName: FONT_DISPLAY, lineHeight: 1,
+    });
+    b.addText({
+      value: label.toUpperCase(), x: b.margin + numW, y: startY + 2.4,
+      width: b.contentW - numW, fontSize: 12.5, color: INK, bold: true, letterSpacing: 1.4,
+    });
+    b.addRect({ x: b.margin + numW, y: startY + 9.5, width: 14, height: 1, color: ACCENT });
+    b.cursorY = startY + 13;
+  };
+
+  if (shouldRender(cv, "summary")) {
+    sectionTitle("Profile");
+    b.addText({
+      value: `"${cv.summary}"`, fontSize: 10.2, color: SUBINK,
+      lineHeight: 1.65, spaceAfter: 5, fontName: FONT_DISPLAY, align: "justify",
+    });
+  }
+
+  const renderers: Partial<Record<SectionKey, () => void>> = {
+    experience: () => {
+      sectionTitle("Experience");
+      const yearColW = 22;
+      cv.experience.forEach((exp, idx) => {
+        const endYear = (exp.endDate || exp.period || "").match(/\d{4}/)?.[0] ?? null;
+        const startYear = (exp.startDate || "").match(/\d{4}/)?.[0] ?? null;
+        const yr = endYear ?? startYear ?? "";
+        b.ensure(16);
+        const py = b.cursorY;
+        if (yr) {
+          b.addText({
+            value: yr, x: b.margin, y: py - 1, width: yearColW,
+            fontSize: 18, color: ACCENT, bold: true, fontName: FONT_DISPLAY, lineHeight: 1,
+          });
+          if (startYear && startYear !== yr) {
+            b.addText({
+              value: `from ${startYear}`, x: b.margin, y: py + 7,
+              width: yearColW, fontSize: 6.4, color: MUTED, letterSpacing: 1, bold: true,
+            });
+          }
+        }
+        const bAny = b as unknown as { margin: number; contentW: number };
+        const savedM = bAny.margin;
+        const savedW = bAny.contentW;
+        bAny.margin = savedM + yearColW + 3;
+        bAny.contentW = savedW - yearColW - 3;
+        b.cursorY = py;
+        b.addText({
+          value: exp.role || "", fontSize: 12.5, color: INK, bold: true,
+          fontName: FONT_DISPLAY, lineHeight: 1.2, spaceAfter: 0.4,
+        });
+        const sub = [exp.company, exp.location].filter(Boolean).join(" · ").toUpperCase();
+        if (sub) {
+          b.addText({
+            value: sub, fontSize: 8.4, color: MUTED, bold: true,
+            letterSpacing: 1.2, spaceAfter: 2,
+          });
+        }
+        for (const bul of visibleBullets(exp)) {
+          bullet(ctx, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+        }
+        bAny.margin = savedM;
+        bAny.contentW = savedW;
+        if (idx < cv.experience.length - 1) b.cursorY += 3;
+      });
+      b.cursorY += 2;
+    },
+    skills: () => {
+      sectionTitle("Skills");
+      const fs = 9;
+      const padX = 3;
+      const padY = 1.3;
+      const gap = 2;
+      const lineH = ptToMm(fs) * 1.25 + padY * 2;
+      let curX = b.margin;
+      let curY = b.cursorY;
+      const ensureRow = () => {
+        if (curY + lineH > b.PAGE_H - b.bottom) {
+          b.cursorY = curY;
+          b.newPage();
+          curY = b.cursorY;
+          curX = b.margin;
+        }
+      };
+      cv.skills.forEach((s, i) => {
+        const w = textWidthMm(s, fs) + padX * 2;
+        if (curX + w > b.margin + b.contentW) {
+          curX = b.margin;
+          curY += lineH + gap;
+          ensureRow();
+        }
+        const filled = i % 2 === 0;
+        if (filled) {
+          b.addRect({ x: curX, y: curY, width: w, height: lineH - 0.2, color: ACCENT, radius: lineH / 2 });
+          b.addText({
+            value: s, x: curX + padX, y: curY + padY, width: w - padX * 2,
+            fontSize: fs, color: PAPER,
+          });
+        } else {
+          b.addRect({
+            x: curX, y: curY, width: w, height: lineH - 0.2,
+            color: "#ffffff", borderColor: ACCENT, borderWidth: 0.4, radius: lineH / 2,
+          });
+          b.addText({
+            value: s, x: curX + padX, y: curY + padY, width: w - padX * 2,
+            fontSize: fs, color: INK,
+          });
+        }
+        curX += w + gap;
+      });
+      b.cursorY = curY + lineH + 4;
+    },
+    competencies: () => {
+      sectionTitle("Competencies");
+      for (const c of cv.competencyClusters) {
+        inlineCluster(ctx, c, { titleFs: 9.8, titleColor: ACCENT, itemsFs: 9.8, itemsColor: SUBINK });
+      }
+    },
+    languages: () => {
+      sectionTitle("Languages");
+      const dotW = 6;
+      const dotH = 2.4;
+      const gap = 1.2;
+      const totalBarsW = 5 * dotW + 4 * gap;
+      for (const l of cv.languages) {
+        b.ensure(6.5);
+        const py = b.cursorY;
+        const label = l.level?.trim() ? `${l.name}  (${l.level.trim()})` : l.name;
+        b.addText({
+          value: label, x: b.margin, y: py, width: b.contentW - totalBarsW - 4,
+          fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY,
+        });
+        const lvl = (l.level || "").toLowerCase();
+        const filled =
+          lvl.includes("native") || lvl.includes("fluent") ? 5 :
+          lvl.includes("professional") ? 4 :
+          lvl.includes("conversational") ? 3 :
+          lvl.includes("basic") ? 2 : 4;
+        const startX = b.margin + b.contentW - totalBarsW;
+        for (let j = 0; j < 5; j += 1) {
+          b.addRect({
+            x: startX + j * (dotW + gap), y: py + 1.6,
+            width: dotW, height: dotH,
+            color: j < filled ? ACCENT : "#e8dfd1",
+          });
+        }
+        b.cursorY = py + 6;
+      }
+      b.cursorY += 2;
+    },
+    education: () => {
+      sectionTitle("Education");
+      for (const ed of cv.education) {
+        periodRow(ctx, ed.qualification, ed.period, { leftFs: 10.5, bold: true });
+        if (ed.institution) {
+          b.addText({ value: ed.institution, fontSize: 9.4, color: ACCENT, bold: true, spaceAfter: 2 });
+        }
+        b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.2, color: "#e8dfd1" });
+        b.cursorY += 2;
+      }
+    },
+    achievements: () => {
+      sectionTitle("Achievements");
+      for (const a of cv.achievements.filter(Boolean)) {
+        bullet(ctx, "—", a, { fs: 9.4, lh: 1.6, glyphColor: ACCENT, glyphW: 3 });
+      }
+      b.cursorY += 2;
+    },
+    certifications: () => {
+      sectionTitle("Certifications");
+      for (const c of cv.certifications) {
+        const left = c.issuer ? `${c.name} — ${c.issuer}` : c.name;
+        periodRow(ctx, left, c.date || "", { leftFs: 10, glyph: "»", glyphColor: ACCENT });
+      }
+      b.cursorY += 2;
+    },
+    custom: () => {
+      for (const s of cv.customSections) {
+        sectionTitle(s.title || "Additional");
+        for (const it of s.bullets.filter(Boolean)) {
+          bullet(ctx, "—", it, { fs: 9.4, lh: 1.6, glyphColor: ACCENT, glyphW: 3 });
+        }
+        b.cursorY += 2;
+      }
+    },
+  };
+
+  for (const k of getSectionOrder(cv)) {
+    if (shouldRender(cv, k)) renderers[k]?.();
+  }
+  return b;
+}
+
+/* ============================================================
  * Public entry — routes to the right builder.
  * ============================================================ */
 export interface PdfmeOptions {
