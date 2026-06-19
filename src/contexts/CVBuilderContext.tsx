@@ -574,7 +574,12 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       loading,
-      setStep: (step) => setState((s) => ({ ...s, currentStep: step })),
+      setStep: (step) => setState((s) => ({
+        ...s,
+        // Lock paid sessions to step 4+ so unlock credits can't be reused for a new CV.
+        currentStep: s.paymentStatus === "paid" && step < 4 ? 4 : step,
+      })),
+
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
       setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
