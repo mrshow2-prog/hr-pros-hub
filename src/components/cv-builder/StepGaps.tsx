@@ -22,6 +22,7 @@ export default function StepGaps() {
     try {
       const { data, error: fnError } = await supabase.functions.invoke("analyze-cv-gaps", {
         body: {
+          mode: state.fromScratch ? "scratch" : "cv",
           parsedText: state.parsedText,
           intentForm: state.intentForm,
           uploadedFiles: state.uploadedFiles.map((f) => ({ path: f.path, name: f.name })),
@@ -37,7 +38,7 @@ export default function StepGaps() {
     } finally {
       setLoading(false);
     }
-  }, [state.parsedText, state.intentForm, state.uploadedFiles, setGaps]);
+  }, [state.parsedText, state.intentForm, state.uploadedFiles, state.fromScratch, setGaps]);
 
   useEffect(() => {
     if (state.gapAnalysis.gaps.length > 0) return;
