@@ -49,11 +49,12 @@ interface Props {
 }
 
 export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: Props) {
-  const { state } = useCVBuilder();
+  const { state, patchIntent } = useCVBuilder();
   const palette = getPalette(state.intentForm.colorPalette);
   const photoShape = state.intentForm.photoShape;
   const previewPhoto = photoShape === "none" ? null : SAMPLE_PHOTO_URL;
   const currentId = (state.selectedTemplate ?? "simple") as TemplateId;
+  const activeFontStyle = (state.intentForm.fontStyle ?? "modern") as FontStyleId;
 
   const [draftId, setDraftId] = useState<TemplateId>(currentId);
 
