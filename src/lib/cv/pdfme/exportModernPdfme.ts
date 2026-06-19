@@ -1944,16 +1944,16 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     });
     b.addText({
       value: label, x: b.margin, y: startY + 3.6, width: b.contentW,
-      fontSize: 13, color: INK, bold: true,
+      fontSize: 15, color: INK, bold: true, fontName: FONT_DISPLAY, letterSpacing: -0.2,
     });
-    b.cursorY = startY + ptToMm(13) * 1.25 + 5;
+    b.cursorY = startY + ptToMm(15) * 1.25 + 5;
     b.addLine({ x: b.margin, y: b.cursorY - 1.4, width: b.contentW, height: 0.25, color: "#d8cfc1" });
     b.cursorY += 2;
   };
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Profile");
-    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, align: "justify" });
+    b.addText({ value: cv.summary, fontSize: 10.2, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, fontName: FONT_DISPLAY, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
