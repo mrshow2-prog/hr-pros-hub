@@ -111,6 +111,9 @@ export default function StepUpload() {
       setError(`You can upload up to ${MAX_FILES} files.`);
       return;
     }
+    // Uploading a file overrides any prior "from scratch" choice.
+    if (state.fromScratch) setFromScratch(false);
+    if (scratchMode) setScratchMode(false);
     const next = [...state.uploadedFiles];
     for (let i = 0; i < list.length; i++) {
       const f = list[i];
