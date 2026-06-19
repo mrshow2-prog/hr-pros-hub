@@ -184,11 +184,11 @@ export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: 
                     onConfirm(draftId);
                     onOpenChange(false);
                   }}
-                  disabled={draftId === currentId}
+                  disabled={ctaDisabled}
                   className="rounded px-4 py-2 font-dm text-xs font-semibold uppercase tracking-wider text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
                   style={{ background: palette.accentHex }}
                 >
-                  {draftId === currentId ? "Current template" : "Use this template"}
+                  {ctaLabel}
                 </button>
               </div>
             </div>
