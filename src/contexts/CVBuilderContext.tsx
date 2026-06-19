@@ -266,6 +266,8 @@ export interface CVBuilderState {
   currentStep: WizardStep;
   uploadedFiles: UploadedFile[];
   parsedText: string;
+  /** True when the user chose "Start from scratch" at the Build step (no source CV). */
+  fromScratch: boolean;
   photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
@@ -403,6 +405,7 @@ const buildInitialState = (): CVBuilderState => {
     currentStep: 1,
     uploadedFiles: [],
     parsedText: "",
+    fromScratch: false,
     photoPath: null,
     intentForm: defaultIntent,
     gapAnalysis: { gaps: [], responses: {} },
@@ -424,6 +427,7 @@ interface CVBuilderContextValue {
   setStep: (step: CVBuilderState["currentStep"]) => void;
   setUploadedFiles: (files: UploadedFile[]) => void;
   setParsedText: (text: string) => void;
+  setFromScratch: (value: boolean) => void;
   setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
@@ -552,6 +556,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     state.currentStep,
     state.uploadedFiles,
     state.parsedText,
+    state.fromScratch,
     state.photoPath,
     state.intentForm,
     state.gapAnalysis,
@@ -582,6 +587,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
 
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
+      setFromScratch: (value) => setState((s) => ({ ...s, fromScratch: value })),
       setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
       patchIntent: (patch) =>
         setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),

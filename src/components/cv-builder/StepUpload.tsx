@@ -66,7 +66,7 @@ async function compressImage(
 }
 
 export default function StepUpload() {
-  const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
+  const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath, setFromScratch } = useCVBuilder();
   const [pasteMode, setPasteMode] = useState(false);
   const [scratchMode, setScratchMode] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -111,6 +111,9 @@ export default function StepUpload() {
       setError(`You can upload up to ${MAX_FILES} files.`);
       return;
     }
+    // Uploading a file overrides any prior "from scratch" choice.
+    if (state.fromScratch) setFromScratch(false);
+    if (scratchMode) setScratchMode(false);
     const next = [...state.uploadedFiles];
     for (let i = 0; i < list.length; i++) {
       const f = list[i];
@@ -235,9 +238,8 @@ export default function StepUpload() {
   const handleScratch = () => {
     setScratchMode(true);
     setPasteMode(false);
-    if (!state.parsedText) {
-      setParsedText("(Starting from scratch — no source CV uploaded.)");
-    }
+    setFromScratch(true);
+    setParsedText("(Starting from scratch — no source CV uploaded.)");
   };
 
   return (
@@ -328,7 +330,15 @@ export default function StepUpload() {
         type="button"
         onClick={() => {
           setError("");
-          setPasteMode((p) => !p);
+          setPasteMode((p) => {
+            const next = !p;
+            if (next && state.fromScratch) {
+              setFromScratch(false);
+              setScratchMode(false);
+              setParsedText("");
+            }
+            return next;
+          });
         }}
         className="mt-5 font-dm text-sm text-sienna underline-offset-4 hover:underline"
       >
