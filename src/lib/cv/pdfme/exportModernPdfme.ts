@@ -1894,7 +1894,10 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
   // ---- Header ----
   if (!isHidden(cv, "contact")) {
-    const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    const rawPhoto = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    // Soft-round square photos to match the editorial template's tile.
+    const { maskImageRounded } = await import("./core");
+    const photoData = rawPhoto ? (await maskImageRounded(rawPhoto, 0.12)) ?? rawPhoto : null;
     const sz = 26;
     const hy0 = b.cursorY;
     let textX = b.margin;
@@ -1940,19 +1943,22 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       const lineStep = ptToMm(cFs) * lh + 1.6;
       const iconSz = ptToMm(cFs) * 0.95;
       const iconGap = 1.4;
-      const itemGap = 4.5;
+      const itemGap = 3.2;
+      const wrapTol = 2.5; // tolerate slight width over-estimation before wrapping
       let curX = textX;
       let curY = ty + 0.4;
       rows.forEach((r, i) => {
-        const labelW = textWidthMm(r.label, cFs);
+        // Tighten width estimate: textWidthMm has a 4% safety factor baked in;
+        // drop it back for the wrap test so we don't bump a short item to a new line.
+        const labelW = textWidthMm(r.label, cFs) / 1.04;
         const total = iconSz + iconGap + labelW;
-        if (curX + total > textX + textW && curX > textX) {
+        if (curX + total > textX + textW + wrapTol && curX > textX) {
           curX = textX;
           curY += lineStep;
         }
         b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
         b.addText({
-          value: r.label, x: curX + iconSz + iconGap, y: curY, width: labelW + 1.5,
+          value: r.label, x: curX + iconSz + iconGap, y: curY, width: labelW + 3,
           fontSize: cFs, color: MUTED, lineHeight: lh,
         });
         if (r.uri) {
