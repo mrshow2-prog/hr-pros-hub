@@ -1911,15 +1911,16 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     let ty = hy0 + ptToMm(7.6) * 1.25 + 1;
     b.addText({
       value: cv.contact.name || "Your name", x: textX, y: ty, width: textW,
-      fontSize: 24, color: INK, bold: true, letterSpacing: -0.5, lineHeight: 1.05,
+      fontSize: 26, color: INK, bold: true, fontName: FONT_DISPLAY,
+      letterSpacing: -0.6, lineHeight: 1.05,
     });
-    ty += ptToMm(24) * 1.05 + 1.2;
+    ty += ptToMm(26) * 1.05 + 1.4;
     if (cv.contact.jobTitle) {
       b.addText({
         value: cv.contact.jobTitle, x: textX, y: ty, width: textW,
-        fontSize: 11, color: SUBINK,
+        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY, italic: true,
       });
-      ty += ptToMm(11) * 1.25 + 1.6;
+      ty += ptToMm(11.5) * 1.25 + 1.6;
     }
     const contactRuns = contactLinkItems(cv);
     const contact = contactRuns.map((r) => r.label).join("   ·   ");
