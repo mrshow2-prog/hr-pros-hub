@@ -138,9 +138,6 @@ export let FONT_DISPLAY_REGULAR_ACTIVE: string = FONT_SANS;
 export let FONT_BODY_ACTIVE: string = FONT_REGULAR;
 export let FONT_BODY_BOLD_ACTIVE: string = FONT_BOLD;
 export let FONT_BODY_ITALIC_ACTIVE: string = FONT_DISPLAY_ITALIC;
-/** Per-theme width multiplier applied by estimatedTextWidthMm so wrapping
- * stays safe when the active body font is wider than Roboto (Fraunces / Syne). */
-let FONT_WIDTH_MULT = 1.0;
 export function setFontTheme(style: FontStyleId | null | undefined) {
   const t = getFontTheme(style);
   FONT_DISPLAY_ACTIVE = t.display;
@@ -148,31 +145,56 @@ export function setFontTheme(style: FontStyleId | null | undefined) {
   FONT_BODY_ACTIVE = t.body;
   FONT_BODY_BOLD_ACTIVE = t.bodyBold;
   FONT_BODY_ITALIC_ACTIVE = t.bodyItalic;
-  // Width safety margin per theme. Fraunces glyphs are ~8% wider than DM Sans;
-  // Syne (editorial display) is much wider but only used for headings which
-  // pass their own short strings.
-  // DM Sans (modern) is ~6–8% wider than Roboto at the same pt size, and
-  // Syne (editorial display) is wider still. Bumping these multipliers keeps
-  // wrapLines safely over-estimating so pdfme doesn't re-wrap mid-word and
-  // headings/contact lines don't overflow their reserved width.
-  FONT_WIDTH_MULT = style === "classic" ? 1.12 : style === "editorial" ? 1.12 : 1.09;
+  // Warm up the browser font cache for the families canvas measureText() will
+  // need; without this, the first measurement may use a fallback face and
+  // return the wrong width.
+  if (typeof document !== "undefined" && (document as unknown as { fonts?: FontFaceSet }).fonts?.load) {
+    const fonts = (document as unknown as { fonts: FontFaceSet }).fonts;
+    for (const f of ['"DM Sans"', "Fraunces", "Syne"]) {
+      try { fonts.load(`400 12px ${f}`); fonts.load(`700 12px ${f}`); } catch { /* noop */ }
+    }
+  }
 }
 
 
-/**
- * Average character width per pt of font size for pdfme's default Roboto.
- * Roboto Regular ~0.50, Bold ~0.54 for mixed-case prose. ALL-CAPS strings
- * (skill names, headings) render noticeably wider — capitals average ~0.58.
- * We make the estimate content-aware so caps-heavy text reserves enough
- * vertical space (no overlap between sidebar items) while body bullets
- * don't over-reserve and leave phantom blank lines.
- */
-function estimatedTextWidthMm(
-  text: string,
-  fontSizePt: number,
-  bold: boolean,
-  letterSpacing = 0,
-) {
+/* ----------------------------------------------------------
+ * Text measurement
+ *
+ * Measures text with the browser's CanvasRenderingContext2D
+ * using the SAME font family pdfme renders with, so wrap
+ * decisions match the final PDF closely. A small (~2%) safety
+ * pad absorbs the metric drift between the browser and
+ * fontkit's hmtx widths so pdfme never re-wraps on us.
+ *
+ * A character-table fallback is kept for non-browser
+ * environments (SSR / tests).
+ * ---------------------------------------------------------- */
+
+const _measureCtx: CanvasRenderingContext2D | null = (() => {
+  if (typeof document === "undefined") return null;
+  try {
+    const c = document.createElement("canvas");
+    return c.getContext("2d");
+  } catch {
+    return null;
+  }
+})();
+
+type MeasureFamily = "body" | "bodyBold" | "display" | "displayRegular";
+
+function activeCssFamily(family: MeasureFamily): string {
+  const name =
+    family === "display" ? FONT_DISPLAY_ACTIVE
+    : family === "displayRegular" ? FONT_DISPLAY_REGULAR_ACTIVE
+    : family === "bodyBold" ? FONT_BODY_BOLD_ACTIVE
+    : FONT_BODY_ACTIVE;
+  if (name.startsWith("Syne")) return 'Syne, system-ui, sans-serif';
+  if (name.startsWith("PlayfairDisplay") || name.startsWith("Fraunces")) return 'Fraunces, Georgia, serif';
+  if (name.startsWith("DMSans")) return '"DM Sans", system-ui, sans-serif';
+  return 'Roboto, system-ui, sans-serif';
+}
+
+function fallbackWidthMm(text: string, fontSizePt: number, bold: boolean, letterSpacing: number) {
   const widthUnits = Array.from(text).reduce((sum, ch) => {
     if (ch === " ") return sum + 0.28;
     if (/[A-Z]/.test(ch)) return sum + (bold ? 0.61 : 0.57);
@@ -183,20 +205,36 @@ function estimatedTextWidthMm(
     return sum + (bold ? 0.56 : 0.51);
   }, 0);
   const tracking = Math.max(0, text.length - 1) * (letterSpacing / PT_PER_MM);
-  // Light safety factor: enough that wrapLines never under-predicts so pdfme
-  // won't re-wrap on us. Bullet rendering pre-wraps with this same function
-  // and emits one block per line, so spacing stays deterministic.
-  // FONT_WIDTH_MULT accounts for body fonts wider than Roboto (e.g. Fraunces).
-  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.04 * FONT_WIDTH_MULT;
+  return ((fontSizePt * widthUnits) / PT_PER_MM + tracking) * 1.08;
+}
 
+function estimatedTextWidthMm(
+  text: string,
+  fontSizePt: number,
+  bold: boolean,
+  letterSpacing = 0,
+  family?: MeasureFamily,
+) {
+  if (!text) return 0;
+  const fam: MeasureFamily = family ?? (bold ? "bodyBold" : "body");
+  if (_measureCtx) {
+    const weight = bold || fam === "display" || fam === "bodyBold" ? 700 : 400;
+    const pxSize = fontSizePt * (96 / 72);
+    _measureCtx.font = `${weight} ${pxSize}px ${activeCssFamily(fam)}`;
+    const w = _measureCtx.measureText(text).width; // px
+    const trackingPx = Math.max(0, text.length - 1) * letterSpacing * (96 / 72);
+    const mm = ((w + trackingPx) / 96) * 25.4;
+    return mm * 1.02;
+  }
+  return fallbackWidthMm(text, fontSizePt, bold, letterSpacing);
 }
 
 export function textWidthMm(
   text: string,
   fontSizePt: number,
-  opts: { bold?: boolean; letterSpacing?: number } = {},
+  opts: { bold?: boolean; letterSpacing?: number; family?: MeasureFamily } = {},
 ) {
-  return estimatedTextWidthMm(text, fontSizePt, !!opts.bold, opts.letterSpacing ?? 0);
+  return estimatedTextWidthMm(text, fontSizePt, !!opts.bold, opts.letterSpacing ?? 0, opts.family);
 }
 
 
