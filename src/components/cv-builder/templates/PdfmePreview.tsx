@@ -18,6 +18,7 @@ interface Props {
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
   sidebarPlacement?: SidebarPlacementMap;
+  fontStyle?: FontStyleId | null;
   onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }
 
@@ -30,6 +31,7 @@ export default function PdfmePreview({
   accentHex,
   photoShape,
   sidebarPlacement,
+  fontStyle,
   onStatusChange,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
