@@ -1951,16 +1951,18 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
         const labelWFull = textWidthMm(r.label, cFs);
         // pdfme's real text wrapper is wider than our estimate for e-mail-like
         // strings, so reserve visible padding and advance by that same width.
-        const noWrapPad = r.iconKey === "mail" ? 12 : 2;
+        const noWrapPad = r.iconKey === "mail" ? 14 : 2;
         const maxLabelW = Math.max(12, textW - iconSz - iconGap);
-        const labelBoxW = Math.min(maxLabelW, labelWFull + noWrapPad);
-        const advance = iconSz + iconGap + labelBoxW;
-        if (curX + advance > textX + textW + wrapTol && curX > textX) {
+        const naturalLabelW = Math.min(maxLabelW, labelWFull + noWrapPad);
+        if (curX + iconSz + iconGap + naturalLabelW > textX + textW + wrapTol && curX > textX) {
           curX = textX;
           curY += lineStep;
         }
         b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
         const labelX = curX + iconSz + iconGap;
+        const availableLabelW = Math.max(12, textX + textW - labelX);
+        const labelBoxW = r.iconKey === "mail" ? availableLabelW : Math.min(availableLabelW, naturalLabelW);
+        const advance = iconSz + iconGap + labelBoxW;
         b.addText({
           value: r.label, x: labelX, y: curY, width: labelBoxW,
           fontSize: cFs, color: MUTED, lineHeight: lh,
