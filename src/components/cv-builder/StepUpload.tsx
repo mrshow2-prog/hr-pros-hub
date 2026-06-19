@@ -238,9 +238,8 @@ export default function StepUpload() {
   const handleScratch = () => {
     setScratchMode(true);
     setPasteMode(false);
-    if (!state.parsedText) {
-      setParsedText("(Starting from scratch — no source CV uploaded.)");
-    }
+    setFromScratch(true);
+    setParsedText("(Starting from scratch — no source CV uploaded.)");
   };
 
   return (
