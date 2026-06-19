@@ -435,9 +435,11 @@ interface HeaderOpts {
   nameFs: number;
   nameBold?: boolean;
   nameLetterSpacing?: number;
+  nameFontName?: string;
   titleFs: number;
   titleColor?: string;
   titleBold?: boolean;
+  titleFontName?: string;
   contactFs?: number;
   contactColor?: string;
   /** Optional bottom rule beneath the header. */
@@ -449,7 +451,12 @@ interface HeaderOpts {
 async function renderHeader(ctx: Ctx, o: HeaderOpts) {
   const { b, cv } = ctx;
   if (isHidden(cv, "contact")) return;
-  const photoData = o.photoUrl ? await urlToDataUrl(o.photoUrl) : null;
+  let photoData = o.photoUrl ? await urlToDataUrl(o.photoUrl) : null;
+  // Soft-round square photos so the corners aren't razor-sharp.
+  if (photoData && o.photoShape === "square") {
+    const { maskImageRounded } = await import("./core");
+    photoData = (await maskImageRounded(photoData, 0.06)) ?? photoData;
+  }
   const hasPhoto = !!photoData && o.photoShape !== "none";
   const gap = o.gap ?? 6;
   const hy0 = b.cursorY;
@@ -468,6 +475,7 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
     x: textX, y: hy0, width: textW,
     fontSize: o.nameFs, color: INK, lineHeight: 1.08,
     letterSpacing: o.nameLetterSpacing, bold: o.nameBold ?? true,
+    fontName: o.nameFontName,
   });
   let hy = hy0 + ptToMm(o.nameFs) * 1.08 + 1.4;
 
@@ -480,23 +488,59 @@ async function renderHeader(ctx: Ctx, o: HeaderOpts) {
     b.addText({
       value: cv.contact.jobTitle, x: textX, y: hy, width: textW,
       fontSize: o.titleFs, color: o.titleColor ?? SIENNA, bold: o.titleBold,
-      lineHeight: titleLh,
+      lineHeight: titleLh, fontName: o.titleFontName,
     });
     hy += titleH + 1.4;
   }
-  const contactRuns = contactLinkItems(cv);
-  const cText = contactRuns.map((r) => r.label).join("   ·   ");
-  if (cText) {
+
+  // Icon-prefixed contact row (matches the template designs).
+  const c = cv.contact;
+  type Row = { iconKey: keyof typeof ICON_SVGS; label: string; uri?: string };
+  const rows: Row[] = [];
+  if (c.location) rows.push({ iconKey: "mapPin", label: c.location });
+  if (c.phone) rows.push({ iconKey: "phone", label: c.phone });
+  if (c.email) rows.push({ iconKey: "mail", label: c.email, uri: `mailto:${c.email}` });
+  if (c.linkedinUrl) rows.push({ iconKey: "linkedin", label: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
+  if (c.website) rows.push({ iconKey: "globe", label: stripUrlPrefix(c.website), uri: c.website });
+
+  if (rows.length) {
     const cFs = o.contactFs ?? 8.6;
-    const contactY = hy + 1.4;
-    const ch = textHeightMm(cText, textW, cFs, 1.45);
-    b.addText({
-      value: cText,
-      x: textX, y: contactY, width: textW,
-      fontSize: cFs, color: o.contactColor ?? MUTED, lineHeight: 1.45,
+    const cColor = o.contactColor ?? MUTED;
+    const iconPngs = await Promise.all(rows.map((r) => svgToPngDataUrl(ICON_SVGS[r.iconKey], cColor, 64)));
+    const lh = 1.45;
+    const lineStep = ptToMm(cFs) * lh + 1.6;
+    const iconSz = ptToMm(cFs) * 0.95;
+    const iconGap = 1.4;
+    const itemGap = 3.2;
+    const wrapTol = 0.5;
+    let curX = textX;
+    let curY = hy + 1.4;
+    const startY = curY;
+    rows.forEach((r, i) => {
+      const labelWFull = textWidthMm(r.label, cFs);
+      const noWrapPad = r.iconKey === "mail" ? 14 : 2;
+      const maxLabelW = Math.max(12, textW - iconSz - iconGap);
+      const naturalLabelW = Math.min(maxLabelW, labelWFull + noWrapPad);
+      if (curX + iconSz + iconGap + naturalLabelW > textX + textW + wrapTol && curX > textX) {
+        curX = textX;
+        curY += lineStep;
+      }
+      b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
+      const labelX = curX + iconSz + iconGap;
+      const availableLabelW = Math.max(12, textX + textW - labelX);
+      const labelBoxW = r.iconKey === "mail" ? availableLabelW : Math.min(availableLabelW, naturalLabelW);
+      const advance = iconSz + iconGap + labelBoxW;
+      b.addText({
+        value: r.label, x: labelX, y: curY, width: labelBoxW,
+        fontSize: cFs, color: cColor, lineHeight: lh,
+      });
+      if (r.uri) {
+        b.addLink({ x: labelX, y: curY, width: labelBoxW, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
+      }
+      curX += advance + itemGap;
     });
-    addContactLinks(b, contactRuns, { x: textX, y: contactY, width: textW, fontSize: cFs, lineHeight: 1.45 });
-    hy += ch + 1.4;
+    hy = curY + ptToMm(cFs) * lh + 1.4;
+    void startY;
   }
   const endY = Math.max(hy, hy0 + (hasPhoto ? o.photoSize : 0)) + (o.spaceAfter ?? 4);
 
@@ -644,7 +688,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 26, photoShape: "circle", gap: 7,
-    nameFs: 28, nameBold: true,
+    nameFs: 28, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
     titleFs: 12, titleColor: SIENNA,
     bottomRule: { color: INK, weight: 0.6 },
   });
@@ -654,6 +698,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 11, color: INK, uppercase: true,
       letterSpacing: 0.9, bold: true, spaceAfter: 1.2,
+      fontName: FONT_DISPLAY_BOLD,
     });
     b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.35, color: "#3a342e" });
     b.cursorY += 3;
@@ -743,7 +788,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 32, photoShape: "square", photoOnRight: false, gap: 10,
-    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true,
+    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
     titleFs: 14, titleColor: SIENNA,
     contactFs: 9, contactColor: MUTED,
     spaceAfter: 9,
@@ -754,6 +799,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 13, color: INK, bold: true,
       letterSpacing: -0.1, spaceAfter: 3,
+      fontName: FONT_DISPLAY_BOLD,
     });
   };
 
