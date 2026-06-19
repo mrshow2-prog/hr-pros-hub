@@ -217,51 +217,15 @@ Deno.serve(async (req) => {
 
 
     const body = await req.json().catch(() => ({}));
+    const mode: string = body.mode === "scratch" ? "scratch" : "cv";
     let parsedText: string = body.parsedText ?? "";
     const intent = body.intentForm ?? {};
     const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
 
+    console.log("mode:", mode);
     console.log("parsedText length:", parsedText?.length ?? 0);
     console.log("parsedText preview:", parsedText?.slice(0, 200));
     console.log("uploadedFiles:", uploadedFiles.map((f) => f.name));
-
-    // If parsedText looks like a placeholder or is empty, extract server-side from storage
-    const looksPlaceholder =
-      !parsedText ||
-      parsedText.length < 200 ||
-      /Parsed content will be extracted server-side/i.test(parsedText);
-
-    if (looksPlaceholder && uploadedFiles.length > 0) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const admin = createClient(supabaseUrl, serviceKey);
-
-      const chunks: string[] = [];
-      for (const f of uploadedFiles) {
-        const { data, error } = await admin.storage
-          .from("cv-builder-uploads")
-          .download(f.path);
-        if (error || !data) {
-          console.error("Download failed for", f.path, error);
-          continue;
-        }
-        const bytes = new Uint8Array(await data.arrayBuffer());
-        const text = await extractFromFile(bytes, f.name);
-        console.log(`Extracted ${text.length} chars from ${f.name}`);
-        if (text.trim().length > 0) chunks.push(text);
-      }
-      parsedText = chunks.join("\n\n---\n\n");
-      console.log("Server-side parsedText length:", parsedText.length);
-    }
-
-    if (!parsedText || parsedText.trim().length < 100) {
-      return new Response(
-        JSON.stringify({
-          error: "CV text too short or empty — PDF may not have parsed correctly",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
-      );
-    }
 
     const targetRoles = Array.isArray(intent.targetRoles)
       ? intent.targetRoles.join(", ")
@@ -269,7 +233,81 @@ Deno.serve(async (req) => {
     const functionArea = intent.function ?? intent.functionArea ?? "";
     const industry = intent.industry ?? intent.targetIndustry ?? "Not industry-specific";
 
-    const userMessage = `Analyze THIS SPECIFIC CV TEXT below on two levels as described in the system instructions.
+    let systemPrompt = SYSTEM_PROMPT;
+    let userMessage = "";
+
+    if (mode === "scratch") {
+      systemPrompt = `You are helping a candidate WITHOUT an existing CV build one from scratch (often a graduate, early-career, or someone re-entering the workforce). Your job is to generate questions that gather the basics and confirm role-relevant skills.
+
+Generate 6–8 questions total split across two layers:
+
+LEVEL 1 — BASIC INFO (layer: "writing"):
+Short free-text questions covering the essentials they'll need on a CV. Pick the most relevant 3–4 of:
+- Education (degree/diploma, institution, graduation year)
+- Internships or part-time work experience
+- Volunteering
+- Trainings & certifications
+- Languages spoken
+- Any notable achievements, projects, or other info worth mentioning
+The 'example' field should be a brief plain-text hint of what to share (no fabricated quotes). The 'question' should be a clear, single-topic prompt.
+
+LEVEL 2 — ROLE-RELEVANT SKILLS (layer: "expectation"):
+3–4 yes/no questions confirming SPECIFIC skills, tools, or competencies a candidate aiming for the target role would typically have. Derive them from the role, function, seniority, and industry. Phrase as direct yes/no the candidate can tap:
+- "Marketing Coordinators typically use design tools like Canva or Figma. Do you have experience with this?"
+- "Junior Accountants are usually expected to work with Excel (formulas, pivot tables). Are you comfortable with this?"
+The 'example' field for expectation gaps should briefly describe the skill/competency. The 'question' MUST be answerable with Yes/No.
+
+Return ONLY a JSON array (no markdown, no fences, no prose) of gap objects. Each must have: id, category, example, question, layer ("writing" | "expectation"). Never fabricate quotes.`;
+
+      userMessage = `Generate starter CV questions for this candidate.
+
+TARGET ROLES: ${targetRoles}
+FUNCTION: ${functionArea}
+SENIORITY: ${intent.seniority ?? ""}
+INDUSTRY: ${industry}
+CV TYPE: ${intent.cvType ?? "skills"}
+
+Return ONLY a JSON array of 6-8 gap objects with: id, category, example, question, layer ("writing" | "expectation"). Aim for ~3-4 writing (basic info) and ~3-4 expectation (yes/no role skill confirmations). Do not wrap in markdown.`;
+    } else {
+      // If parsedText looks like a placeholder or is empty, extract server-side from storage
+      const looksPlaceholder =
+        !parsedText ||
+        parsedText.length < 200 ||
+        /Parsed content will be extracted server-side/i.test(parsedText);
+
+      if (looksPlaceholder && uploadedFiles.length > 0) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const admin = createClient(supabaseUrl, serviceKey);
+
+        const chunks: string[] = [];
+        for (const f of uploadedFiles) {
+          const { data, error } = await admin.storage
+            .from("cv-builder-uploads")
+            .download(f.path);
+          if (error || !data) {
+            console.error("Download failed for", f.path, error);
+            continue;
+          }
+          const bytes = new Uint8Array(await data.arrayBuffer());
+          const text = await extractFromFile(bytes, f.name);
+          console.log(`Extracted ${text.length} chars from ${f.name}`);
+          if (text.trim().length > 0) chunks.push(text);
+        }
+        parsedText = chunks.join("\n\n---\n\n");
+        console.log("Server-side parsedText length:", parsedText.length);
+      }
+
+      if (!parsedText || parsedText.trim().length < 100) {
+        return new Response(
+          JSON.stringify({
+            error: "CV text too short or empty — PDF may not have parsed correctly",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        );
+      }
+
+      userMessage = `Analyze THIS SPECIFIC CV TEXT below on two levels as described in the system instructions.
 
 CV TEXT:
 ---
@@ -290,11 +328,12 @@ Return ONLY a JSON array of 6-8 gap objects. Each object must have:
 - layer: "writing" | "expectation"
 
 Aim for a mix: ~3-4 writing gaps and ~3-4 expectation gaps. Do not wrap in markdown. Do not add explanation.`;
+    }
 
     const provider: string = body.provider ?? "gemini";
     console.log("analyze-cv-gaps provider:", provider);
 
-    const result = await runProvider(provider, SYSTEM_PROMPT, userMessage, 25000);
+    const result = await runProvider(provider, systemPrompt, userMessage, 25000);
 
     if ("error" in result) {
       return new Response(
