@@ -101,7 +101,7 @@ export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: 
                   >
                     <ScaledPreview scale={0.18} visibleHeight={150} className="border-b border-ink/10 pointer-events-none">
                       <div style={{ ['--accent' as never]: palette.accentHex } as React.CSSProperties}>
-                        <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} />
+                        <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} fontStyle={activeFontStyle} />
                       </div>
                     </ScaledPreview>
                     {isDraft && (
