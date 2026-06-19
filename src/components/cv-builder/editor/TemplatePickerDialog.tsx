@@ -173,11 +173,72 @@ export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: 
               </div>
             </div>
 
+            {/* Customisation row: palette + font style */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-ink/10 bg-paper/70 px-5 py-3">
+              <div className="flex items-center gap-2">
+                <span className="font-dm text-[10px] font-semibold uppercase tracking-wider2 text-ink/55">Colour</span>
+                <div className="flex items-center gap-1.5">
+                  {PALETTES.map((p) => {
+                    const selected = state.intentForm.colorPalette === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => patchIntent({ colorPalette: p.id as PaletteId })}
+                        title={p.name}
+                        aria-label={p.name}
+                        className={cn(
+                          "h-6 w-6 rounded-full border transition",
+                          selected ? "ring-2 ring-offset-2 ring-offset-paper" : "border-ink/15 hover:scale-110",
+                        )}
+                        style={{
+                          background: p.accentHex,
+                          ...(selected ? { borderColor: p.accentHex, boxShadow: `0 0 0 2px ${p.accentHex}` } : null),
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-dm text-[10px] font-semibold uppercase tracking-wider2 text-ink/55">Font</span>
+                <div className="flex items-center gap-1.5">
+                  {FONT_STYLES.map((f) => {
+                    const selected = activeFontStyle === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => patchIntent({ fontStyle: f.id })}
+                        title={f.description}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-md border px-2.5 py-1 transition",
+                          selected
+                            ? "border-ink/60 bg-ink/5"
+                            : "border-ink/15 hover:border-ink/40",
+                        )}
+                        style={selected ? { borderColor: palette.accentHex } : undefined}
+                      >
+                        <span
+                          className="text-[15px] leading-none text-ink"
+                          style={f.vars}
+                        >
+                          <span style={{ fontFamily: "var(--cv-font-display)", fontWeight: 700 }}>{f.sample}</span>
+                        </span>
+                        <span className="font-dm text-[11px] text-ink/70">{f.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             <div className="flex-1 overflow-auto p-6">
               <div className="mx-auto" style={{ maxWidth: 720 }}>
                 <ScaledPreview scale={0.85} visibleHeight={900} className="rounded-md border border-ink/10 shadow-sm">
                   <div style={{ ['--accent' as never]: palette.accentHex } as React.CSSProperties}>
-                    <CVRenderer cv={SAMPLE_CV} template={draftId} photoUrl={previewPhoto} />
+                    <CVRenderer cv={SAMPLE_CV} template={draftId} photoUrl={previewPhoto} fontStyle={activeFontStyle} />
                   </div>
                 </ScaledPreview>
               </div>
