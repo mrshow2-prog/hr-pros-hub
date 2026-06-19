@@ -151,7 +151,11 @@ export function setFontTheme(style: FontStyleId | null | undefined) {
   // Width safety margin per theme. Fraunces glyphs are ~8% wider than DM Sans;
   // Syne (editorial display) is much wider but only used for headings which
   // pass their own short strings.
-  FONT_WIDTH_MULT = style === "classic" ? 1.09 : style === "editorial" ? 1.03 : 1.0;
+  // DM Sans (modern) is ~6–8% wider than Roboto at the same pt size, and
+  // Syne (editorial display) is wider still. Bumping these multipliers keeps
+  // wrapLines safely over-estimating so pdfme doesn't re-wrap mid-word and
+  // headings/contact lines don't overflow their reserved width.
+  FONT_WIDTH_MULT = style === "classic" ? 1.12 : style === "editorial" ? 1.12 : 1.09;
 }
 
 
