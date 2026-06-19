@@ -491,21 +491,24 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       if (!error && data?.state) {
         const remote = data.state as Partial<CVBuilderState> & { currentStep?: unknown };
         const remotePaid = (data.payment_status as PaymentStatus) === "paid";
-        const hydratedStep = remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep;
-        // Paid (unlocked) sessions are locked to the editor / export to prevent
-        // re-running upload + AI processing on a single unlock credit.
-        const finalStep: WizardStep = remotePaid && hydratedStep < 4 ? 4 : hydratedStep;
-        setState((prev) => ({
-          ...prev,
-          ...remote,
-          currentStep: finalStep,
-          intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
-          generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
-          sessionId: prev.sessionId,
-          anonToken: prev.anonToken,
-          paymentStatus: (data.payment_status as PaymentStatus) ?? prev.paymentStatus,
-        }));
+        setState((prev) => {
+          const hydratedStep = remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep;
+          // Paid (unlocked) sessions are locked to the editor / export to prevent
+          // re-running upload + AI processing on a single unlock credit.
+          const finalStep: WizardStep = remotePaid && hydratedStep < 4 ? 4 : hydratedStep;
+          return {
+            ...prev,
+            ...remote,
+            currentStep: finalStep,
+            intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
+            generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
+            sessionId: prev.sessionId,
+            anonToken: prev.anonToken,
+            paymentStatus: (data.payment_status as PaymentStatus) ?? prev.paymentStatus,
+          };
+        });
       }
+
 
       hydrated.current = true;
       setLoading(false);
