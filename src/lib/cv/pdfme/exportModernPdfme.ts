@@ -2731,7 +2731,7 @@ export async function generateCvPdfmeBlob(
     case "editorial":    b = await buildGeneva(cv, effectivePhoto); break;
     // New templates currently route to the closest existing PDF builder.
     case "vibrant":      b = await buildRiyadh(cv, effectivePhoto, sidebarKeys, "vibrant"); break;
-    case "gradient":     b = await buildModern(cv, effectivePhoto); break;
+    case "gradient":     b = await buildTokyo(cv, effectivePhoto); break;
     case "creative":     b = await buildMilano(cv, effectivePhoto); break;
     case "simple":
     default:             b = await buildModern(cv, effectivePhoto);
