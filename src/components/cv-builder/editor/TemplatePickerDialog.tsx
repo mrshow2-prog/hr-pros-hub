@@ -57,13 +57,33 @@ export default function TemplatePickerDialog({ open, onOpenChange, onConfirm }: 
   const activeFontStyle = (state.intentForm.fontStyle ?? "modern") as FontStyleId;
 
   const [draftId, setDraftId] = useState<TemplateId>(currentId);
+  // Snapshot the intent (palette/font) when the dialog opens so we can detect
+  // edits and label the CTA as "Update template" even if the template id
+  // itself didn't change.
+  const [openSnapshot, setOpenSnapshot] = useState<{ palette: string; fontStyle: FontStyleId } | null>(null);
 
   // Re-sync the draft to current template whenever the dialog opens
   useEffect(() => {
-    if (open) setDraftId(currentId);
+    if (open) {
+      setDraftId(currentId);
+      setOpenSnapshot({ palette: state.intentForm.colorPalette, fontStyle: activeFontStyle });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, currentId]);
 
   const active = TEMPLATES.find((t) => t.id === draftId) ?? TEMPLATES[0];
+
+  const intentChanged =
+    openSnapshot != null &&
+    (openSnapshot.palette !== state.intentForm.colorPalette ||
+      openSnapshot.fontStyle !== activeFontStyle);
+  const templateChanged = draftId !== currentId;
+  const ctaDisabled = !templateChanged && !intentChanged;
+  const ctaLabel = templateChanged
+    ? "Use this template"
+    : intentChanged
+      ? "Update template"
+      : "Current template";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
