@@ -586,6 +586,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
 
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
+      setFromScratch: (value) => setState((s) => ({ ...s, fromScratch: value })),
       setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
       patchIntent: (patch) =>
         setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),
