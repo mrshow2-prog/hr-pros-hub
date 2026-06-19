@@ -156,7 +156,7 @@ export default function TemplateModern({
         <header className="mb-12 flex items-start gap-8">
           {photoUrl && <Photo url={photoUrl} shape="square" size={140} />}
           <div className="flex-1">
-            <h1 className="text-[48px] font-bold leading-[1.1] tracking-[-0.02em] text-ink">
+            <h1 className="font-display text-[48px] font-bold leading-[1.1] tracking-[-0.02em] text-ink">
               {cv.contact.name || "Your name"}
             </h1>
             {cv.contact.jobTitle && (
