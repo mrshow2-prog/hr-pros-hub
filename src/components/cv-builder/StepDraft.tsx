@@ -616,6 +616,7 @@ export function LivePreview() {
             accentHex={accentHex}
             photoShape={state.intentForm.photoShape}
             sidebarPlacement={state.intentForm.sidebarPlacement}
+            fontStyle={state.intentForm.fontStyle ?? "modern"}
           />
         </div>
       </div>
