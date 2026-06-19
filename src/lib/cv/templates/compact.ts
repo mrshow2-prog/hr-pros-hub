@@ -2,6 +2,27 @@ import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import { shouldRender } from "@/lib/cv/sectionVisibility";
 
 export type CompactMode = "preview" | "pdf" | "docx";
+export type CompactFontStyle = "modern" | "classic" | "editorial";
+
+interface FontPreset {
+  family: string;
+  googleHref: string | null;
+}
+const FONT_PRESETS: Record<CompactFontStyle, FontPreset> = {
+  modern: {
+    family: '"DM Sans", system-ui, sans-serif',
+    googleHref: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap",
+  },
+  classic: {
+    family: "Fraunces, Georgia, serif",
+    googleHref: "https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&display=swap",
+  },
+  editorial: {
+    family: 'Syne, "DM Sans", system-ui, sans-serif',
+    googleHref: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap",
+  },
+};
+
 
 
 const esc = (s: string) =>
