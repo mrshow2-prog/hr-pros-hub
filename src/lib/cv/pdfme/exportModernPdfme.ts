@@ -2829,6 +2829,8 @@ export interface PdfmeOptions {
   photoShape?: "circle" | "square" | "none";
   /** Per-section sidebar/main overrides for multi-column templates. */
   sidebarPlacement?: SidebarPlacementMap;
+  /** Selected font style (modern/classic/editorial). */
+  fontStyle?: FontStyleId | null;
 }
 
 export async function exportCvPdfme(
@@ -2851,6 +2853,7 @@ export async function generateCvPdfmeBlob(
 ) {
   const { setAccent, maskImageCircle } = await import("./core");
   setAccent(opts?.accentHex ?? null);
+  setFontTheme(opts?.fontStyle ?? "modern");
   let effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
   if (effectivePhoto && opts?.photoShape === "circle") {
     effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;
