@@ -1918,7 +1918,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     if (cv.contact.jobTitle) {
       b.addText({
         value: cv.contact.jobTitle, x: textX, y: ty, width: textW,
-        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY, italic: true,
+        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY,
       });
       ty += ptToMm(11.5) * 1.25 + 1.6;
     }
