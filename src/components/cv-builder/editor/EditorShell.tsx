@@ -556,6 +556,7 @@ function PreviewPane({ onStatusChange }: { onStatusChange?: (status: "loading" |
           accentHex={accentHexForPreview}
           photoShape={state.intentForm.photoShape}
           sidebarPlacement={state.intentForm.sidebarPlacement}
+          fontStyle={state.intentForm.fontStyle ?? "modern"}
           onStatusChange={onStatusChange}
         />
       </div>
