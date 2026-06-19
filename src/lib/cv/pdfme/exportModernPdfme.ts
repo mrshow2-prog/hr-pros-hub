@@ -700,7 +700,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
       letterSpacing: 0.9, bold: true, spaceAfter: 1.2,
       fontName: FONT_DISPLAY_BOLD,
     });
-    b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.35, color: "#3a342e" });
+    b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.35, color: HAIRLINE });
     b.cursorY += 3;
   };
 
