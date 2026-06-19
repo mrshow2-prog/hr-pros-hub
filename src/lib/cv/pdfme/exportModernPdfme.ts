@@ -1894,7 +1894,10 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
   // ---- Header ----
   if (!isHidden(cv, "contact")) {
-    const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    const rawPhoto = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    // Soft-round square photos to match the editorial template's tile.
+    const { maskImageRounded } = await import("./core");
+    const photoData = rawPhoto ? (await maskImageRounded(rawPhoto, 0.12)) ?? rawPhoto : null;
     const sz = 26;
     const hy0 = b.cursorY;
     let textX = b.margin;
