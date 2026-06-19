@@ -319,7 +319,7 @@ function renderHeader(
 }
 
 /* ─── Stylesheet ─── */
-function styles(mode: CompactMode) {
+function styles(mode: CompactMode, fontFamily: string) {
   const sidebarBorder =
     mode === "docx"
       ? "1pt solid #C8C0B8"
