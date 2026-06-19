@@ -131,6 +131,22 @@ export function setAccent(hex: string | null | undefined) {
   SIENNA = hex && /^#?[0-9a-f]{6}$/i.test(hex) ? (hex.startsWith("#") ? hex : `#${hex}`) : DEFAULT_ACCENT;
 }
 
+/* Active font theme — mutated by setFontTheme() before each export so all
+ * builders pick up the user-selected style via ES module live bindings. */
+export let FONT_DISPLAY_ACTIVE: string = FONT_SANS_BOLD;
+export let FONT_DISPLAY_REGULAR_ACTIVE: string = FONT_SANS;
+export let FONT_BODY_ACTIVE: string = FONT_REGULAR;
+export let FONT_BODY_BOLD_ACTIVE: string = FONT_BOLD;
+export let FONT_BODY_ITALIC_ACTIVE: string = FONT_DISPLAY_ITALIC;
+export function setFontTheme(style: FontStyleId | null | undefined) {
+  const t = getFontTheme(style);
+  FONT_DISPLAY_ACTIVE = t.display;
+  FONT_DISPLAY_REGULAR_ACTIVE = t.displayRegular;
+  FONT_BODY_ACTIVE = t.body;
+  FONT_BODY_BOLD_ACTIVE = t.bodyBold;
+  FONT_BODY_ITALIC_ACTIVE = t.bodyItalic;
+}
+
 /**
  * Average character width per pt of font size for pdfme's default Roboto.
  * Roboto Regular ~0.50, Bold ~0.54 for mixed-case prose. ALL-CAPS strings
