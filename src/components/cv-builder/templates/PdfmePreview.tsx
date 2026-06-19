@@ -90,7 +90,7 @@ export default function PdfmePreview({
       window.clearTimeout(timer);
       void doc?.destroy();
     };
-  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape, JSON.stringify(sidebarPlacement ?? {})]);
+  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape, fontStyle, JSON.stringify(sidebarPlacement ?? {})]);
 
   const pageHeight = Math.round(pageWidth * (297 / 210));
 
