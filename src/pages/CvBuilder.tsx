@@ -53,8 +53,10 @@ function Wizard() {
   }
 
   const step = state.currentStep;
-  // Step 4 (Draft) renders the full-screen editor outside the wizard shell.
-  if (step === 4) {
+  const locked = state.paymentStatus === "paid";
+  // Paid (unlocked) sessions are locked to the editor / export — never let the
+  // wizard render the upload / intent / gaps screens again.
+  if (step === 4 || (locked && step < 4)) {
     return <EditorShell />;
   }
 
@@ -66,6 +68,7 @@ function Wizard() {
       {step === 5 && <StepExport />}
     </WizardShell>
   );
+
 }
 
 export default function CvBuilder() {
