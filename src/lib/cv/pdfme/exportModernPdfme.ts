@@ -2522,6 +2522,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
   }
 
   // ---------- Experience (full-width with year column + timeline) ----------
+  const TIMELINE_COLOR = mixHex(HAIR, ACCENT, 0.25);
   async function renderExperience() {
     await sectionTitle("Experience", "briefcase");
     const yearColW = 26;
@@ -2530,6 +2531,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
       const yr = ((exp.startDate || "") + (exp.endDate ? " — " + exp.endDate : "")) || exp.period || "";
       b.ensure(14);
       const py = b.cursorY;
+      const pageBefore = b.pageIndex;
       if (yr) {
         b.addText({
           value: yr.toUpperCase(), x: b.margin, y: py + 0.5, width: yearColW,
@@ -2557,14 +2559,32 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
         b.addText({ value: sub, fontSize: 9, color: MUTED, bold: true, spaceAfter: 2 });
       }
       for (const bul of visibleBullets(exp)) {
-        bullet(ctx, "▪", bul.rewrite || bul.original, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+        bullet(ctx, "•", bul.rewrite || bul.original, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
       }
 
       const endY = b.cursorY;
+      const pageAfter = b.pageIndex;
       bAny.margin = savedM;
       bAny.contentW = savedW;
-      // vertical timeline line spanning this entry
-      b.addLine({ x: lineX, y: py + 4, width: 0.4, height: Math.max(2, endY - py - 5), color: mixHex(HAIR, ACCENT, 0.25) });
+
+      // vertical timeline line — handle entries that span multiple pages
+      const drawLine = (yStart: number, yEnd: number) => {
+        const h = yEnd - yStart;
+        if (h > 1) b.addLine({ x: lineX, y: yStart, width: 0.4, height: h, color: TIMELINE_COLOR });
+      };
+      if (pageBefore === pageAfter) {
+        drawLine(py + 4, Math.max(py + 5, endY - 1));
+      } else {
+        const pageBottom = b.PAGE_H - b.bottom;
+        b.setPageIndex(pageBefore);
+        drawLine(py + 4, pageBottom);
+        for (let p = pageBefore + 1; p < pageAfter; p += 1) {
+          b.setPageIndex(p);
+          drawLine(b.top, pageBottom);
+        }
+        b.setPageIndex(pageAfter);
+        drawLine(b.top, Math.max(b.top + 1, endY - 1));
+      }
       b.cursorY = endY;
       if (idx < cv.experience.length - 1) b.cursorY += 3.5;
     });
@@ -2575,14 +2595,15 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
   async function renderSkills() {
     await sectionTitle("Skills", "sparkles");
     const fs = 8.8;
-    const padX = 2.6;
+    const padX = 3;
     const padY = 1.1;
     const gap = 1.6;
     const lineH = ptToMm(fs) * 1.25 + padY * 2;
     let curX = b.margin;
     let curY = b.cursorY;
     cv.skills.forEach((s) => {
-      const w = textWidthMm(s, fs) + padX * 2;
+      const tw = textWidthMm(s, fs) + 2.5;
+      const w = tw + padX * 2;
       if (curX + w > b.margin + b.contentW) {
         curX = b.margin;
         curY += lineH + gap;
@@ -2595,7 +2616,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
         color: SOFT_ACCENT, borderColor: mixHex(ACCENT, "#ffffff", 0.6), borderWidth: 0.25, radius: 1.5,
       });
       b.addText({
-        value: s, x: curX + padX, y: curY + padY, width: w - padX * 2,
+        value: s, x: curX + padX, y: curY + padY, width: w - padX * 2 + 10,
         fontSize: fs, color: INK,
       });
       curX += w + gap;
