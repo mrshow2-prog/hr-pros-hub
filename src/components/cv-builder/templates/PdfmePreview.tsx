@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { generateCvPdfmeBlob } from "@/lib/cv/pdfme/exportModernPdfme";
+import type { FontStyleId } from "@/lib/cv/fontStyles";
 import type { SidebarPlacementMap } from "@/lib/cv/sidebarPlacement";
 import * as pdfjs from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
