@@ -2654,7 +2654,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
   async function renderAchievements() {
     await sectionTitle("Achievements", "award");
     for (const a of cv.achievements.filter(Boolean)) {
-      bullet(ctx, "▪", a, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+      bullet(ctx, "•", a, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
     }
     b.cursorY += 2;
   }
@@ -2685,7 +2685,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
     for (const s of cv.customSections) {
       await sectionTitle(s.title || "Additional", "fileText");
       for (const it of s.bullets.filter(Boolean)) {
-        bullet(ctx, "▪", it, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+        bullet(ctx, "•", it, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
       }
       b.cursorY += 2;
     }
