@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import CVRenderer, { SAMPLE_CV } from "./templates/CVRenderer";
 import { ScaledPreview } from "./templates/shared";
 import { PALETTES, getPalette, type PaletteId } from "@/lib/cv/palettes";
+import { FONT_STYLES, type FontStyleId } from "@/lib/cv/fontStyles";
 import type { PhotoShape } from "@/contexts/CVBuilderContext";
 
 const SAMPLE_PHOTO_URL =
