@@ -688,7 +688,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 26, photoShape: "circle", gap: 7,
-    nameFs: 28, nameBold: true,
+    nameFs: 28, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
     titleFs: 12, titleColor: SIENNA,
     bottomRule: { color: INK, weight: 0.6 },
   });
@@ -698,6 +698,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 11, color: INK, uppercase: true,
       letterSpacing: 0.9, bold: true, spaceAfter: 1.2,
+      fontName: FONT_DISPLAY_BOLD,
     });
     b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.35, color: "#3a342e" });
     b.cursorY += 3;
