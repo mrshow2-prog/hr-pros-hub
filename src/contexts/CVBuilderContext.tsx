@@ -556,6 +556,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     state.currentStep,
     state.uploadedFiles,
     state.parsedText,
+    state.fromScratch,
     state.photoPath,
     state.intentForm,
     state.gapAnalysis,
