@@ -6,24 +6,36 @@ import { saveAs } from "file-saver";
 import RobotoRegularUrl from "./fonts/Roboto-Regular.ttf?url";
 import RobotoBoldUrl from "./fonts/Roboto-Bold.ttf?url";
 import PlayfairDisplayUrl from "./fonts/Fraunces.ttf?url";
+import FrauncesBoldUrl from "./fonts/Fraunces-Bold.ttf?url";
+import FrauncesItalicUrl from "./fonts/Fraunces-Italic.ttf?url";
+import FrauncesBoldItalicUrl from "./fonts/Fraunces-BoldItalic.ttf?url";
 
 /** Font registry for pdfme. Lazy-loaded once and cached. */
 export const FONT_REGULAR = "Roboto";
 export const FONT_BOLD = "Roboto-Bold";
 export const FONT_DISPLAY = "PlayfairDisplay";
+export const FONT_DISPLAY_BOLD = "PlayfairDisplay-Bold";
+export const FONT_DISPLAY_ITALIC = "PlayfairDisplay-Italic";
+export const FONT_DISPLAY_BOLD_ITALIC = "PlayfairDisplay-BoldItalic";
 let fontPromise: Promise<Font> | null = null;
 async function loadFont(): Promise<Font> {
   if (!fontPromise) {
     fontPromise = (async () => {
-      const [reg, bold, display] = await Promise.all([
+      const [reg, bold, display, displayBold, displayItalic, displayBoldItalic] = await Promise.all([
         fetch(RobotoRegularUrl).then((r) => r.arrayBuffer()),
         fetch(RobotoBoldUrl).then((r) => r.arrayBuffer()),
         fetch(PlayfairDisplayUrl).then((r) => r.arrayBuffer()),
+        fetch(FrauncesBoldUrl).then((r) => r.arrayBuffer()),
+        fetch(FrauncesItalicUrl).then((r) => r.arrayBuffer()),
+        fetch(FrauncesBoldItalicUrl).then((r) => r.arrayBuffer()),
       ]);
       return {
         [FONT_REGULAR]: { data: reg, fallback: true },
         [FONT_BOLD]: { data: bold },
         [FONT_DISPLAY]: { data: display },
+        [FONT_DISPLAY_BOLD]: { data: displayBold },
+        [FONT_DISPLAY_ITALIC]: { data: displayItalic },
+        [FONT_DISPLAY_BOLD_ITALIC]: { data: displayBoldItalic },
       };
     })();
   }
