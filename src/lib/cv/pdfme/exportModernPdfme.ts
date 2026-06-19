@@ -2047,7 +2047,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       for (const s of cv.customSections) {
         sectionTitle(s.title || "Additional");
         for (const it of s.bullets.filter(Boolean)) {
-          bullet(ctx, "—", it, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+          bullet(ctx, "—", it, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
         }
         b.cursorY += 2;
       }
