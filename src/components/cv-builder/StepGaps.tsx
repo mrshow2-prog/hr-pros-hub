@@ -53,13 +53,17 @@ export default function StepGaps() {
     <>
       <StepHeader
         eyebrow="Step 3 · Gaps"
-        title="A few things your CV doesn't quite say yet"
-        subtitle="Answer what's relevant. Writing gaps need detail; role-expectation gaps can be answered Yes or No."
+        title={state.fromScratch ? "Let's gather the basics for your CV" : "A few things your CV doesn't quite say yet"}
+        subtitle={state.fromScratch
+          ? "Since you're starting from scratch, tell us about your education, internships, volunteering, trainings, and confirm the skills that fit your target role."
+          : "Answer what's relevant. Writing gaps need detail; role-expectation gaps can be answered Yes or No."}
       />
 
       <div className="mb-6 flex items-center justify-between">
         <p className="font-dm text-sm text-ink/65">
-          {loading ? "Reading your CV…" : `${answered} of ${gaps.length} answered`}
+          {loading
+            ? state.fromScratch ? "Preparing your questions…" : "Reading your CV…"
+            : `${answered} of ${gaps.length} answered`}
         </p>
         {!loading && gaps.length > 0 && (
           <div className="h-1 w-32 overflow-hidden rounded-full bg-ink/10">
@@ -71,7 +75,7 @@ export default function StepGaps() {
       <div className="space-y-5">
         {loading && (
           <div className="rounded-md border border-ink/10 bg-clay/30 p-8 text-center font-dm text-sm text-ink/55">
-            Pulling specifics from your CV…
+            {state.fromScratch ? "Building your starter questions…" : "Pulling specifics from your CV…"}
           </div>
         )}
         {!loading && error && gaps.length === 0 && (
