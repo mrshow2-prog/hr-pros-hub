@@ -19,14 +19,14 @@ export interface CVRendererProps {
   fontStyle?: FontStyleId | null;
 }
 
-function pick(template: CVRendererProps["template"], cv: GeneratedCV, photoUrl: string | null) {
+function pick(template: CVRendererProps["template"], cv: GeneratedCV, photoUrl: string | null, fontStyle: FontStyleId) {
   switch (normalizeTemplateId(template)) {
     case "traditional":
       return <TemplateClassic cv={cv} photoUrl={photoUrl} />;
     case "simple":
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
     case "detailed":
-      return <TemplateCompact cv={cv} photoUrl={photoUrl} />;
+      return <TemplateCompact cv={cv} photoUrl={photoUrl} fontStyle={fontStyle} />;
     case "skills":
       return <TemplateSkillsFirst cv={cv} photoUrl={photoUrl} />;
     case "executive":
@@ -47,9 +47,10 @@ function pick(template: CVRendererProps["template"], cv: GeneratedCV, photoUrl: 
 }
 
 export default function CVRenderer({ cv, template, photoUrl, fontStyle }: CVRendererProps) {
+  const style = fontStyle ?? "modern";
   return (
-    <div style={getFontStyleVars(fontStyle)}>
-      {pick(template, cv, photoUrl)}
+    <div style={getFontStyleVars(style)}>
+      {pick(template, cv, photoUrl, style)}
     </div>
   );
 }
