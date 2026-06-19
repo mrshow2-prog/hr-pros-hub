@@ -405,6 +405,7 @@ const buildInitialState = (): CVBuilderState => {
     currentStep: 1,
     uploadedFiles: [],
     parsedText: "",
+    fromScratch: false,
     photoPath: null,
     intentForm: defaultIntent,
     gapAnalysis: { gaps: [], responses: {} },
