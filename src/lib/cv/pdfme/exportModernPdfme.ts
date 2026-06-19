@@ -5,7 +5,7 @@ import {
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
-  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY, FONT_DISPLAY_ACTIVE, FONT_DISPLAY_ITALIC,
+  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY_ITALIC,
   FONT_DISPLAY_ACTIVE, FONT_DISPLAY_REGULAR_ACTIVE, FONT_BODY_ACTIVE, FONT_BODY_BOLD_ACTIVE,
   setFontTheme, type FontStyleId,
   type PdfmeBuilder,
