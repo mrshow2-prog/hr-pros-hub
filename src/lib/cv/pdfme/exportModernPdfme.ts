@@ -1978,7 +1978,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
         const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
         deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
         for (const bul of visibleBullets(exp)) {
-          bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+          bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
         }
 
         (b as unknown as { margin: number }).margin = savedMargin;
