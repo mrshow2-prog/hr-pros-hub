@@ -2351,6 +2351,342 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
 }
 
 /* ============================================================
+ *  TOKYO (Gradient)
+ *  - Bold gradient header band with circular photo, contact pills,
+ *    icon-squared section headings, timeline experience, pill skills.
+ *  - Mirrors src/components/cv-builder/templates/TemplateTokyo.tsx
+ * ============================================================ */
+async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
+  const b = createBuilder({ margin: 14, top: 14, bottom: 14 });
+  const ACCENT = SIENNA;
+  const ACCENT_DARK = shadeHex(ACCENT, -0.55);
+  const PAPER = "#ffffff";
+  const SOFT_ACCENT = mixHex(ACCENT, "#ffffff", 0.88);
+  const HAIR = "#e5dfd6";
+  const ctx: Ctx = { cv, primary: ACCENT, b };
+
+  // ---------- Header band (simulated diagonal gradient) ----------
+  const BAND_H = isHidden(cv, "contact") ? 0 : 62;
+  if (BAND_H > 0) {
+    const strips = 90;
+    const stripH = BAND_H / strips;
+    for (let i = 0; i < strips; i += 1) {
+      // diagonal-ish feel: blend on Y but bias darker toward bottom-right
+      const t = i / (strips - 1);
+      b.addRect({
+        x: 0,
+        y: i * stripH,
+        width: PAGE_W,
+        height: stripH + 0.15,
+        color: mixHex(ACCENT, ACCENT_DARK, t * 0.95),
+      });
+    }
+    // Decorative soft blob top-right
+    b.addRect({
+      x: PAGE_W - 28, y: -8, width: 60, height: 60,
+      color: mixHex(ACCENT, "#ffffff", 0.18), radius: 28,
+    });
+    // Decorative outlined square bottom-right
+    b.addRect({
+      x: PAGE_W - 52, y: BAND_H - 18, width: 14, height: 14,
+      color: mixHex(ACCENT, ACCENT_DARK, 0.5),
+      borderColor: mixHex("#ffffff", ACCENT, 0.65), borderWidth: 0.5,
+    });
+
+    // Photo with white ring
+    const photoData = photoUrl ? await urlToDataUrl(photoUrl) : null;
+    const photoSize = 30;
+    const photoX = 14;
+    const photoY = (BAND_H - photoSize) / 2 - 4;
+    const textX = photoData ? photoX + photoSize + 8 : 14;
+    const textW = PAGE_W - textX - 14;
+
+    if (photoData) {
+      // white circular plate
+      b.addRect({
+        x: photoX - 1.6, y: photoY - 1.6,
+        width: photoSize + 3.2, height: photoSize + 3.2,
+        color: PAPER, radius: (photoSize + 3.2) / 2,
+      });
+      b.addImage({ x: photoX, y: photoY, w: photoSize, h: photoSize, data: photoData });
+    }
+
+    // Name
+    const nameY = photoY + 2;
+    b.addText({
+      value: cv.contact.name || "Your name",
+      x: textX, y: nameY, width: textW,
+      fontSize: 28, color: PAPER, bold: true, fontName: FONT_DISPLAY,
+      lineHeight: 1.05, letterSpacing: -0.6,
+    });
+    let cy = nameY + ptToMm(28) * 1.05 + 1.5;
+    if (cv.contact.jobTitle) {
+      b.addText({
+        value: cv.contact.jobTitle.toUpperCase(),
+        x: textX, y: cy, width: textW,
+        fontSize: 9.5, color: mixHex(PAPER, ACCENT, 0.15),
+        bold: true, letterSpacing: 2.4,
+      });
+      cy += ptToMm(9.5) * 1.25 + 3;
+    }
+
+    // Contact pills
+    const runs = contactLinkItems(cv);
+    if (runs.length) {
+      const padX = 2.4;
+      const padY = 1.1;
+      const fs = 8.4;
+      const lineH = ptToMm(fs) * 1.25 + padY * 2;
+      const pillBg = mixHex(ACCENT, "#ffffff", 0.22);
+      const gap = 1.8;
+      let px = textX;
+      let py = cy;
+      for (const r of runs) {
+        const pw = textWidthMm(r.label, fs) + padX * 2 + 4;
+        if (px + pw > PAGE_W - 14) {
+          px = textX;
+          py += lineH + gap;
+        }
+        b.addRect({
+          x: px, y: py, width: pw, height: lineH,
+          color: pillBg, radius: lineH / 2,
+        });
+        b.addText({
+          value: r.label, x: px + padX + 2, y: py + padY, width: pw - padX * 2 - 4,
+          fontSize: fs, color: PAPER,
+        });
+        if (r.uri) {
+          b.addLink({ x: px, y: py, width: pw, height: lineH, uri: withScheme(r.uri) });
+        }
+        px += pw + gap;
+      }
+    }
+    b.cursorY = BAND_H + 8;
+  }
+
+  // ---------- Icon section heading ----------
+  const iconCache = new Map<string, string>();
+  async function iconFor(key: keyof typeof ICON_SVGS | undefined): Promise<string | null> {
+    if (!key) return null;
+    if (!iconCache.has(key)) {
+      iconCache.set(key, await svgToPngDataUrl(ICON_SVGS[key], PAPER, 64));
+    }
+    return iconCache.get(key)!;
+  }
+
+  async function sectionTitle(label: string, key?: keyof typeof ICON_SVGS) {
+    b.ensure(10);
+    const py = b.cursorY;
+    const sq = 5.2;
+    b.addRect({ x: b.margin, y: py, width: sq, height: sq, color: ACCENT, radius: 1.2 });
+    const ico = await iconFor(key);
+    if (ico) {
+      b.addImage({ x: b.margin + 0.7, y: py + 0.7, w: sq - 1.4, h: sq - 1.4, data: ico });
+    }
+    b.addText({
+      value: label, x: b.margin + sq + 2.4, y: py + 0.4,
+      width: b.contentW - sq - 2.4,
+      fontSize: 12, color: INK, bold: true, fontName: FONT_DISPLAY,
+      letterSpacing: -0.2,
+    });
+    // hairline rule on the right
+    const labelW = textWidthMm(label, 12, { bold: true }) + 2;
+    const ruleX = b.margin + sq + 2.4 + labelW + 2;
+    const ruleEnd = b.margin + b.contentW;
+    if (ruleEnd - ruleX > 6) {
+      b.addLine({ x: ruleX, y: py + 3, width: ruleEnd - ruleX, height: 0.25, color: HAIR });
+    }
+    b.cursorY = py + sq + 3.5;
+  }
+
+  // ---------- Summary ----------
+  if (shouldRender(cv, "summary")) {
+    await sectionTitle("About me", "user");
+    // accent vertical bar to the left of the paragraph
+    const fs = 9.8;
+    const lh = 1.6;
+    const indent = 4;
+    const lines = wrapLines(cv.summary || "", b.contentW - indent, fs, {});
+    const blockH = Math.max(1, lines.length) * ptToMm(fs) * lh;
+    b.ensure(blockH);
+    const py = b.cursorY;
+    b.addRect({ x: b.margin, y: py, width: 1.1, height: blockH, color: ACCENT, radius: 0.5 });
+    for (let i = 0; i < lines.length; i += 1) {
+      b.addText({
+        value: lines[i], x: b.margin + indent, y: py + i * ptToMm(fs) * lh,
+        width: b.contentW - indent + 10, fontSize: fs, color: SUBINK, lineHeight: lh,
+      });
+    }
+    b.cursorY = py + blockH + 5;
+  }
+
+  // ---------- Experience (full-width with year column + timeline) ----------
+  async function renderExperience() {
+    await sectionTitle("Experience", "briefcase");
+    const yearColW = 26;
+    const lineX = b.margin + yearColW + 2;
+    cv.experience.forEach((exp, idx) => {
+      const yr = ((exp.startDate || "") + (exp.endDate ? " — " + exp.endDate : "")) || exp.period || "";
+      b.ensure(14);
+      const py = b.cursorY;
+      if (yr) {
+        b.addText({
+          value: yr.toUpperCase(), x: b.margin, y: py + 0.5, width: yearColW,
+          fontSize: 7.8, color: ACCENT, bold: true, letterSpacing: 1.1,
+        });
+      }
+      // timeline dot
+      b.addRect({ x: lineX - 1.6, y: py + 1.2, width: 2.6, height: 2.6, color: ACCENT, radius: 1.3 });
+
+      // shift content margin to start after the timeline
+      const bAny = b as unknown as { margin: number; contentW: number };
+      const savedM = bAny.margin;
+      const savedW = bAny.contentW;
+      const indent = yearColW + 8;
+      bAny.margin = savedM + indent;
+      bAny.contentW = savedW - indent;
+      b.cursorY = py;
+
+      b.addText({
+        value: exp.role || "", fontSize: 11.5, color: INK, bold: true,
+        fontName: FONT_DISPLAY, lineHeight: 1.15, spaceAfter: 0.4,
+      });
+      const sub = [exp.company, exp.location].filter(Boolean).join(" · ");
+      if (sub) {
+        b.addText({ value: sub, fontSize: 9, color: MUTED, bold: true, spaceAfter: 2 });
+      }
+      for (const bul of visibleBullets(exp)) {
+        bullet(ctx, "▪", bul.rewrite || bul.original, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+      }
+
+      const endY = b.cursorY;
+      bAny.margin = savedM;
+      bAny.contentW = savedW;
+      // vertical timeline line spanning this entry
+      b.addLine({ x: lineX, y: py + 4, width: 0.4, height: Math.max(2, endY - py - 5), color: mixHex(HAIR, ACCENT, 0.25) });
+      b.cursorY = endY;
+      if (idx < cv.experience.length - 1) b.cursorY += 3.5;
+    });
+    b.cursorY += 3;
+  }
+
+  // ---------- Two-column compact renderers ----------
+  async function renderSkills() {
+    await sectionTitle("Skills", "sparkles");
+    const fs = 8.8;
+    const padX = 2.6;
+    const padY = 1.1;
+    const gap = 1.6;
+    const lineH = ptToMm(fs) * 1.25 + padY * 2;
+    let curX = b.margin;
+    let curY = b.cursorY;
+    cv.skills.forEach((s) => {
+      const w = textWidthMm(s, fs) + padX * 2;
+      if (curX + w > b.margin + b.contentW) {
+        curX = b.margin;
+        curY += lineH + gap;
+      }
+      if (curY + lineH > b.PAGE_H - b.bottom) {
+        b.cursorY = curY; b.newPage(); curY = b.cursorY; curX = b.margin;
+      }
+      b.addRect({
+        x: curX, y: curY, width: w, height: lineH,
+        color: SOFT_ACCENT, borderColor: mixHex(ACCENT, "#ffffff", 0.6), borderWidth: 0.25, radius: 1.5,
+      });
+      b.addText({
+        value: s, x: curX + padX, y: curY + padY, width: w - padX * 2,
+        fontSize: fs, color: INK,
+      });
+      curX += w + gap;
+    });
+    b.cursorY = curY + lineH + 3;
+  }
+
+  async function renderEducation() {
+    await sectionTitle("Education", "graduationCap");
+    for (const ed of cv.education) {
+      b.addText({ value: ed.qualification, fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY, spaceAfter: 0.4 });
+      if (ed.institution) b.addText({ value: ed.institution, fontSize: 9, color: ACCENT, bold: true, spaceAfter: 0.4 });
+      if (ed.period) b.addText({ value: ed.period, fontSize: 8.4, color: MUTED, spaceAfter: 2 });
+    }
+    b.cursorY += 2;
+  }
+
+  async function renderLanguages() {
+    await sectionTitle("Languages", "languages");
+    for (const l of cv.languages) {
+      b.ensure(5);
+      const py = b.cursorY;
+      b.addText({ value: l.name, x: b.margin, y: py, width: b.contentW * 0.6, fontSize: 9.6, color: INK, bold: true });
+      if (l.level) {
+        b.addText({
+          value: l.level, x: b.margin + b.contentW * 0.6, y: py,
+          width: b.contentW * 0.4, fontSize: 9.6, color: MUTED, align: "right",
+        });
+      }
+      b.cursorY = py + 5;
+    }
+    b.cursorY += 2;
+  }
+
+  async function renderAchievements() {
+    await sectionTitle("Achievements", "award");
+    for (const a of cv.achievements.filter(Boolean)) {
+      bullet(ctx, "▪", a, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+    }
+    b.cursorY += 2;
+  }
+
+  async function renderCertifications() {
+    await sectionTitle("Certifications", "badgeCheck");
+    for (const c of cv.certifications) {
+      b.ensure(5);
+      const py = b.cursorY;
+      const left = c.name + (c.issuer ? ` — ${c.issuer}` : "");
+      b.addText({ value: left, x: b.margin, y: py, width: b.contentW * 0.7, fontSize: 9.4, color: INK, bold: true });
+      if (c.date) {
+        b.addText({ value: c.date, x: b.margin + b.contentW * 0.7, y: py, width: b.contentW * 0.3, fontSize: 9, color: MUTED, align: "right" });
+      }
+      b.cursorY = py + 5;
+    }
+    b.cursorY += 2;
+  }
+
+  async function renderCompetencies() {
+    await sectionTitle("Competencies", "fileText");
+    for (const c of cv.competencyClusters) {
+      inlineCluster(ctx, c, { titleFs: 9.6, titleColor: ACCENT, itemsFs: 9.6, itemsColor: SUBINK });
+    }
+  }
+
+  async function renderCustom() {
+    for (const s of cv.customSections) {
+      await sectionTitle(s.title || "Additional", "fileText");
+      for (const it of s.bullets.filter(Boolean)) {
+        bullet(ctx, "▪", it, { fs: 9.3, lh: 1.55, glyphColor: ACCENT, glyphW: 3 });
+      }
+      b.cursorY += 2;
+    }
+  }
+
+  // Render in user-defined order. Experience and custom are full width;
+  // the rest render at full width too (single-column flow keeps PDF predictable).
+  for (const k of getSectionOrder(cv)) {
+    if (!shouldRender(cv, k)) continue;
+    if (k === "experience") await renderExperience();
+    else if (k === "skills") await renderSkills();
+    else if (k === "education") await renderEducation();
+    else if (k === "languages") await renderLanguages();
+    else if (k === "achievements") await renderAchievements();
+    else if (k === "certifications") await renderCertifications();
+    else if (k === "competencies") await renderCompetencies();
+    else if (k === "custom") await renderCustom();
+  }
+
+  return b;
+}
+
+/* ============================================================
  * Public entry — routes to the right builder.
  * ============================================================ */
 export interface PdfmeOptions {
