@@ -2433,7 +2433,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
     // Contact pills
     const runs = contactLinkItems(cv);
     if (runs.length) {
-      const padX = 2.4;
+      const padX = 3;
       const padY = 1.1;
       const fs = 8.4;
       const lineH = ptToMm(fs) * 1.25 + padY * 2;
@@ -2442,7 +2442,8 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
       let px = textX;
       let py = cy;
       for (const r of runs) {
-        const pw = textWidthMm(r.label, fs) + padX * 2 + 4;
+        const tw = textWidthMm(r.label, fs) + 2.5;
+        const pw = tw + padX * 2;
         if (px + pw > PAGE_W - 14) {
           px = textX;
           py += lineH + gap;
@@ -2452,7 +2453,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
           color: pillBg, radius: lineH / 2,
         });
         b.addText({
-          value: r.label, x: px + padX + 2, y: py + padY, width: pw - padX * 2 - 4,
+          value: r.label, x: px + padX, y: py + padY, width: pw - padX * 2 + 10,
           fontSize: fs, color: PAPER,
         });
         if (r.uri) {
