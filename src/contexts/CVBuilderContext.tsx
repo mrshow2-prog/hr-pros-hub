@@ -102,6 +102,8 @@ export interface IntentForm {
   photoShape: PhotoShape;
   /** Selected colour palette id (see src/lib/cv/palettes.ts). */
   colorPalette: string;
+  /** Selected font style: modern (sans), classic (serif), editorial (display sans). */
+  fontStyle?: "modern" | "classic" | "editorial";
   /**
    * For multi-column templates only — per-section override of whether the
    * section is rendered in the sidebar/banner or in the main body.
