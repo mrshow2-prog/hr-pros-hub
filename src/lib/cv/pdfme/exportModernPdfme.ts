@@ -1944,27 +1944,31 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       const iconSz = ptToMm(cFs) * 0.95;
       const iconGap = 1.4;
       const itemGap = 3.2;
-      const wrapTol = 2.5; // tolerate slight width over-estimation before wrapping
+      const wrapTol = 0.5;
       let curX = textX;
       let curY = ty + 0.4;
       rows.forEach((r, i) => {
-        // Full width pdfme will actually use to render (includes the 4% safety factor).
         const labelWFull = textWidthMm(r.label, cFs);
-        // Tighter estimate only for the wrap test, so a short item doesn't bump to a new line.
-        const labelWWrap = labelWFull / 1.04;
-        const advance = iconSz + iconGap + labelWFull;
-        if (curX + iconSz + iconGap + labelWWrap > textX + textW + wrapTol && curX > textX) {
+        // pdfme's real text wrapper is wider than our estimate for e-mail-like
+        // strings, so reserve visible padding and advance by that same width.
+        const noWrapPad = r.iconKey === "mail" ? 14 : 2;
+        const maxLabelW = Math.max(12, textW - iconSz - iconGap);
+        const naturalLabelW = Math.min(maxLabelW, labelWFull + noWrapPad);
+        if (curX + iconSz + iconGap + naturalLabelW > textX + textW + wrapTol && curX > textX) {
           curX = textX;
           curY += lineStep;
         }
         b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
         const labelX = curX + iconSz + iconGap;
+        const availableLabelW = Math.max(12, textX + textW - labelX);
+        const labelBoxW = r.iconKey === "mail" ? availableLabelW : Math.min(availableLabelW, naturalLabelW);
+        const advance = iconSz + iconGap + labelBoxW;
         b.addText({
-          value: r.label, x: labelX, y: curY, width: labelWFull + 0.5,
+          value: r.label, x: labelX, y: curY, width: labelBoxW,
           fontSize: cFs, color: MUTED, lineHeight: lh,
         });
         if (r.uri) {
-          b.addLink({ x: labelX, y: curY, width: labelWFull, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
+          b.addLink({ x: labelX, y: curY, width: labelBoxW, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
         }
         curX += advance + itemGap;
       });
