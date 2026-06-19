@@ -48,7 +48,7 @@ export default function PdfmePreview({
     const timer = window.setTimeout(async () => {
       try {
         setStatus("loading");
-        const blob = await generateCvPdfmeBlob(cv, photoUrl, template, { accentHex, photoShape, sidebarPlacement });
+        const blob = await generateCvPdfmeBlob(cv, photoUrl, template, { accentHex, photoShape, sidebarPlacement, fontStyle });
         const loadingTask = pdfjs.getDocument({ data: await blob.arrayBuffer() });
         doc = await loadingTask.promise;
         const rendered: string[] = [];
