@@ -175,7 +175,7 @@ export default function StepTemplate() {
               >
                 <ScaledPreview scale={0.36} visibleHeight={360} className="border-b border-ink/10">
                   <div style={{ ['--accent' as never]: palette.accentHex } as React.CSSProperties}>
-                    <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} />
+                    <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} fontStyle={state.intentForm.fontStyle ?? "modern"} />
                   </div>
                 </ScaledPreview>
                 {active && (
