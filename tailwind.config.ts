@@ -12,10 +12,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ['Fraunces', 'Georgia', 'serif'],
-        syne: ['Fraunces', 'Georgia', 'serif'],
-        dm: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        serif: ['var(--cv-font-display, Fraunces)', 'Georgia', 'serif'],
+        syne: ['var(--cv-font-display, "DM Sans")', 'system-ui', 'sans-serif'],
+        dm: ['var(--cv-font-body, "DM Sans")', 'system-ui', 'sans-serif'],
         sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['var(--cv-font-display, "DM Sans")', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
