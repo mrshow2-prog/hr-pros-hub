@@ -1708,7 +1708,7 @@ async function buildRiyadh(
     letterSpacing: variant === "vibrant" ? -0.6 : -0.4,
     lineHeight: 1.05,
     spaceAfter: 1,
-    fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
+    fontName: variant === "vibrant" ? FONT_DISPLAY_REGULAR_ACTIVE : undefined,
   });
 
   if (cv.contact.jobTitle) {
