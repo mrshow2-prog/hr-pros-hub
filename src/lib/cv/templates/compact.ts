@@ -426,7 +426,15 @@ export function renderCompactHtml(
   cv: GeneratedCV,
   photoDataUrl: string | null,
   mode: CompactMode,
+  fontStyle: CompactFontStyle = "modern",
 ): string {
+  const preset = FONT_PRESETS[fontStyle] ?? FONT_PRESETS.modern;
+  // DOCX rendering doesn't load web fonts — fall back to Calibri there.
+  const fontFamily = mode === "docx" ? "Calibri, Carlito, Arial, sans-serif" : preset.family;
+  const fontLink = mode !== "docx" && preset.googleHref
+    ? `<link rel="stylesheet" href="${preset.googleHref}">`
+    : "";
+
   const { onPage1, rest } = splitForPage1(cv);
 
   const leftPage1 =
@@ -456,7 +464,8 @@ export function renderCompactHtml(
 <head>
 <meta charset="UTF-8">
 <title>${esc(cv.contact.name || "CV")} — CV</title>
-<style>${styles(mode)}</style>
+${fontLink}
+<style>${styles(mode, fontFamily)}</style>
 </head>
 <body>
 ${renderHeader(cv, photoDataUrl, mode)}
