@@ -788,7 +788,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 32, photoShape: "square", photoOnRight: false, gap: 10,
-    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true,
+    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
     titleFs: 14, titleColor: SIENNA,
     contactFs: 9, contactColor: MUTED,
     spaceAfter: 9,
@@ -799,6 +799,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 13, color: INK, bold: true,
       letterSpacing: -0.1, spaceAfter: 3,
+      fontName: FONT_DISPLAY_BOLD,
     });
   };
 
