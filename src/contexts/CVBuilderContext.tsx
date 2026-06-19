@@ -266,6 +266,8 @@ export interface CVBuilderState {
   currentStep: WizardStep;
   uploadedFiles: UploadedFile[];
   parsedText: string;
+  /** True when the user chose "Start from scratch" at the Build step (no source CV). */
+  fromScratch: boolean;
   photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
