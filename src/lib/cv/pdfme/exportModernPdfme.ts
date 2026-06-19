@@ -1957,12 +1957,14 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
           curY += lineStep;
         }
         b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
+        const labelX = curX + iconSz + iconGap;
+        const remainingLineW = Math.max(labelW + 10, textX + textW - labelX);
         b.addText({
-          value: r.label, x: curX + iconSz + iconGap, y: curY, width: labelW + 3,
+          value: r.label, x: labelX, y: curY, width: remainingLineW,
           fontSize: cFs, color: MUTED, lineHeight: lh,
         });
         if (r.uri) {
-          b.addLink({ x: curX + iconSz + iconGap, y: curY, width: labelW, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
+          b.addLink({ x: labelX, y: curY, width: labelW, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
         }
         curX += total + itemGap;
       });
