@@ -330,7 +330,15 @@ export default function StepUpload() {
         type="button"
         onClick={() => {
           setError("");
-          setPasteMode((p) => !p);
+          setPasteMode((p) => {
+            const next = !p;
+            if (next && state.fromScratch) {
+              setFromScratch(false);
+              setScratchMode(false);
+              setParsedText("");
+            }
+            return next;
+          });
         }}
         className="mt-5 font-dm text-sm text-sienna underline-offset-4 hover:underline"
       >
