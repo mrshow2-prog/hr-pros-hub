@@ -5,7 +5,9 @@ import {
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
-  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY, FONT_DISPLAY_BOLD, FONT_DISPLAY_ITALIC,
+  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY_ITALIC,
+  FONT_DISPLAY_ACTIVE, FONT_DISPLAY_REGULAR_ACTIVE, FONT_BODY_ACTIVE, FONT_BODY_BOLD_ACTIVE,
+  setFontTheme, type FontStyleId,
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
@@ -564,7 +566,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 28, photoShape: "square", gap: 7,
-    nameFs: 26, nameLetterSpacing: -0.3, nameBold: true,
+    nameFs: 26, nameLetterSpacing: -0.3, nameBold: true, nameFontName: FONT_DISPLAY_ACTIVE,
     titleFs: 12, titleColor: SIENNA,
     spaceAfter: 6,
   });
@@ -688,7 +690,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 26, photoShape: "circle", gap: 7,
-    nameFs: 28, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
+    nameFs: 28, nameBold: true, nameFontName: FONT_DISPLAY_ACTIVE,
     titleFs: 12, titleColor: SIENNA,
     bottomRule: { color: INK, weight: 0.6 },
   });
@@ -698,7 +700,7 @@ async function buildClassic(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 11, color: INK, uppercase: true,
       letterSpacing: 0.9, bold: true, spaceAfter: 1.2,
-      fontName: FONT_DISPLAY_BOLD,
+      fontName: FONT_DISPLAY_ACTIVE,
     });
     b.addLine({ x: b.margin, y: b.cursorY, width: b.contentW, height: 0.35, color: HAIRLINE });
     b.cursorY += 3;
@@ -788,7 +790,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 32, photoShape: "square", photoOnRight: false, gap: 10,
-    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true, nameFontName: FONT_DISPLAY_BOLD,
+    nameFs: 32, nameLetterSpacing: -0.6, nameBold: true, nameFontName: FONT_DISPLAY_ACTIVE,
     titleFs: 14, titleColor: SIENNA,
     contactFs: 9, contactColor: MUTED,
     spaceAfter: 9,
@@ -799,7 +801,7 @@ async function buildExecutive(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, fontSize: 13, color: INK, bold: true,
       letterSpacing: -0.1, spaceAfter: 3,
-      fontName: FONT_DISPLAY_BOLD,
+      fontName: FONT_DISPLAY_ACTIVE,
     });
   };
 
@@ -1706,7 +1708,7 @@ async function buildRiyadh(
     letterSpacing: variant === "vibrant" ? -0.6 : -0.4,
     lineHeight: 1.05,
     spaceAfter: 1,
-    fontName: variant === "vibrant" ? FONT_DISPLAY : undefined,
+    fontName: variant === "vibrant" ? FONT_DISPLAY_REGULAR_ACTIVE : undefined,
   });
 
   if (cv.contact.jobTitle) {
@@ -1960,7 +1962,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     let ty = hy0 + ptToMm(7.6) * 1.25 + 1;
     b.addText({
       value: cv.contact.name || "Your name", x: textX, y: ty, width: textW,
-      fontSize: 26, color: INK, fontName: FONT_DISPLAY_BOLD,
+      fontSize: 26, color: INK, fontName: FONT_DISPLAY_ACTIVE,
       letterSpacing: -0.6, lineHeight: 1.05,
     });
     ty += ptToMm(26) * 1.05 + 1.4;
@@ -2034,7 +2036,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     });
     b.addText({
       value: label, x: b.margin, y: startY + 3.6, width: b.contentW,
-      fontSize: 15, color: INK, fontName: FONT_DISPLAY_BOLD, letterSpacing: -0.2,
+      fontSize: 15, color: INK, fontName: FONT_DISPLAY_ACTIVE, letterSpacing: -0.2,
     });
     b.cursorY = startY + ptToMm(15) * 1.25 + 5;
     b.addLine({ x: b.margin, y: b.cursorY - 1.4, width: b.contentW, height: 0.25, color: "#d8cfc1" });
@@ -2201,7 +2203,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
           .map((s) => s[0]?.toUpperCase() ?? "").join("") || "YN";
       b.addText({
         value: initials, x: b.margin, y: hy0 + 8.5, width: photoSize,
-        fontSize: 24, color: PAPER, bold: true, fontName: FONT_DISPLAY, align: "center",
+        fontSize: 24, color: PAPER, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, align: "center",
       });
     }
 
@@ -2217,14 +2219,14 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
 
     b.addText({
       value: first, x: textX, y: ty, width: textW,
-      fontSize: 30, color: INK, bold: true, fontName: FONT_DISPLAY,
+      fontSize: 30, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
       lineHeight: 1.0, letterSpacing: -0.8,
     });
     ty += ptToMm(30) * 1.0 + 0.6;
     if (last) {
       b.addText({
         value: last, x: textX, y: ty, width: textW,
-        fontSize: 30, color: ACCENT, bold: true, fontName: FONT_DISPLAY,
+        fontSize: 30, color: ACCENT, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
         lineHeight: 1.0, letterSpacing: -0.8,
       });
       ty += ptToMm(30) * 1.0 + 1.6;
@@ -2269,7 +2271,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
     const numW = 18;
     b.addText({
       value: numStr, x: b.margin, y: startY - 1, width: numW,
-      fontSize: 24, color: ACCENT, bold: true, fontName: FONT_DISPLAY, lineHeight: 1,
+      fontSize: 24, color: ACCENT, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, lineHeight: 1,
     });
     b.addText({
       value: label.toUpperCase(), x: b.margin + numW, y: startY + 2.4,
@@ -2283,7 +2285,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
     sectionTitle("Profile");
     b.addText({
       value: `"${cv.summary}"`, fontSize: 10.2, color: SUBINK,
-      lineHeight: 1.65, spaceAfter: 5, fontName: FONT_DISPLAY, align: "justify",
+      lineHeight: 1.65, spaceAfter: 5, fontName: FONT_DISPLAY_REGULAR_ACTIVE, align: "justify",
     });
   }
 
@@ -2300,7 +2302,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
         if (yr) {
           b.addText({
             value: yr, x: b.margin, y: py - 1, width: yearColW,
-            fontSize: 18, color: ACCENT, bold: true, fontName: FONT_DISPLAY, lineHeight: 1,
+            fontSize: 18, color: ACCENT, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, lineHeight: 1,
           });
           if (startYear && startYear !== yr) {
             b.addText({
@@ -2317,7 +2319,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
         b.cursorY = py;
         b.addText({
           value: exp.role || "", fontSize: 12.5, color: INK, bold: true,
-          fontName: FONT_DISPLAY, lineHeight: 1.2, spaceAfter: 0.4,
+          fontName: FONT_DISPLAY_REGULAR_ACTIVE, lineHeight: 1.2, spaceAfter: 0.4,
         });
         const sub = [exp.company, exp.location].filter(Boolean).join(" · ").toUpperCase();
         if (sub) {
@@ -2398,7 +2400,7 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
         const label = l.level?.trim() ? `${l.name}  (${l.level.trim()})` : l.name;
         b.addText({
           value: label, x: b.margin, y: py, width: b.contentW - totalBarsW - 4,
-          fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY,
+          fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
         });
         const lvl = (l.level || "").toLowerCase();
         const filled =
@@ -2527,7 +2529,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: cv.contact.name || "Your name",
       x: textX, y: nameY, width: textW,
-      fontSize: 28, color: PAPER, bold: true, fontName: FONT_DISPLAY,
+      fontSize: 28, color: PAPER, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
       lineHeight: 1.05, letterSpacing: -0.6,
     });
     let cy = nameY + ptToMm(28) * 1.05 + 1.5;
@@ -2598,7 +2600,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
     b.addText({
       value: label, x: b.margin + sq + 2.4, y: py + 0.4,
       width: b.contentW - sq - 2.4,
-      fontSize: 12, color: INK, bold: true, fontName: FONT_DISPLAY,
+      fontSize: 12, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
       letterSpacing: -0.2,
     });
     // hairline rule on the right
@@ -2663,7 +2665,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
 
       b.addText({
         value: exp.role || "", fontSize: 11.5, color: INK, bold: true,
-        fontName: FONT_DISPLAY, lineHeight: 1.15, spaceAfter: 0.4,
+        fontName: FONT_DISPLAY_REGULAR_ACTIVE, lineHeight: 1.15, spaceAfter: 0.4,
       });
       const sub = [exp.company, exp.location].filter(Boolean).join(" · ");
       if (sub) {
@@ -2738,7 +2740,7 @@ async function buildTokyo(cv: GeneratedCV, photoUrl: string | null) {
   async function renderEducation() {
     await sectionTitle("Education", "graduationCap");
     for (const ed of cv.education) {
-      b.addText({ value: ed.qualification, fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY, spaceAfter: 0.4 });
+      b.addText({ value: ed.qualification, fontSize: 10, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, spaceAfter: 0.4 });
       if (ed.institution) b.addText({ value: ed.institution, fontSize: 9, color: ACCENT, bold: true, spaceAfter: 0.4 });
       if (ed.period) b.addText({ value: ed.period, fontSize: 8.4, color: MUTED, spaceAfter: 2 });
     }
@@ -2827,6 +2829,8 @@ export interface PdfmeOptions {
   photoShape?: "circle" | "square" | "none";
   /** Per-section sidebar/main overrides for multi-column templates. */
   sidebarPlacement?: SidebarPlacementMap;
+  /** Selected font style (modern/classic/editorial). */
+  fontStyle?: FontStyleId | null;
 }
 
 export async function exportCvPdfme(
@@ -2849,6 +2853,7 @@ export async function generateCvPdfmeBlob(
 ) {
   const { setAccent, maskImageCircle } = await import("./core");
   setAccent(opts?.accentHex ?? null);
+  setFontTheme(opts?.fontStyle ?? "modern");
   let effectivePhoto = opts?.photoShape === "none" ? null : photoUrl;
   if (effectivePhoto && opts?.photoShape === "circle") {
     effectivePhoto = (await maskImageCircle(effectivePhoto)) ?? effectivePhoto;

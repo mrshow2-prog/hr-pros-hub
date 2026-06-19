@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import CVRenderer, { SAMPLE_CV } from "./templates/CVRenderer";
 import { ScaledPreview } from "./templates/shared";
 import { PALETTES, getPalette, type PaletteId } from "@/lib/cv/palettes";
+import { FONT_STYLES, type FontStyleId } from "@/lib/cv/fontStyles";
 import type { PhotoShape } from "@/contexts/CVBuilderContext";
 
 const SAMPLE_PHOTO_URL =
@@ -151,6 +152,35 @@ export default function StepTemplate() {
             })}
           </div>
         </div>
+
+        {/* Font style */}
+        <div className="flex flex-col gap-2">
+          <span className="font-dm text-[11px] uppercase tracking-wider2 text-ink/55">Font style</span>
+          <div className="flex flex-wrap gap-2">
+            {FONT_STYLES.map((f) => {
+              const active = (state.intentForm.fontStyle ?? "modern") === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => patchIntent({ fontStyle: f.id as FontStyleId })}
+                  title={f.description}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full border px-3 py-1.5 font-dm text-xs transition-colors",
+                    active ? "border-ink bg-ink/5 text-ink" : "border-ink/15 text-ink/70 hover:border-ink/30",
+                  )}
+                >
+                  <span style={f.vars}>
+                    <span className="text-[14px] leading-none" style={{ fontFamily: "var(--cv-font-display)", fontWeight: 700 }}>
+                      {f.sample}
+                    </span>
+                  </span>
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
@@ -175,7 +205,7 @@ export default function StepTemplate() {
               >
                 <ScaledPreview scale={0.36} visibleHeight={360} className="border-b border-ink/10">
                   <div style={{ ['--accent' as never]: palette.accentHex } as React.CSSProperties}>
-                    <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} />
+                    <CVRenderer cv={SAMPLE_CV} template={t.id} photoUrl={previewPhoto} fontStyle={state.intentForm.fontStyle ?? "modern"} />
                   </div>
                 </ScaledPreview>
                 {active && (

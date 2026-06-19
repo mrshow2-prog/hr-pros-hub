@@ -1,4 +1,5 @@
 import { normalizeTemplateId, type GeneratedCV, type TemplateId } from "@/contexts/CVBuilderContext";
+import { getFontStyleVars, type FontStyleId } from "@/lib/cv/fontStyles";
 import TemplateClassic from "./TemplateClassic";
 import TemplateModern from "./TemplateModern";
 import TemplateCompact from "./TemplateCompact";
@@ -14,9 +15,11 @@ export interface CVRendererProps {
   cv: GeneratedCV;
   template: TemplateId | string | null | undefined;
   photoUrl: string | null;
+  /** Selected font style. Defaults to "modern". */
+  fontStyle?: FontStyleId | null;
 }
 
-export default function CVRenderer({ cv, template, photoUrl }: CVRendererProps) {
+function pick(template: CVRendererProps["template"], cv: GeneratedCV, photoUrl: string | null) {
   switch (normalizeTemplateId(template)) {
     case "traditional":
       return <TemplateClassic cv={cv} photoUrl={photoUrl} />;
@@ -41,6 +44,14 @@ export default function CVRenderer({ cv, template, photoUrl }: CVRendererProps) 
     default:
       return <TemplateModern cv={cv} photoUrl={photoUrl} />;
   }
+}
+
+export default function CVRenderer({ cv, template, photoUrl, fontStyle }: CVRendererProps) {
+  return (
+    <div style={getFontStyleVars(fontStyle)}>
+      {pick(template, cv, photoUrl)}
+    </div>
+  );
 }
 
 /** Built-in sample CV used for selector previews. */

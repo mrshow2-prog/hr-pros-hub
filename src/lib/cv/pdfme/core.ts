@@ -9,6 +9,10 @@ import PlayfairDisplayUrl from "./fonts/Fraunces.ttf?url";
 import FrauncesBoldUrl from "./fonts/Fraunces-Bold.ttf?url";
 import FrauncesItalicUrl from "./fonts/Fraunces-Italic.ttf?url";
 import FrauncesBoldItalicUrl from "./fonts/Fraunces-BoldItalic.ttf?url";
+import DMSansRegularUrl from "./fonts/DMSans-Regular.ttf?url";
+import DMSansBoldUrl from "./fonts/DMSans-Bold.ttf?url";
+import SyneBoldUrl from "./fonts/Syne-Bold.ttf?url";
+import SyneExtraBoldUrl from "./fonts/Syne-ExtraBold.ttf?url";
 
 /** Font registry for pdfme. Lazy-loaded once and cached. */
 export const FONT_REGULAR = "Roboto";
@@ -17,17 +21,69 @@ export const FONT_DISPLAY = "PlayfairDisplay";
 export const FONT_DISPLAY_BOLD = "PlayfairDisplay-Bold";
 export const FONT_DISPLAY_ITALIC = "PlayfairDisplay-Italic";
 export const FONT_DISPLAY_BOLD_ITALIC = "PlayfairDisplay-BoldItalic";
+export const FONT_SANS = "DMSans";
+export const FONT_SANS_BOLD = "DMSans-Bold";
+export const FONT_DISPLAY_SANS = "Syne-Bold";
+export const FONT_DISPLAY_SANS_BOLD = "Syne-ExtraBold";
+
+/** A 'font theme' selects which display + body fonts a template uses. */
+export type FontStyleId = "modern" | "classic" | "editorial";
+export interface FontTheme {
+  display: string;
+  displayRegular: string;
+  bodyBold: string;
+  body: string;
+  bodyItalic: string;
+  serif: boolean;
+}
+export function getFontTheme(style: FontStyleId | null | undefined): FontTheme {
+  switch (style) {
+    case "classic":
+      return {
+        display: FONT_DISPLAY_BOLD,
+        displayRegular: FONT_DISPLAY,
+        bodyBold: FONT_DISPLAY_BOLD,
+        body: FONT_DISPLAY,
+        bodyItalic: FONT_DISPLAY_ITALIC,
+        serif: true,
+      };
+    case "editorial":
+      return {
+        display: FONT_DISPLAY_SANS_BOLD,
+        displayRegular: FONT_DISPLAY_SANS,
+        bodyBold: FONT_SANS_BOLD,
+        body: FONT_SANS,
+        bodyItalic: FONT_SANS,
+        serif: false,
+      };
+    case "modern":
+    default:
+      return {
+        display: FONT_SANS_BOLD,
+        displayRegular: FONT_SANS,
+        bodyBold: FONT_SANS_BOLD,
+        body: FONT_SANS,
+        bodyItalic: FONT_SANS,
+        serif: false,
+      };
+  }
+}
+
 let fontPromise: Promise<Font> | null = null;
 async function loadFont(): Promise<Font> {
   if (!fontPromise) {
     fontPromise = (async () => {
-      const [reg, bold, display, displayBold, displayItalic, displayBoldItalic] = await Promise.all([
+      const [reg, bold, display, displayBold, displayItalic, displayBoldItalic, dmSans, dmSansBold, syneBold, syneExtraBold] = await Promise.all([
         fetch(RobotoRegularUrl).then((r) => r.arrayBuffer()),
         fetch(RobotoBoldUrl).then((r) => r.arrayBuffer()),
         fetch(PlayfairDisplayUrl).then((r) => r.arrayBuffer()),
         fetch(FrauncesBoldUrl).then((r) => r.arrayBuffer()),
         fetch(FrauncesItalicUrl).then((r) => r.arrayBuffer()),
         fetch(FrauncesBoldItalicUrl).then((r) => r.arrayBuffer()),
+        fetch(DMSansRegularUrl).then((r) => r.arrayBuffer()),
+        fetch(DMSansBoldUrl).then((r) => r.arrayBuffer()),
+        fetch(SyneBoldUrl).then((r) => r.arrayBuffer()),
+        fetch(SyneExtraBoldUrl).then((r) => r.arrayBuffer()),
       ]);
       return {
         [FONT_REGULAR]: { data: reg, fallback: true },
@@ -36,6 +92,10 @@ async function loadFont(): Promise<Font> {
         [FONT_DISPLAY_BOLD]: { data: displayBold },
         [FONT_DISPLAY_ITALIC]: { data: displayItalic },
         [FONT_DISPLAY_BOLD_ITALIC]: { data: displayBoldItalic },
+        [FONT_SANS]: { data: dmSans },
+        [FONT_SANS_BOLD]: { data: dmSansBold },
+        [FONT_DISPLAY_SANS]: { data: syneBold },
+        [FONT_DISPLAY_SANS_BOLD]: { data: syneExtraBold },
       };
     })();
   }
@@ -69,6 +129,22 @@ export let SIENNA = "#9c5643";
 export const DEFAULT_ACCENT = "#9c5643";
 export function setAccent(hex: string | null | undefined) {
   SIENNA = hex && /^#?[0-9a-f]{6}$/i.test(hex) ? (hex.startsWith("#") ? hex : `#${hex}`) : DEFAULT_ACCENT;
+}
+
+/* Active font theme — mutated by setFontTheme() before each export so all
+ * builders pick up the user-selected style via ES module live bindings. */
+export let FONT_DISPLAY_ACTIVE: string = FONT_SANS_BOLD;
+export let FONT_DISPLAY_REGULAR_ACTIVE: string = FONT_SANS;
+export let FONT_BODY_ACTIVE: string = FONT_REGULAR;
+export let FONT_BODY_BOLD_ACTIVE: string = FONT_BOLD;
+export let FONT_BODY_ITALIC_ACTIVE: string = FONT_DISPLAY_ITALIC;
+export function setFontTheme(style: FontStyleId | null | undefined) {
+  const t = getFontTheme(style);
+  FONT_DISPLAY_ACTIVE = t.display;
+  FONT_DISPLAY_REGULAR_ACTIVE = t.displayRegular;
+  FONT_BODY_ACTIVE = t.body;
+  FONT_BODY_BOLD_ACTIVE = t.bodyBold;
+  FONT_BODY_ITALIC_ACTIVE = t.bodyItalic;
 }
 
 /**
@@ -436,7 +512,7 @@ export function createBuilder(opts: BuilderOpts = {}): PdfmeBuilder {
           width,
           height: h + 0.5,
           fontSize: o.fontSize,
-          fontName: o.fontName ?? (o.bold ? FONT_BOLD : FONT_REGULAR),
+          fontName: o.fontName ?? (o.bold ? FONT_BODY_BOLD_ACTIVE : FONT_BODY_ACTIVE),
           fontColor: o.color ?? INK,
           alignment: o.align ?? "left",
           verticalAlignment: "top",

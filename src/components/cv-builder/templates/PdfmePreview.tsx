@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { GeneratedCV, TemplateId } from "@/contexts/CVBuilderContext";
 import { generateCvPdfmeBlob } from "@/lib/cv/pdfme/exportModernPdfme";
+import type { FontStyleId } from "@/lib/cv/fontStyles";
 import type { SidebarPlacementMap } from "@/lib/cv/sidebarPlacement";
 import * as pdfjs from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
@@ -17,6 +18,7 @@ interface Props {
   accentHex?: string | null;
   photoShape?: "circle" | "square" | "none";
   sidebarPlacement?: SidebarPlacementMap;
+  fontStyle?: FontStyleId | null;
   onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }
 
@@ -29,6 +31,7 @@ export default function PdfmePreview({
   accentHex,
   photoShape,
   sidebarPlacement,
+  fontStyle,
   onStatusChange,
 }: Props) {
   const [pages, setPages] = useState<string[]>([]);
@@ -45,7 +48,7 @@ export default function PdfmePreview({
     const timer = window.setTimeout(async () => {
       try {
         setStatus("loading");
-        const blob = await generateCvPdfmeBlob(cv, photoUrl, template, { accentHex, photoShape, sidebarPlacement });
+        const blob = await generateCvPdfmeBlob(cv, photoUrl, template, { accentHex, photoShape, sidebarPlacement, fontStyle });
         const loadingTask = pdfjs.getDocument({ data: await blob.arrayBuffer() });
         doc = await loadingTask.promise;
         const rendered: string[] = [];
@@ -87,7 +90,7 @@ export default function PdfmePreview({
       window.clearTimeout(timer);
       void doc?.destroy();
     };
-  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape, JSON.stringify(sidebarPlacement ?? {})]);
+  }, [cv, template, photoUrl, pageWidth, accentHex, photoShape, fontStyle, JSON.stringify(sidebarPlacement ?? {})]);
 
   const pageHeight = Math.round(pageWidth * (297 / 210));
 

@@ -13,6 +13,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/syne": "^5.2.7",
     "@hookform/resolvers": "^3.10.0",
     "@pdfme/common": "^6.1.2",
     "@pdfme/generator": "^6.1.2",

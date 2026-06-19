@@ -45,6 +45,7 @@ export default function StepExport() {
     accentHex: paletteHexFor(state.intentForm.colorPalette),
     photoShape: state.intentForm.photoShape,
     sidebarPlacement: state.intentForm.sidebarPlacement,
+    fontStyle: state.intentForm.fontStyle ?? "modern",
   };
 
   /** Re-sign the photo URL just before export so a stale/expired token never silently drops the photo. */

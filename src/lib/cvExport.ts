@@ -21,6 +21,8 @@ export interface CvExportOptions {
   photoShape?: "circle" | "square" | "none";
   /** Per-section sidebar/main overrides for multi-column templates. */
   sidebarPlacement?: SidebarPlacementMap;
+  /** Selected font style for the PDF render. */
+  fontStyle?: "modern" | "classic" | "editorial" | null;
 }
 
 /* =========================================================
