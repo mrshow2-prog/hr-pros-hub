@@ -5,7 +5,7 @@ import { PDFDocument, PDFName, PDFString } from "@pdfme/pdf-lib";
 import { saveAs } from "file-saver";
 import RobotoRegularUrl from "./fonts/Roboto-Regular.ttf?url";
 import RobotoBoldUrl from "./fonts/Roboto-Bold.ttf?url";
-import PlayfairDisplayUrl from "./fonts/PlayfairDisplay.ttf?url";
+import PlayfairDisplayUrl from "./fonts/Fraunces.ttf?url";
 
 /** Font registry for pdfme. Lazy-loaded once and cached. */
 export const FONT_REGULAR = "Roboto";

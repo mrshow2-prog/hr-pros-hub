@@ -1911,15 +1911,16 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     let ty = hy0 + ptToMm(7.6) * 1.25 + 1;
     b.addText({
       value: cv.contact.name || "Your name", x: textX, y: ty, width: textW,
-      fontSize: 24, color: INK, bold: true, letterSpacing: -0.5, lineHeight: 1.05,
+      fontSize: 26, color: INK, bold: true, fontName: FONT_DISPLAY,
+      letterSpacing: -0.6, lineHeight: 1.05,
     });
-    ty += ptToMm(24) * 1.05 + 1.2;
+    ty += ptToMm(26) * 1.05 + 1.4;
     if (cv.contact.jobTitle) {
       b.addText({
         value: cv.contact.jobTitle, x: textX, y: ty, width: textW,
-        fontSize: 11, color: SUBINK,
+        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY,
       });
-      ty += ptToMm(11) * 1.25 + 1.6;
+      ty += ptToMm(11.5) * 1.25 + 1.6;
     }
     const contactRuns = contactLinkItems(cv);
     const contact = contactRuns.map((r) => r.label).join("   ·   ");
@@ -1943,16 +1944,16 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     });
     b.addText({
       value: label, x: b.margin, y: startY + 3.6, width: b.contentW,
-      fontSize: 13, color: INK, bold: true,
+      fontSize: 15, color: INK, bold: true, fontName: FONT_DISPLAY, letterSpacing: -0.2,
     });
-    b.cursorY = startY + ptToMm(13) * 1.25 + 5;
+    b.cursorY = startY + ptToMm(15) * 1.25 + 5;
     b.addLine({ x: b.margin, y: b.cursorY - 1.4, width: b.contentW, height: 0.25, color: "#d8cfc1" });
     b.cursorY += 2;
   };
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Profile");
-    b.addText({ value: cv.summary, fontSize: 10, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, align: "justify" });
+    b.addText({ value: cv.summary, fontSize: 10.2, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, fontName: FONT_DISPLAY, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -1977,7 +1978,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
         const comp = [exp.company, exp.location].filter(Boolean).join(" · ");
         deterministicLine({ cv, primary: SIENNA, b }, comp, { fs: 9.6, color: SIENNA, bold: true, spaceAfter: 1.8 });
         for (const bul of visibleBullets(exp)) {
-          bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+          bullet({ cv, primary: SIENNA, b }, "—", bul.rewrite || bul.original, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
         }
 
         (b as unknown as { margin: number }).margin = savedMargin;
@@ -2030,7 +2031,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     achievements: () => {
       sectionTitle("Achievements");
       for (const a of cv.achievements.filter(Boolean)) {
-        bullet(ctx, "—", a, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+        bullet(ctx, "—", a, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
       }
       b.cursorY += 2;
     },
@@ -2046,7 +2047,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       for (const s of cv.customSections) {
         sectionTitle(s.title || "Additional");
         for (const it of s.bullets.filter(Boolean)) {
-          bullet(ctx, "—", it, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+          bullet(ctx, "—", it, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
         }
         b.cursorY += 2;
       }
