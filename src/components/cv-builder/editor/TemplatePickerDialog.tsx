@@ -11,7 +11,8 @@ import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCVBuilder, type TemplateId } from "@/contexts/CVBuilderContext";
-import { getPalette } from "@/lib/cv/palettes";
+import { getPalette, PALETTES, type PaletteId } from "@/lib/cv/palettes";
+import { FONT_STYLES, type FontStyleId } from "@/lib/cv/fontStyles";
 import CVRenderer, { SAMPLE_CV } from "../templates/CVRenderer";
 import { ScaledPreview } from "../templates/shared";
 
