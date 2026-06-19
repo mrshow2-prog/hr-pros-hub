@@ -66,7 +66,7 @@ async function compressImage(
 }
 
 export default function StepUpload() {
-  const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath } = useCVBuilder();
+  const { state, setUploadedFiles, setParsedText, setStep, setPhotoPath, setFromScratch } = useCVBuilder();
   const [pasteMode, setPasteMode] = useState(false);
   const [scratchMode, setScratchMode] = useState(false);
   const [dragging, setDragging] = useState(false);
