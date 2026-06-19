@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { GeneratedCV } from "@/contexts/CVBuilderContext";
-import { renderCompactHtml } from "@/lib/cv/templates/compact";
+import { renderCompactHtml, type CompactFontStyle } from "@/lib/cv/templates/compact";
 
 /**
  * Compact template preview — renders the same HTML used for PDF/DOCX export
@@ -11,14 +11,16 @@ import { renderCompactHtml } from "@/lib/cv/templates/compact";
 export default function TemplateCompact({
   cv,
   photoUrl,
+  fontStyle,
 }: {
   cv: GeneratedCV;
   photoUrl: string | null;
+  fontStyle?: CompactFontStyle;
 }) {
   const A4_W = 794;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(1123);
-  const html = renderCompactHtml(cv, photoUrl, "preview");
+  const html = renderCompactHtml(cv, photoUrl, "preview", fontStyle ?? "modern");
 
   useEffect(() => {
     const f = iframeRef.current;
