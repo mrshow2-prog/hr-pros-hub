@@ -566,7 +566,7 @@ async function buildModern(cv: GeneratedCV, photoUrl: string | null) {
 
   await renderHeader(ctx, {
     photoUrl, photoSize: 28, photoShape: "square", gap: 7,
-    nameFs: 26, nameLetterSpacing: -0.3, nameBold: true,
+    nameFs: 26, nameLetterSpacing: -0.3, nameBold: true, nameFontName: FONT_DISPLAY_ACTIVE,
     titleFs: 12, titleColor: SIENNA,
     spaceAfter: 6,
   });
