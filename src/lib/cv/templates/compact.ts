@@ -2,6 +2,27 @@ import type { GeneratedCV, SectionKey } from "@/contexts/CVBuilderContext";
 import { shouldRender } from "@/lib/cv/sectionVisibility";
 
 export type CompactMode = "preview" | "pdf" | "docx";
+export type CompactFontStyle = "modern" | "classic" | "editorial";
+
+interface FontPreset {
+  family: string;
+  googleHref: string | null;
+}
+const FONT_PRESETS: Record<CompactFontStyle, FontPreset> = {
+  modern: {
+    family: '"DM Sans", system-ui, sans-serif',
+    googleHref: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap",
+  },
+  classic: {
+    family: "Fraunces, Georgia, serif",
+    googleHref: "https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&display=swap",
+  },
+  editorial: {
+    family: 'Syne, "DM Sans", system-ui, sans-serif',
+    googleHref: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap",
+  },
+};
+
 
 
 const esc = (s: string) =>
@@ -298,7 +319,7 @@ function renderHeader(
 }
 
 /* ─── Stylesheet ─── */
-function styles(mode: CompactMode) {
+function styles(mode: CompactMode, fontFamily: string) {
   const sidebarBorder =
     mode === "docx"
       ? "1pt solid #C8C0B8"
@@ -335,7 +356,7 @@ function styles(mode: CompactMode) {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     @page { size: A4; margin: 0; }
     body {
-      font-family: Calibri, Carlito, Arial, sans-serif;
+      font-family: ${fontFamily};
       font-size: 11pt; line-height: 1.4; color: #1A1714; background: white;
       padding: ${mode === "preview" ? "0 15mm" : "14mm 15mm"};
       print-color-adjust: exact; -webkit-print-color-adjust: exact;
@@ -405,7 +426,15 @@ export function renderCompactHtml(
   cv: GeneratedCV,
   photoDataUrl: string | null,
   mode: CompactMode,
+  fontStyle: CompactFontStyle = "modern",
 ): string {
+  const preset = FONT_PRESETS[fontStyle] ?? FONT_PRESETS.modern;
+  // DOCX rendering doesn't load web fonts — fall back to Calibri there.
+  const fontFamily = mode === "docx" ? "Calibri, Carlito, Arial, sans-serif" : preset.family;
+  const fontLink = mode !== "docx" && preset.googleHref
+    ? `<link rel="stylesheet" href="${preset.googleHref}">`
+    : "";
+
   const { onPage1, rest } = splitForPage1(cv);
 
   const leftPage1 =
@@ -435,7 +464,8 @@ export function renderCompactHtml(
 <head>
 <meta charset="UTF-8">
 <title>${esc(cv.contact.name || "CV")} — CV</title>
-<style>${styles(mode)}</style>
+${fontLink}
+<style>${styles(mode, fontFamily)}</style>
 </head>
 <body>
 ${renderHeader(cv, photoDataUrl, mode)}
