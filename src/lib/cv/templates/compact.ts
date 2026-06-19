@@ -356,7 +356,7 @@ function styles(mode: CompactMode, fontFamily: string) {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     @page { size: A4; margin: 0; }
     body {
-      font-family: Calibri, Carlito, Arial, sans-serif;
+      font-family: ${fontFamily};
       font-size: 11pt; line-height: 1.4; color: #1A1714; background: white;
       padding: ${mode === "preview" ? "0 15mm" : "14mm 15mm"};
       print-color-adjust: exact; -webkit-print-color-adjust: exact;
