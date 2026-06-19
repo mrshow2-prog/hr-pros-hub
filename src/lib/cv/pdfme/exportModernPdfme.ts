@@ -5,7 +5,7 @@ import {
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
-  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY,
+  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY, FONT_DISPLAY_BOLD, FONT_DISPLAY_ITALIC,
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
@@ -1911,24 +1911,56 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     let ty = hy0 + ptToMm(7.6) * 1.25 + 1;
     b.addText({
       value: cv.contact.name || "Your name", x: textX, y: ty, width: textW,
-      fontSize: 26, color: INK, bold: true, fontName: FONT_DISPLAY,
+      fontSize: 26, color: INK, fontName: FONT_DISPLAY_BOLD,
       letterSpacing: -0.6, lineHeight: 1.05,
     });
     ty += ptToMm(26) * 1.05 + 1.4;
     if (cv.contact.jobTitle) {
       b.addText({
         value: cv.contact.jobTitle, x: textX, y: ty, width: textW,
-        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY,
+        fontSize: 11.5, color: SUBINK, fontName: FONT_DISPLAY_ITALIC,
       });
       ty += ptToMm(11.5) * 1.25 + 1.6;
     }
-    const contactRuns = contactLinkItems(cv);
-    const contact = contactRuns.map((r) => r.label).join("   ·   ");
-    if (contact) {
-      const ch = textHeightMm(contact, textW, 8.4, 1.4);
-      b.addText({ value: contact, x: textX, y: ty, width: textW, fontSize: 8.4, color: MUTED, lineHeight: 1.4 });
-      addContactLinks(b, contactRuns, { x: textX, y: ty, width: textW, fontSize: 8.4, lineHeight: 1.4 });
-      ty += ch + 1;
+
+    // Contact pills with inline icons (mirrors ContactLine in TemplateGeneva)
+    const c = cv.contact;
+    type Row = { iconKey: keyof typeof ICON_SVGS; label: string; uri?: string };
+    const rows: Row[] = [];
+    if (c.location) rows.push({ iconKey: "mapPin", label: c.location });
+    if (c.phone) rows.push({ iconKey: "phone", label: c.phone });
+    if (c.email) rows.push({ iconKey: "mail", label: c.email, uri: `mailto:${c.email}` });
+    if (c.linkedinUrl) rows.push({ iconKey: "linkedin", label: stripUrlPrefix(c.linkedinUrl), uri: c.linkedinUrl });
+    if (c.website) rows.push({ iconKey: "globe", label: stripUrlPrefix(c.website), uri: c.website });
+
+    if (rows.length) {
+      const iconPngs = await Promise.all(rows.map((r) => svgToPngDataUrl(ICON_SVGS[r.iconKey], MUTED, 64)));
+      const cFs = 8.4;
+      const lh = 1.45;
+      const lineStep = ptToMm(cFs) * lh + 1.6;
+      const iconSz = ptToMm(cFs) * 0.95;
+      const iconGap = 1.4;
+      const itemGap = 4.5;
+      let curX = textX;
+      let curY = ty + 0.4;
+      rows.forEach((r, i) => {
+        const labelW = textWidthMm(r.label, cFs);
+        const total = iconSz + iconGap + labelW;
+        if (curX + total > textX + textW && curX > textX) {
+          curX = textX;
+          curY += lineStep;
+        }
+        b.addImage({ x: curX, y: curY + (ptToMm(cFs) * lh - iconSz) / 2 - 0.2, w: iconSz, h: iconSz, data: iconPngs[i] });
+        b.addText({
+          value: r.label, x: curX + iconSz + iconGap, y: curY, width: labelW + 1.5,
+          fontSize: cFs, color: MUTED, lineHeight: lh,
+        });
+        if (r.uri) {
+          b.addLink({ x: curX + iconSz + iconGap, y: curY, width: labelW, height: ptToMm(cFs) * lh, uri: withScheme(r.uri) });
+        }
+        curX += total + itemGap;
+      });
+      ty = curY + ptToMm(cFs) * lh + 1;
     }
     b.cursorY = Math.max(ty, hy0 + (photoData ? sz : 0)) + 8;
   }
@@ -1944,7 +1976,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     });
     b.addText({
       value: label, x: b.margin, y: startY + 3.6, width: b.contentW,
-      fontSize: 15, color: INK, bold: true, fontName: FONT_DISPLAY, letterSpacing: -0.2,
+      fontSize: 15, color: INK, fontName: FONT_DISPLAY_BOLD, letterSpacing: -0.2,
     });
     b.cursorY = startY + ptToMm(15) * 1.25 + 5;
     b.addLine({ x: b.margin, y: b.cursorY - 1.4, width: b.contentW, height: 0.25, color: "#d8cfc1" });
@@ -1953,7 +1985,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
   if (shouldRender(cv, "summary")) {
     sectionTitle("Profile");
-    b.addText({ value: cv.summary, fontSize: 10.2, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, fontName: FONT_DISPLAY, align: "justify" });
+    b.addText({ value: cv.summary, fontSize: 10.2, color: SUBINK, lineHeight: 1.75, spaceAfter: 6, fontName: FONT_DISPLAY_ITALIC, align: "justify" });
   }
 
   const bodyRenderers: Partial<Record<SectionKey, () => void>> = {
@@ -1961,13 +1993,32 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
       sectionTitle("Career Timeline");
       const railX = b.margin + 1.2;
       const indent = 6;
-      const startY = b.cursorY;
+      const RAIL_COLOR = "#d8cfc1";
+      const drawRailSegment = (startPage: number, fromY: number, endPage: number, toY: number) => {
+        const savedPage = b.pageIndex;
+        if (startPage === endPage) {
+          b.setPageIndex(startPage);
+          if (toY - fromY > 0.5) b.addLine({ x: railX, y: fromY, width: 0.3, height: toY - fromY, color: RAIL_COLOR });
+        } else {
+          b.setPageIndex(startPage);
+          b.addLine({ x: railX, y: fromY, width: 0.3, height: b.pageBottom - fromY, color: RAIL_COLOR });
+          for (let p = startPage + 1; p < endPage; p++) {
+            b.setPageIndex(p);
+            b.addLine({ x: railX, y: b.top, width: 0.3, height: b.pageBottom - b.top, color: RAIL_COLOR });
+          }
+          b.setPageIndex(endPage);
+          if (toY - b.top > 0.5) b.addLine({ x: railX, y: b.top, width: 0.3, height: toY - b.top, color: RAIL_COLOR });
+        }
+        b.setPageIndex(savedPage);
+      };
       cv.experience.forEach((exp, idx) => {
         b.ensure(8);
-        const dotY = b.cursorY + 1.2;
+        const entryStartPage = b.pageIndex;
+        const entryStartY = b.cursorY + 1.2;
+        // dot (drawn on the page the entry starts on)
         b.addRect({
-          x: railX - 1.4, y: dotY, width: 2.8, height: 2.8,
-          color: PAPER, borderColor: SIENNA, borderWidth: 0.6, radius: 1.4,
+          x: railX - 1.4, y: entryStartY, width: 2.8, height: 2.8,
+          color: "#ffffff", borderColor: SIENNA, borderWidth: 0.6, radius: 1.4,
         });
         const savedMargin = (b as unknown as { margin: number }).margin;
         const savedContentW = (b as unknown as { contentW: number }).contentW;
@@ -1983,10 +2034,11 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
 
         (b as unknown as { margin: number }).margin = savedMargin;
         (b as unknown as { contentW: number }).contentW = savedContentW;
+        const entryEndPage = b.pageIndex;
+        const entryEndY = b.cursorY;
+        drawRailSegment(entryStartPage, entryStartY + 2.8, entryEndPage, entryEndY - 1);
         if (idx < cv.experience.length - 1) b.cursorY += 3.6;
       });
-      const endY = b.cursorY;
-      b.addLine({ x: railX, y: startY + 2.6, width: 0.3, height: endY - startY - 4, color: "#d8cfc1" });
       b.cursorY += 4;
     },
     education: () => {
