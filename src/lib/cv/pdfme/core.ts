@@ -138,6 +138,9 @@ export let FONT_DISPLAY_REGULAR_ACTIVE: string = FONT_SANS;
 export let FONT_BODY_ACTIVE: string = FONT_REGULAR;
 export let FONT_BODY_BOLD_ACTIVE: string = FONT_BOLD;
 export let FONT_BODY_ITALIC_ACTIVE: string = FONT_DISPLAY_ITALIC;
+/** Per-theme width multiplier applied by estimatedTextWidthMm so wrapping
+ * stays safe when the active body font is wider than Roboto (Fraunces / Syne). */
+let FONT_WIDTH_MULT = 1.0;
 export function setFontTheme(style: FontStyleId | null | undefined) {
   const t = getFontTheme(style);
   FONT_DISPLAY_ACTIVE = t.display;
@@ -145,7 +148,12 @@ export function setFontTheme(style: FontStyleId | null | undefined) {
   FONT_BODY_ACTIVE = t.body;
   FONT_BODY_BOLD_ACTIVE = t.bodyBold;
   FONT_BODY_ITALIC_ACTIVE = t.bodyItalic;
+  // Width safety margin per theme. Fraunces glyphs are ~8% wider than DM Sans;
+  // Syne (editorial display) is much wider but only used for headings which
+  // pass their own short strings.
+  FONT_WIDTH_MULT = style === "classic" ? 1.09 : style === "editorial" ? 1.03 : 1.0;
 }
+
 
 /**
  * Average character width per pt of font size for pdfme's default Roboto.
