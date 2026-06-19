@@ -312,6 +312,7 @@ const defaultIntent: IntentForm = {
   pageLimit: null,
   photoShape: "circle",
   colorPalette: "sienna",
+  fontStyle: "modern",
   sidebarPlacement: {},
 };
 
