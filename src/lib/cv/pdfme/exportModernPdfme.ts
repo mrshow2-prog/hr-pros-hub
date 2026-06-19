@@ -5,7 +5,7 @@ import {
 } from "./helpers";
 import {
   createBuilder, urlToDataUrl, textHeightMm, textWidthMm, ptToMm, wrapLines,
-  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY,
+  INK, SUBINK, MUTED, HAIRLINE, SIENNA, PAGE_W, FONT_DISPLAY, FONT_DISPLAY_BOLD, FONT_DISPLAY_ITALIC,
   type PdfmeBuilder,
 } from "./core";
 import { shadeHex, mixHex } from "@/lib/cv/palettes";
