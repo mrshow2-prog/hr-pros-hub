@@ -2031,7 +2031,7 @@ async function buildGeneva(cv: GeneratedCV, photoUrl: string | null) {
     achievements: () => {
       sectionTitle("Achievements");
       for (const a of cv.achievements.filter(Boolean)) {
-        bullet(ctx, "—", a, { fs: 9.4, lh: 1.65, glyphColor: SIENNA });
+        bullet(ctx, "—", a, { fs: 9.4, lh: 1.65, glyphColor: SIENNA, glyphW: 4 });
       }
       b.cursorY += 2;
     },
