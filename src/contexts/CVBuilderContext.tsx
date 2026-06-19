@@ -490,17 +490,26 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       if (!active) return;
       if (!error && data?.state) {
         const remote = data.state as Partial<CVBuilderState> & { currentStep?: unknown };
-        setState((prev) => ({
-          ...prev,
-          ...remote,
-          currentStep: remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep,
-          intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
-          generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
-          sessionId: prev.sessionId,
-          anonToken: prev.anonToken,
-          paymentStatus: (data.payment_status as PaymentStatus) ?? prev.paymentStatus,
-        }));
+        const remotePaid = (data.payment_status as PaymentStatus) === "paid";
+        setState((prev) => {
+          const hydratedStep = remote.currentStep !== undefined ? migrateStep(remote.currentStep) : prev.currentStep;
+          // Paid (unlocked) sessions are locked to the editor / export to prevent
+          // re-running upload + AI processing on a single unlock credit.
+          const finalStep: WizardStep = remotePaid && hydratedStep < 4 ? 4 : hydratedStep;
+          return {
+            ...prev,
+            ...remote,
+            currentStep: finalStep,
+            intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
+            generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
+            sessionId: prev.sessionId,
+            anonToken: prev.anonToken,
+            paymentStatus: (data.payment_status as PaymentStatus) ?? prev.paymentStatus,
+          };
+        });
       }
+
+
       hydrated.current = true;
       setLoading(false);
     })();
@@ -565,7 +574,12 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       loading,
-      setStep: (step) => setState((s) => ({ ...s, currentStep: step })),
+      setStep: (step) => setState((s) => ({
+        ...s,
+        // Lock paid sessions to step 4+ so unlock credits can't be reused for a new CV.
+        currentStep: s.paymentStatus === "paid" && step < 4 ? 4 : step,
+      })),
+
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
       setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
