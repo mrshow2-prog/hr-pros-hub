@@ -475,53 +475,64 @@ Deno.serve(async (req) => {
     let parsedText: string = body.parsedText ?? "";
     const intent = body.intentForm ?? {};
     const gapResponses = body.gapResponses ?? body.gapAnalysis?.responses ?? {};
+    const gaps: any[] = body.gaps ?? body.gapAnalysis?.gaps ?? [];
+    const fromScratch: boolean = body.fromScratch === true;
     const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
 
+    console.log("generate-cv fromScratch:", fromScratch);
     console.log("generate-cv parsedText length:", parsedText?.length ?? 0);
     console.log("generate-cv parsedText preview:", parsedText?.slice(0, 300));
     console.log("generate-cv uploadedFiles:", uploadedFiles.map((f) => f.name));
 
-    const looksPlaceholder =
-      !parsedText ||
-      parsedText.length < 200 ||
-      /Parsed content will be extracted server-side/i.test(parsedText);
-
-    if (looksPlaceholder && uploadedFiles.length > 0) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const admin = createClient(supabaseUrl, serviceKey);
-
-      const chunks: string[] = [];
-      for (const f of uploadedFiles) {
-        const { data, error } = await admin.storage
-          .from("cv-builder-uploads")
-          .download(f.path);
-        if (error || !data) {
-          console.error("Download failed for", f.path, error);
-          continue;
-        }
-        const bytes = new Uint8Array(await data.arrayBuffer());
-        const text = await extractFromFile(bytes, f.name);
-        console.log(`Extracted ${text.length} chars from ${f.name}`);
-        if (text.trim().length > 0) chunks.push(text);
-      }
-      parsedText = chunks.join("\n\n---\n\n");
-      console.log("Server-side parsedText length:", parsedText.length);
-    }
-
-    if (!parsedText || parsedText.trim().length < 100) {
-      return new Response(
-        JSON.stringify({
-          error: "CV text too short or empty — PDF may not have parsed correctly",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
-      );
-    }
-
     const pageLimit: number | null =
       typeof body.pageLimit === "number" ? body.pageLimit
         : (intent?.pageLimit ?? null);
-    const userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
+
+    let userMessage: string;
+
+    if (fromScratch) {
+      userMessage = buildScratchUserMessage(intent, gaps, gapResponses, pageLimit);
+    } else {
+      const looksPlaceholder =
+        !parsedText ||
+        parsedText.length < 200 ||
+        /Parsed content will be extracted server-side/i.test(parsedText);
+
+      if (looksPlaceholder && uploadedFiles.length > 0) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const admin = createClient(supabaseUrl, serviceKey);
+
+        const chunks: string[] = [];
+        for (const f of uploadedFiles) {
+          const { data, error } = await admin.storage
+            .from("cv-builder-uploads")
+            .download(f.path);
+          if (error || !data) {
+            console.error("Download failed for", f.path, error);
+            continue;
+          }
+          const bytes = new Uint8Array(await data.arrayBuffer());
+          const text = await extractFromFile(bytes, f.name);
+          console.log(`Extracted ${text.length} chars from ${f.name}`);
+          if (text.trim().length > 0) chunks.push(text);
+        }
+        parsedText = chunks.join("\n\n---\n\n");
+        console.log("Server-side parsedText length:", parsedText.length);
+      }
+
+      if (!parsedText || parsedText.trim().length < 100) {
+        return new Response(
+          JSON.stringify({
+            error: "CV text too short or empty — PDF may not have parsed correctly",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        );
+      }
+
+      userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
+    }
+
 
     const requestedProvider: string = body.provider ?? "gemini";
     const all = ["gemini", "lovable", "nvidia"];
