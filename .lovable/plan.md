@@ -1,34 +1,27 @@
-## Goal
+## Problem
 
-When a user starts from scratch at the Build step (no CV uploaded), the gaps stage currently fails because there's no CV text to analyze. Switch it to a "scratch" mode that asks for the basic info needed to build a skills-focused CV for the selected target role(s).
+When users build a CV from scratch (no upload), `generate-cv` returns 400 with `"CV text too short or empty"`. The function was never updated for scratch mode — only `analyze-cv-gaps` was. The gap answers are sent, but the function rejects the request before calling the AI because `parsedText` is just the placeholder `"(Starting from scratch — no source CV uploaded.)"` (~50 chars), which fails the `length < 100` guard and triggers the storage re-parse path.
 
-Keep it simple — same gaps UI, same writing/expectation question structure, just sourced differently.
+The user sees this as "High demand right now" because `StepDraft` (the caller) maps any non-2xx into that generic message.
 
-## Changes
+## Fix
 
-### 1. Track scratch mode (`src/contexts/CVBuilderContext.tsx`)
-- Add `fromScratch: boolean` to `CVBuilderState` (default `false`), persisted with the rest of the session state.
-- Add a `setFromScratch(value)` setter on the context.
+### 1. `src/components/cv-builder/StepDraft.tsx`
+Pass `fromScratch: state.fromScratch` and `gaps: state.gapAnalysis.gaps` in the body of the `generate-cv` invocation so the function has the question text alongside the answers (gap IDs alone are not self-describing).
 
-### 2. Flag scratch start (`src/components/cv-builder/StepUpload.tsx`)
-- In `handleScratch`, call `setFromScratch(true)`.
-- If the user later uploads a file or switches to paste mode, reset `fromScratch` to `false`.
+### 2. `supabase/functions/generate-cv/index.ts`
+- Read `fromScratch` and `gaps` from the request body.
+- When `fromScratch === true`:
+  - Skip the storage re-parse branch entirely.
+  - Skip the `parsedText.trim().length < 100` guard.
+  - Build the user message from the gap Q&A instead of CV text: format each gap as `Q: <question>\nA: <answer>` (writing) or `<category>: yes/no [+ details]` (expectation), plus the intent form (target roles, function, industry, seniority, cvType).
+  - Add a short system-prompt addendum noting the candidate is starting from scratch, so the AI should build a skills-/education-focused CV from the answers without inventing experience. Keep the existing JSON output schema unchanged so the rest of the pipeline (`StepDraft`, editor, ATS scoring) works as-is.
+- Keep all existing CV-mode behavior untouched.
 
-### 3. Branch the gap analysis (`src/components/cv-builder/StepGaps.tsx`)
-- When `state.fromScratch` is true:
-  - Skip the existing `analyze-cv-gaps` call.
-  - Call the same edge function with a new `mode: "scratch"` flag (no CV text needed) so the AI returns role-relevant prompts.
-- Update the empty-state copy (header subtitle + loading text) to say something like "Let's gather a few basics to build your CV" when in scratch mode.
-
-### 4. Edge function (`supabase/functions/analyze-cv-gaps/index.ts`)
-Add a `mode === "scratch"` branch (placed before the "parsedText too short" guard):
-
-- Skip the CV-text length validation and the storage download path.
-- Use a dedicated system prompt for graduates / no-CV candidates that produces 6–8 questions split across two layers:
-  - **writing layer** → short free-text questions covering: education (degree, institution, dates), internships, volunteering, trainings/certifications, languages, and any other notable info.
-  - **expectation layer** → yes/no questions about role-relevant **skills and competencies** the user likely has, derived from `targetRoles`, `functionArea`, `seniority`, and `industry` (e.g. "Roles like Marketing Coordinator typically use Canva or Figma — do you have experience with this?"). Confirmed items will seed the skills section.
-- Same JSON return shape as today (`{ gaps: [...] }`) so `StepGaps` renders without changes.
+### 3. No changes elsewhere
+`StepDraft`'s error mapping, `EditorShell`, ATS scoring, and persistence layer don't need updates — only the generation input/guard changes.
 
 ## Out of scope
-- No new UI components, no new wizard step, no changes to how gap answers are later merged into the generated CV (the existing `generate-cv` flow already consumes gap responses).
-- No changes to the paid-CV lock behavior added earlier.
+- No UI changes to the gaps screen or draft screen.
+- No change to provider routing (still Gemini-first per your earlier instruction).
+- No change to the paid-CV lock behavior.
