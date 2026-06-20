@@ -332,6 +332,82 @@ Return ONLY a valid JSON object, no markdown, no code fences, matching this exac
 }`;
 }
 
+function buildScratchUserMessage(intent: any, gaps: any[], gapResponses: any, pageLimit: number | null) {
+  const targetRoles = Array.isArray(intent?.targetRoles)
+    ? intent.targetRoles.join(", ")
+    : intent?.targetRoles ?? intent?.targetRole ?? "";
+  const functionArea = intent?.function ?? intent?.functionArea ?? "";
+  const industry = intent?.industry ?? intent?.targetIndustry ?? "Not industry-specific";
+
+  const qa = (() => {
+    if (!Array.isArray(gaps) || gaps.length === 0) {
+      // Fallback: dump raw responses if gap metadata wasn't sent
+      const lines: string[] = [];
+      for (const [k, v] of Object.entries(gapResponses ?? {})) {
+        if (v && typeof v === "object") {
+          const o = v as any;
+          lines.push(`- ${k}: confirm=${o.confirm ?? ""}${o.details ? ` | ${o.details}` : ""}`);
+        } else if (v) {
+          lines.push(`- ${k}: ${v}`);
+        }
+      }
+      return lines.join("\n") || "(no answers provided)";
+    }
+    const writing: string[] = [];
+    const confirmed: string[] = [];
+    for (const g of gaps) {
+      const r = gapResponses?.[g.id];
+      if (!r) continue;
+      const layer = g.layer ?? "writing";
+      if (layer === "expectation") {
+        if (typeof r === "object" && (r as any).confirm === "yes") {
+          const details = (r as any).details ? ` — ${(r as any).details}` : "";
+          confirmed.push(`- ${g.category ?? g.id}${details}`);
+        }
+      } else {
+        const ans = typeof r === "string" ? r : (r as any).details ?? "";
+        if (ans && String(ans).trim().length > 0) {
+          writing.push(`Q (${g.category ?? g.id}): ${g.question ?? ""}\nA: ${ans}`);
+        }
+      }
+    }
+    return [
+      writing.length ? `BASICS:\n${writing.join("\n\n")}` : "",
+      confirmed.length ? `CONFIRMED SKILLS / COMPETENCIES:\n${confirmed.join("\n")}` : "",
+    ].filter(Boolean).join("\n\n") || "(no answers provided)";
+  })();
+
+  return `SCRATCH MODE: This candidate is starting from scratch and has no prior CV. Build a skills- and education-focused CV strictly from the answers below. DO NOT invent work experience. If there are no internships/jobs, return an empty "experience" array — that is correct. Use confirmed skills/competencies to populate "skills" and "competencyClusters". Write a short, honest summary tailored to the target roles.
+
+TARGET ROLES: ${targetRoles}
+FUNCTION: ${functionArea}
+SENIORITY: ${intent?.seniority ?? ""}
+INDUSTRY: ${industry}
+CV TYPE: ${intent?.cvType ?? "skills"}
+TONE: ${intent?.tone ?? ""}
+PAGE LIMIT: ${pageLimit === null || pageLimit === undefined ? "unlimited" : `${pageLimit} page(s)`}
+
+CANDIDATE ANSWERS:
+${qa}
+
+Return ONLY a valid JSON object, no markdown, no code fences, matching this exact structure:
+{
+  "name": string,
+  "jobTitle": string,
+  "email": string,
+  "phone": string,
+  "location": string,
+  "linkedIn": string,
+  "summary": string,
+  "experience": [{ "id": string, "jobTitle": string, "company": string, "location": string, "from": string, "to": string, "bullets": [{ "id": string, "original": string, "rewritten": string, "explanation": string }] }],
+  "skills": [string],
+  "education": [{ "id": string, "institution": string, "qualification": string, "year": string }],
+  "competencyClusters": [{ "id": string, "title": string, "items": [string] }],
+  "languages": [{ "language": string, "proficiency": string }]
+}`;
+}
+
+
 
 function adaptToClientShape(ai: any, intent: any) {
   const fallbackRole =
