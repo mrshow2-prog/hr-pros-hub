@@ -332,6 +332,82 @@ Return ONLY a valid JSON object, no markdown, no code fences, matching this exac
 }`;
 }
 
+function buildScratchUserMessage(intent: any, gaps: any[], gapResponses: any, pageLimit: number | null) {
+  const targetRoles = Array.isArray(intent?.targetRoles)
+    ? intent.targetRoles.join(", ")
+    : intent?.targetRoles ?? intent?.targetRole ?? "";
+  const functionArea = intent?.function ?? intent?.functionArea ?? "";
+  const industry = intent?.industry ?? intent?.targetIndustry ?? "Not industry-specific";
+
+  const qa = (() => {
+    if (!Array.isArray(gaps) || gaps.length === 0) {
+      // Fallback: dump raw responses if gap metadata wasn't sent
+      const lines: string[] = [];
+      for (const [k, v] of Object.entries(gapResponses ?? {})) {
+        if (v && typeof v === "object") {
+          const o = v as any;
+          lines.push(`- ${k}: confirm=${o.confirm ?? ""}${o.details ? ` | ${o.details}` : ""}`);
+        } else if (v) {
+          lines.push(`- ${k}: ${v}`);
+        }
+      }
+      return lines.join("\n") || "(no answers provided)";
+    }
+    const writing: string[] = [];
+    const confirmed: string[] = [];
+    for (const g of gaps) {
+      const r = gapResponses?.[g.id];
+      if (!r) continue;
+      const layer = g.layer ?? "writing";
+      if (layer === "expectation") {
+        if (typeof r === "object" && (r as any).confirm === "yes") {
+          const details = (r as any).details ? ` — ${(r as any).details}` : "";
+          confirmed.push(`- ${g.category ?? g.id}${details}`);
+        }
+      } else {
+        const ans = typeof r === "string" ? r : (r as any).details ?? "";
+        if (ans && String(ans).trim().length > 0) {
+          writing.push(`Q (${g.category ?? g.id}): ${g.question ?? ""}\nA: ${ans}`);
+        }
+      }
+    }
+    return [
+      writing.length ? `BASICS:\n${writing.join("\n\n")}` : "",
+      confirmed.length ? `CONFIRMED SKILLS / COMPETENCIES:\n${confirmed.join("\n")}` : "",
+    ].filter(Boolean).join("\n\n") || "(no answers provided)";
+  })();
+
+  return `SCRATCH MODE: This candidate is starting from scratch and has no prior CV. Build a skills- and education-focused CV strictly from the answers below. DO NOT invent work experience. If there are no internships/jobs, return an empty "experience" array — that is correct. Use confirmed skills/competencies to populate "skills" and "competencyClusters". Write a short, honest summary tailored to the target roles.
+
+TARGET ROLES: ${targetRoles}
+FUNCTION: ${functionArea}
+SENIORITY: ${intent?.seniority ?? ""}
+INDUSTRY: ${industry}
+CV TYPE: ${intent?.cvType ?? "skills"}
+TONE: ${intent?.tone ?? ""}
+PAGE LIMIT: ${pageLimit === null || pageLimit === undefined ? "unlimited" : `${pageLimit} page(s)`}
+
+CANDIDATE ANSWERS:
+${qa}
+
+Return ONLY a valid JSON object, no markdown, no code fences, matching this exact structure:
+{
+  "name": string,
+  "jobTitle": string,
+  "email": string,
+  "phone": string,
+  "location": string,
+  "linkedIn": string,
+  "summary": string,
+  "experience": [{ "id": string, "jobTitle": string, "company": string, "location": string, "from": string, "to": string, "bullets": [{ "id": string, "original": string, "rewritten": string, "explanation": string }] }],
+  "skills": [string],
+  "education": [{ "id": string, "institution": string, "qualification": string, "year": string }],
+  "competencyClusters": [{ "id": string, "title": string, "items": [string] }],
+  "languages": [{ "language": string, "proficiency": string }]
+}`;
+}
+
+
 
 function adaptToClientShape(ai: any, intent: any) {
   const fallbackRole =
@@ -399,53 +475,64 @@ Deno.serve(async (req) => {
     let parsedText: string = body.parsedText ?? "";
     const intent = body.intentForm ?? {};
     const gapResponses = body.gapResponses ?? body.gapAnalysis?.responses ?? {};
+    const gaps: any[] = body.gaps ?? body.gapAnalysis?.gaps ?? [];
+    const fromScratch: boolean = body.fromScratch === true;
     const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
 
+    console.log("generate-cv fromScratch:", fromScratch);
     console.log("generate-cv parsedText length:", parsedText?.length ?? 0);
     console.log("generate-cv parsedText preview:", parsedText?.slice(0, 300));
     console.log("generate-cv uploadedFiles:", uploadedFiles.map((f) => f.name));
 
-    const looksPlaceholder =
-      !parsedText ||
-      parsedText.length < 200 ||
-      /Parsed content will be extracted server-side/i.test(parsedText);
-
-    if (looksPlaceholder && uploadedFiles.length > 0) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const admin = createClient(supabaseUrl, serviceKey);
-
-      const chunks: string[] = [];
-      for (const f of uploadedFiles) {
-        const { data, error } = await admin.storage
-          .from("cv-builder-uploads")
-          .download(f.path);
-        if (error || !data) {
-          console.error("Download failed for", f.path, error);
-          continue;
-        }
-        const bytes = new Uint8Array(await data.arrayBuffer());
-        const text = await extractFromFile(bytes, f.name);
-        console.log(`Extracted ${text.length} chars from ${f.name}`);
-        if (text.trim().length > 0) chunks.push(text);
-      }
-      parsedText = chunks.join("\n\n---\n\n");
-      console.log("Server-side parsedText length:", parsedText.length);
-    }
-
-    if (!parsedText || parsedText.trim().length < 100) {
-      return new Response(
-        JSON.stringify({
-          error: "CV text too short or empty — PDF may not have parsed correctly",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
-      );
-    }
-
     const pageLimit: number | null =
       typeof body.pageLimit === "number" ? body.pageLimit
         : (intent?.pageLimit ?? null);
-    const userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
+
+    let userMessage: string;
+
+    if (fromScratch) {
+      userMessage = buildScratchUserMessage(intent, gaps, gapResponses, pageLimit);
+    } else {
+      const looksPlaceholder =
+        !parsedText ||
+        parsedText.length < 200 ||
+        /Parsed content will be extracted server-side/i.test(parsedText);
+
+      if (looksPlaceholder && uploadedFiles.length > 0) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const admin = createClient(supabaseUrl, serviceKey);
+
+        const chunks: string[] = [];
+        for (const f of uploadedFiles) {
+          const { data, error } = await admin.storage
+            .from("cv-builder-uploads")
+            .download(f.path);
+          if (error || !data) {
+            console.error("Download failed for", f.path, error);
+            continue;
+          }
+          const bytes = new Uint8Array(await data.arrayBuffer());
+          const text = await extractFromFile(bytes, f.name);
+          console.log(`Extracted ${text.length} chars from ${f.name}`);
+          if (text.trim().length > 0) chunks.push(text);
+        }
+        parsedText = chunks.join("\n\n---\n\n");
+        console.log("Server-side parsedText length:", parsedText.length);
+      }
+
+      if (!parsedText || parsedText.trim().length < 100) {
+        return new Response(
+          JSON.stringify({
+            error: "CV text too short or empty — PDF may not have parsed correctly",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        );
+      }
+
+      userMessage = buildUserMessage(parsedText, intent, gapResponses, pageLimit);
+    }
+
 
     const requestedProvider: string = body.provider ?? "gemini";
     const all = ["gemini", "lovable", "nvidia"];
