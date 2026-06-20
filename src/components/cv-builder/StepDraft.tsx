@@ -60,6 +60,8 @@ export default function StepDraft() {
           parsedText: state.parsedText,
           intentForm: state.intentForm,
           gapResponses: state.gapAnalysis.responses,
+          gaps: state.gapAnalysis.gaps,
+          fromScratch: state.fromScratch,
           template: state.selectedTemplate,
           typeOption: state.typeOption,
           uploadedFiles: state.uploadedFiles,
