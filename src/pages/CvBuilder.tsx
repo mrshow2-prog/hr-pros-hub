@@ -65,7 +65,8 @@ function Wizard() {
     <WizardShell stepKey={step}>
       {step === 1 && <StepTemplate />}
       {step === 2 && <StepUpload />}
-      {step === 3 && <StepGaps />}
+      {step === 3 && state.fromScratch && !state.scratchBasics.completed && <StepScratchBasics />}
+      {step === 3 && !(state.fromScratch && !state.scratchBasics.completed) && <StepGaps />}
       {step === 5 && <StepExport />}
     </WizardShell>
   );
