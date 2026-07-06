@@ -539,6 +539,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
             ...remote,
             currentStep: finalStep,
             intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
+            scratchBasics: { ...emptyScratchBasics, ...(remote.scratchBasics ?? {}) },
             generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
             sessionId: prev.sessionId,
             anonToken: prev.anonToken,
