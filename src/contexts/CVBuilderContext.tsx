@@ -260,6 +260,36 @@ export interface AtsScore {
  */
 export type WizardStep = 1 | 2 | 3 | 4 | 5;
 
+export interface ScratchBasics {
+  completed: boolean;
+  fullName: string;
+  email: string;
+  phone: string;
+  linkedin: string;
+  location: string;
+  targetTitle: string;
+  education: string;
+  experience: string;
+  certifications: string;
+  skills: string;
+  extras: string;
+}
+
+export const emptyScratchBasics: ScratchBasics = {
+  completed: false,
+  fullName: "",
+  email: "",
+  phone: "",
+  linkedin: "",
+  location: "",
+  targetTitle: "",
+  education: "",
+  experience: "",
+  certifications: "",
+  skills: "",
+  extras: "",
+};
+
 export interface CVBuilderState {
   sessionId: string;
   anonToken: string;
@@ -268,6 +298,8 @@ export interface CVBuilderState {
   parsedText: string;
   /** True when the user chose "Start from scratch" at the Build step (no source CV). */
   fromScratch: boolean;
+  /** Basic info gathered on the scratch-mode intake form (before gap analysis). */
+  scratchBasics: ScratchBasics;
   photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
