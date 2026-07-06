@@ -260,6 +260,36 @@ export interface AtsScore {
  */
 export type WizardStep = 1 | 2 | 3 | 4 | 5;
 
+export interface ScratchBasics {
+  completed: boolean;
+  fullName: string;
+  email: string;
+  phone: string;
+  linkedin: string;
+  location: string;
+  targetTitle: string;
+  education: string;
+  experience: string;
+  certifications: string;
+  skills: string;
+  extras: string;
+}
+
+export const emptyScratchBasics: ScratchBasics = {
+  completed: false,
+  fullName: "",
+  email: "",
+  phone: "",
+  linkedin: "",
+  location: "",
+  targetTitle: "",
+  education: "",
+  experience: "",
+  certifications: "",
+  skills: "",
+  extras: "",
+};
+
 export interface CVBuilderState {
   sessionId: string;
   anonToken: string;
@@ -268,6 +298,8 @@ export interface CVBuilderState {
   parsedText: string;
   /** True when the user chose "Start from scratch" at the Build step (no source CV). */
   fromScratch: boolean;
+  /** Basic info gathered on the scratch-mode intake form (before gap analysis). */
+  scratchBasics: ScratchBasics;
   photoPath: string | null;
   intentForm: IntentForm;
   gapAnalysis: GapAnalysis;
@@ -406,6 +438,7 @@ const buildInitialState = (): CVBuilderState => {
     uploadedFiles: [],
     parsedText: "",
     fromScratch: false,
+    scratchBasics: emptyScratchBasics,
     photoPath: null,
     intentForm: defaultIntent,
     gapAnalysis: { gaps: [], responses: {} },
@@ -428,6 +461,7 @@ interface CVBuilderContextValue {
   setUploadedFiles: (files: UploadedFile[]) => void;
   setParsedText: (text: string) => void;
   setFromScratch: (value: boolean) => void;
+  setScratchBasics: (patch: Partial<ScratchBasics>) => void;
   setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
@@ -505,6 +539,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
             ...remote,
             currentStep: finalStep,
             intentForm: { ...prev.intentForm, ...(remote.intentForm ?? {}) },
+            scratchBasics: { ...emptyScratchBasics, ...(remote.scratchBasics ?? {}) },
             generatedCV: remote.generatedCV ? hydrateGeneratedCV(remote.generatedCV) : null,
             sessionId: prev.sessionId,
             anonToken: prev.anonToken,
@@ -557,6 +592,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     state.uploadedFiles,
     state.parsedText,
     state.fromScratch,
+    state.scratchBasics,
     state.photoPath,
     state.intentForm,
     state.gapAnalysis,
@@ -588,6 +624,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
       setUploadedFiles: (files) => setState((s) => ({ ...s, uploadedFiles: files })),
       setParsedText: (text) => setState((s) => ({ ...s, parsedText: text })),
       setFromScratch: (value) => setState((s) => ({ ...s, fromScratch: value })),
+      setScratchBasics: (patch) => setState((s) => ({ ...s, scratchBasics: { ...s.scratchBasics, ...patch } })),
       setPhotoPath: (path) => setState((s) => ({ ...s, photoPath: path })),
       patchIntent: (patch) =>
         setState((s) => ({ ...s, intentForm: { ...s.intentForm, ...patch } })),

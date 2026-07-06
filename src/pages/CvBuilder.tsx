@@ -6,6 +6,7 @@ import { CVBuilderProvider, useCVBuilder } from "@/contexts/CVBuilderContext";
 import WizardShell from "@/components/cv-builder/WizardShell";
 import StepUpload from "@/components/cv-builder/StepUpload";
 import StepGaps from "@/components/cv-builder/StepGaps";
+import StepScratchBasics from "@/components/cv-builder/StepScratchBasics";
 import StepTemplate from "@/components/cv-builder/StepTemplate";
 import EditorShell from "@/components/cv-builder/editor/EditorShell";
 import StepExport from "@/components/cv-builder/StepExport";
@@ -64,7 +65,8 @@ function Wizard() {
     <WizardShell stepKey={step}>
       {step === 1 && <StepTemplate />}
       {step === 2 && <StepUpload />}
-      {step === 3 && <StepGaps />}
+      {step === 3 && state.fromScratch && !state.scratchBasics.completed && <StepScratchBasics />}
+      {step === 3 && !(state.fromScratch && !state.scratchBasics.completed) && <StepGaps />}
       {step === 5 && <StepExport />}
     </WizardShell>
   );

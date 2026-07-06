@@ -14,12 +14,7 @@ export default function TemplateMilano({
 }) {
   const accent = "var(--accent, #c9a36a)";
 
-  const initials = (cv.contact.name || "Y N")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("") || "YN";
+  // Monogram fallback previously rendered when no photo — removed; a clean typographic header reads better without the coloured block.
 
   let n = 1;
   const num = () => String(n++).padStart(2, "0");
@@ -213,49 +208,36 @@ export default function TemplateMilano({
     ),
   };
 
+  const tokens = (cv.contact.name || "Your name").trim().split(/\s+/);
+  const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
+  const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
+
   return (
     <Page>
       <header className="relative px-12 pt-12 pb-8">
-        <div className="flex items-stretch gap-6">
-          {photoUrl ? (
+        <p className="mb-3 font-dm text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: accent as string }}>
+          Curriculum Vitae
+        </p>
+        <div className={photoUrl ? "flex items-center gap-6" : ""}>
+          {photoUrl && (
             <div className="shrink-0">
               <div className="relative">
-                <div className="h-32 w-32 overflow-hidden">
+                <div className="h-28 w-28 overflow-hidden">
                   <img src={photoUrl} alt="" className="h-full w-full object-cover" />
                 </div>
-                <span className="absolute -bottom-2 -right-2 h-10 w-10" style={{ background: accent as string }} aria-hidden />
+                <span className="absolute -bottom-2 -right-2 h-8 w-8" style={{ background: accent as string }} aria-hidden />
               </div>
             </div>
-          ) : (
-            <div
-              className="flex h-32 w-32 shrink-0 items-center justify-center font-syne text-[58px] font-bold leading-none text-paper"
-              style={{ background: accent as string }}
-            >
-              {initials}
-            </div>
           )}
-
           <div className="min-w-0 flex-1">
-            <p className="mb-2 font-dm text-[11px] font-bold uppercase tracking-[0.32em]" style={{ color: accent as string }}>
-              Curriculum Vitae
-            </p>
-            {(() => {
-              const tokens = (cv.contact.name || "Your name").trim().split(/\s+/);
-              const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
-              const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
-              return (
-                <>
-                  <h1 className="font-syne text-[52px] font-bold leading-[0.95] tracking-[-0.035em] text-ink">{first}</h1>
-                  {last && (
-                    <h1 className="font-syne text-[52px] font-bold italic leading-[0.95] tracking-[-0.035em]" style={{ color: accent as string }}>
-                      {last}
-                    </h1>
-                  )}
-                </>
-              );
-            })()}
+            <h1 className="font-syne text-[48px] font-bold leading-[0.98] tracking-[-0.035em] text-ink">{first}</h1>
+            {last && (
+              <h1 className="font-syne text-[48px] font-bold italic leading-[0.98] tracking-[-0.035em]" style={{ color: accent as string }}>
+                {last}
+              </h1>
+            )}
             {cv.contact.jobTitle && (
-              <p className="mt-3 font-dm text-[14px] font-medium uppercase tracking-[0.24em] text-ink/70">
+              <p className="mt-3 font-dm text-[13px] font-medium uppercase tracking-[0.22em] text-ink/70">
                 {cv.contact.jobTitle}
               </p>
             )}
