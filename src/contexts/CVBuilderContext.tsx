@@ -461,6 +461,7 @@ interface CVBuilderContextValue {
   setUploadedFiles: (files: UploadedFile[]) => void;
   setParsedText: (text: string) => void;
   setFromScratch: (value: boolean) => void;
+  setScratchBasics: (patch: Partial<ScratchBasics>) => void;
   setPhotoPath: (path: string | null) => void;
   patchIntent: (patch: Partial<IntentForm>) => void;
   setGaps: (gaps: Gap[]) => void;
