@@ -14,12 +14,7 @@ export default function TemplateMilano({
 }) {
   const accent = "var(--accent, #c9a36a)";
 
-  const initials = (cv.contact.name || "Y N")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase() ?? "")
-    .join("") || "YN";
+  // Monogram fallback previously rendered when no photo — removed; a clean typographic header reads better without the coloured block.
 
   let n = 1;
   const num = () => String(n++).padStart(2, "0");
