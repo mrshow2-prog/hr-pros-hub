@@ -2208,19 +2208,20 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
     const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
     const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
 
+    const nameFs = photoData ? 30 : 28;
     b.addText({
       value: first, x: textX, y: ty, width: textW,
-      fontSize: 30, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
-      lineHeight: 1.0, letterSpacing: -0.8,
+      fontSize: nameFs, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
+      lineHeight: 1.0, letterSpacing: 0,
     });
-    ty += ptToMm(30) * 1.0 + 0.6;
+    ty += ptToMm(nameFs) * 1.0 + 0.6;
     if (last) {
       b.addText({
         value: last, x: textX, y: ty, width: textW,
-        fontSize: 30, color: ACCENT, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
-        lineHeight: 1.0, letterSpacing: -0.8,
+        fontSize: nameFs, color: ACCENT, bold: true, fontName: FONT_DISPLAY_ITALIC,
+        lineHeight: 1.0, letterSpacing: 0,
       });
-      ty += ptToMm(30) * 1.0 + 1.6;
+      ty += ptToMm(nameFs) * 1.0 + 1.6;
     }
     if (cv.contact.jobTitle) {
       b.addText({
