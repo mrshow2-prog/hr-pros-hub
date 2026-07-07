@@ -215,29 +215,43 @@ export default function TemplateMilano({
   return (
     <Page>
       <header className="relative px-12 pt-12 pb-8">
-        <p className="mb-3 font-dm text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: accent as string }}>
+        <p className="mb-6 font-dm text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: accent as string }}>
           Curriculum Vitae
         </p>
-        <div className={photoUrl ? "flex items-center gap-6" : ""}>
+
+        <div className="flex items-start gap-7">
           {photoUrl && (
             <div className="shrink-0">
               <div className="relative">
-                <div className="h-28 w-28 overflow-hidden">
+                <div
+                  className="h-28 w-28 overflow-hidden"
+                  style={{ background: "rgba(0,0,0,0.06)" }}
+                >
                   <img src={photoUrl} alt="" className="h-full w-full object-cover" />
                 </div>
-                <span className="absolute -bottom-2 -right-2 h-8 w-8" style={{ background: accent as string }} aria-hidden />
+                <span
+                  className="absolute -bottom-2 -right-2 h-8 w-8"
+                  style={{ background: accent as string }}
+                  aria-hidden
+                />
               </div>
             </div>
           )}
+
           <div className="min-w-0 flex-1">
-            <h1 className="font-syne text-[48px] font-bold leading-[0.98] tracking-[-0.035em] text-ink">{first}</h1>
+            <h1 className="font-syne text-[44px] font-bold leading-[1.02] tracking-[-0.03em] text-ink">
+              {first}
+            </h1>
             {last && (
-              <h1 className="font-syne text-[48px] font-bold italic leading-[0.98] tracking-[-0.035em]" style={{ color: accent as string }}>
+              <h1
+                className="font-syne text-[44px] font-bold italic leading-[1.02] tracking-[-0.03em]"
+                style={{ color: accent as string }}
+              >
                 {last}
               </h1>
             )}
             {cv.contact.jobTitle && (
-              <p className="mt-3 font-dm text-[13px] font-medium uppercase tracking-[0.22em] text-ink/70">
+              <p className="mt-3 font-dm text-[12px] font-medium uppercase tracking-[0.22em] text-ink/70">
                 {cv.contact.jobTitle}
               </p>
             )}
@@ -260,6 +274,7 @@ export default function TemplateMilano({
           </div>
         )}
       </header>
+
 
       <div className="px-12 pb-12">
         {shouldRender(cv, "summary") && (
