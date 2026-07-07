@@ -2196,15 +2196,6 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
       b.addImage({ x: b.margin, y: hy0, w: photoSize, h: photoSize, data: photoData });
       // Accent square offset behind the photo's bottom-right corner
       b.addRect({ x: b.margin + photoSize - 4, y: hy0 + photoSize - 4, width: 8, height: 8, color: ACCENT });
-    } else {
-      b.addRect({ x: b.margin, y: hy0, width: photoSize, height: photoSize, color: ACCENT });
-      const initials =
-        (cv.contact.name || "Y N").split(/\s+/).filter(Boolean).slice(0, 2)
-          .map((s) => s[0]?.toUpperCase() ?? "").join("") || "YN";
-      b.addText({
-        value: initials, x: b.margin, y: hy0 + 8.5, width: photoSize,
-        fontSize: 24, color: PAPER, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, align: "center",
-      });
     }
 
     b.addText({
