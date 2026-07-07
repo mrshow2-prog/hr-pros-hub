@@ -476,11 +476,11 @@ Deno.serve(async (req) => {
     const intent = body.intentForm ?? {};
     const gapResponses = body.gapResponses ?? body.gapAnalysis?.responses ?? {};
     const gaps: any[] = body.gaps ?? body.gapAnalysis?.gaps ?? [];
+    const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
     const fromScratch: boolean =
       body.fromScratch === true ||
       /Starting from scratch/i.test(parsedText ?? "") ||
       ((!uploadedFiles || uploadedFiles.length === 0) && (!parsedText || parsedText.trim().length < 100));
-    const uploadedFiles: Array<{ path: string; name: string }> = body.uploadedFiles ?? [];
 
     console.log("generate-cv fromScratch:", fromScratch);
     console.log("generate-cv parsedText length:", parsedText?.length ?? 0);
