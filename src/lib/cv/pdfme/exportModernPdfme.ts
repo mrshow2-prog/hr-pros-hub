@@ -2196,15 +2196,6 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
       b.addImage({ x: b.margin, y: hy0, w: photoSize, h: photoSize, data: photoData });
       // Accent square offset behind the photo's bottom-right corner
       b.addRect({ x: b.margin + photoSize - 4, y: hy0 + photoSize - 4, width: 8, height: 8, color: ACCENT });
-    } else {
-      b.addRect({ x: b.margin, y: hy0, width: photoSize, height: photoSize, color: ACCENT });
-      const initials =
-        (cv.contact.name || "Y N").split(/\s+/).filter(Boolean).slice(0, 2)
-          .map((s) => s[0]?.toUpperCase() ?? "").join("") || "YN";
-      b.addText({
-        value: initials, x: b.margin, y: hy0 + 8.5, width: photoSize,
-        fontSize: 24, color: PAPER, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE, align: "center",
-      });
     }
 
     b.addText({
@@ -2217,19 +2208,20 @@ async function buildMilano(cv: GeneratedCV, photoUrl: string | null) {
     const first = tokens.length > 1 ? tokens.slice(0, -1).join(" ") : tokens[0];
     const last = tokens.length > 1 ? tokens[tokens.length - 1] : "";
 
+    const nameFs = photoData ? 30 : 28;
     b.addText({
       value: first, x: textX, y: ty, width: textW,
-      fontSize: 30, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
-      lineHeight: 1.0, letterSpacing: -0.8,
+      fontSize: nameFs, color: INK, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
+      lineHeight: 1.0, letterSpacing: 0,
     });
-    ty += ptToMm(30) * 1.0 + 0.6;
+    ty += ptToMm(nameFs) * 1.0 + 0.6;
     if (last) {
       b.addText({
         value: last, x: textX, y: ty, width: textW,
-        fontSize: 30, color: ACCENT, bold: true, fontName: FONT_DISPLAY_REGULAR_ACTIVE,
-        lineHeight: 1.0, letterSpacing: -0.8,
+        fontSize: nameFs, color: ACCENT, bold: true, fontName: FONT_DISPLAY_ITALIC,
+        lineHeight: 1.0, letterSpacing: 0,
       });
-      ty += ptToMm(30) * 1.0 + 1.6;
+      ty += ptToMm(nameFs) * 1.0 + 1.6;
     }
     if (cv.contact.jobTitle) {
       b.addText({
