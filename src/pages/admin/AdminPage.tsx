@@ -48,7 +48,7 @@ export default function AdminPage() {
   const [cvUserFilter, setCvUserFilter] = useState<string | null>(null);
   const [pwUser, setPwUser] = useState<AdminUser | null>(null);
   const [newPw, setNewPw] = useState("");
-  const [confirm, setConfirm] = useState<{ title: string; body: string; run: () => Promise<void> } | null>(null);
+  const [confirm, setConfirm] = useState<{ title: string; body: string; run: () => Promise<unknown> } | null>(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState("users");
 
