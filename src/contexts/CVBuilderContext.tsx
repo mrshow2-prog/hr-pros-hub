@@ -515,6 +515,7 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const saveTimer = useRef<number | null>(null);
   const hydrated = useRef(false);
+  const ownerId = useRef<string | null>(null);
 
   // Hydrate from Supabase
   useEffect(() => {
@@ -522,10 +523,11 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
     (async () => {
       const { data, error } = await supabase
         .from("cv_builder_sessions")
-        .select("state, payment_status")
+        .select("state, payment_status, user_id")
         .eq("id", state.sessionId)
         .maybeSingle();
       if (!active) return;
+      if (!error && data?.user_id) ownerId.current = data.user_id as string;
       if (!error && data?.state) {
         const remote = data.state as Partial<CVBuilderState> & { currentStep?: unknown };
         const remotePaid = (data.payment_status as PaymentStatus) === "paid";
@@ -571,7 +573,8 @@ export function CVBuilderProvider({ children }: { children: ReactNode }) {
         [
           {
             id: sessionId,
-            user_id: userId,
+            // Preserve the original owner (e.g. when an admin edits a user's CV)
+            user_id: ownerId.current ?? userId,
             state: persisted as unknown as any,
             payment_status: state.paymentStatus,
           },
