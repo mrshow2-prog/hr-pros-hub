@@ -1,0 +1,2 @@
+CREATE POLICY "Admins delete all sessions" ON public.cv_builder_sessions FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins delete requests" ON public.unlock_requests FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
