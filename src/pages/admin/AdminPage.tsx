@@ -50,6 +50,7 @@ export default function AdminPage() {
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState<{ title: string; body: string; run: () => Promise<void> } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState("users");
 
   const load = async () => {
     setLoading(true);
@@ -195,7 +196,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <Tabs defaultValue="users">
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="mb-4 flex-wrap h-auto">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="cvs">CV projects</TabsTrigger>
@@ -223,10 +224,7 @@ export default function AdminPage() {
                       <p className="text-xs text-ink/55">{u.cv_count} CV{u.cv_count === 1 ? "" : "s"} · {u.paid_count} unlocked</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setCvUserFilter(u.id)} disabled={!u.cv_count}
-                        asChild={false}>
-                        <span onClick={() => (document.querySelector('[role="tab"][id$="cvs"]') as HTMLElement)?.click()}>View CVs</span>
-                      </Button>
+                      <Button size="sm" variant="outline" disabled={!u.cv_count} onClick={() => { setCvUserFilter(u.id); setTab("cvs"); }}>View CVs</Button>
                       <Button size="sm" variant="outline" onClick={() => sendReset(u)} disabled={!u.email}>Send reset email</Button>
                       <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setNewPw(""); }}>Set password</Button>
                       {!u.is_admin && (
